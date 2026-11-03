@@ -2,7 +2,10 @@
  * eumenes-pipeline public entry. Host-agnostic: no Bun, browser or Eumenes imports, so Eumenes can
  * install the tarball and connect it through a thin adapter (plan §7).
  *
- * Status: P0 skeleton. The definition schema and check are provisional until P0e.
+ * Status: P1 — the internal data contract (definition schema, check, catalog resolution,
+ * execution plan) is fixed at contract version p0-2. The composing AI's primary description
+ * format (JSON) is a separate, still provisional choice: its final confirmation on the weak
+ * target model is outstanding and does not change this package's data contract.
  */
 export {
 	ENTRY_PATTERN,

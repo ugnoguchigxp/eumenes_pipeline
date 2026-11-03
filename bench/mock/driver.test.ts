@@ -113,6 +113,31 @@ describe("runPlan", () => {
 		expect(outcome.delivered).toBeNull();
 	});
 
+	test("partial success is not reported as completion", async () => {
+		const host = new FakeHost((step) =>
+			step.stepId === "b" ? { state: "failed", code: "boom" } : {},
+		);
+		const outcome = await runPlan(
+			plan(
+				[planned("a", ["request"]), planned("b", ["a"]), planned("c", ["b"])],
+				["c"],
+			),
+			host,
+			{ runId: "r", validateOutput: alwaysValid },
+		);
+		// Step `a` was adopted, yet the run as a whole is stopped, delivers nothing,
+		// and the step after the failure never ran.
+		expect(outcome.steps[0]?.adopted).toBe(true);
+		expect(outcome.status).toBe("stopped");
+		expect(outcome.stoppedAt).toEqual({
+			stepId: "b",
+			state: "failed",
+			code: "boom",
+		});
+		expect(outcome.delivered).toBeNull();
+		expect(host.seen.map((s) => s.stepId)).toEqual(["a", "b"]);
+	});
+
 	test("a completed step without its declared output is not handed on", async () => {
 		const host = new FakeHost(() => ({}));
 		const outcome = await runPlan(

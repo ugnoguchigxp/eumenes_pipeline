@@ -1,9 +1,10 @@
 /**
  * The short pipeline definition (plan §3): `request`, `steps`, `output`.
  *
- * PROVISIONAL. This is the shared internal data structure every description format (JSON, YAML)
- * is parsed into before checking; P0b may change fields and limits. Formats never get their own
- * schema: a parser yields `unknown`, and `checkDefinition` decides.
+ * Fixed in P1 at contract version p0-2. This is the shared internal data structure every
+ * description format (JSON, YAML) is parsed into before checking; field or limit changes need
+ * a contract version bump. Formats never get their own schema: a parser yields `unknown`, and
+ * `checkDefinition` decides.
  */
 import { z } from "zod";
 import { ENTRY_PATTERN } from "./component.ts";

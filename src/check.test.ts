@@ -105,6 +105,11 @@ describe("checkDefinition", () => {
 			"forward_reference",
 		],
 		[
+			"reference cycle",
+			definition([step("a", "solo", ["b"]), step("b", "solo", ["a"])], ["b"]),
+			"forward_reference",
+		],
+		[
 			"self reference",
 			definition([step("a", "solo", ["a"])], ["a"]),
 			"self_reference",
@@ -273,6 +278,46 @@ describe("step arguments", () => {
 		if (!result.ok) return;
 		expect(result.plan.steps[0]?.arguments).toBeUndefined();
 	});
+
+	test("a schema the converter cannot handle is reported unchecked, never silently passed", () => {
+		// Conditional schemas (if/then) are outside what `z.fromJSONSchema` converts.
+		const conditional = createCatalogView(
+			[
+				record("gate", {
+					bundle: "gate-kit",
+					execution: "instant",
+					// A conditional (if/then) JSON Schema, assembled from text: the
+					// schema itself is plain data for the checker under test.
+					argumentsSchema: JSON.parse(
+						'{"type":"object","properties":{"mode":{"type":"string"}},' +
+							'"if":{"properties":{"mode":{"const":"strict"}}},' +
+							'"then":{"required":["level"]}}',
+					) as Record<string, unknown>,
+				}),
+			],
+			{ version: "v-test", offer: () => true },
+		);
+		const input = definition(
+			[step("g", "gate", ["request"], { arguments: { mode: "strict" } })],
+			["g"],
+		);
+		const result = checkDefinition(input, conditional);
+		expect(result.ok).toBe(true);
+		expect(result.issues).toEqual([
+			expect.objectContaining({
+				code: "arguments_unchecked",
+				path: "steps.0.arguments",
+				severity: "warning",
+			}),
+		]);
+		// Without stated arguments there is nothing to leave unchecked.
+		const silent = checkDefinition(
+			definition([step("g", "gate", ["request"])], ["g"]),
+			conditional,
+		);
+		expect(silent.ok).toBe(true);
+		expect(silent.issues).toEqual([]);
+	});
 });
 
 describe("createCatalogView", () => {
@@ -329,5 +374,43 @@ describe("createCatalogView", () => {
 			code: "unknown_component",
 			candidates: [],
 		});
+	});
+
+	test("a near-miss name is not resolved by similarity or prefix", () => {
+		const view = createCatalogView(
+			[record("research", { bundle: "research-kit" })],
+			{ version: "v", offer: () => true },
+		);
+		expect(view.resolve("reserch").ok).toBe(false);
+		expect(view.resolve("research-ki").ok).toBe(false);
+		expect(view.resolve("research-kit-extra").ok).toBe(false);
+	});
+
+	test("a catalogued entry that is not offered does not resolve", () => {
+		const view = createCatalogView([record("ready-one"), record("held-back")], {
+			version: "v",
+			offer: (r) => r.card.entry === "ready-one",
+		});
+		expect(view.resolve("held-back")).toEqual({
+			ok: false,
+			code: "component_not_offered",
+			candidates: [],
+		});
+		const result = checkDefinition(
+			{
+				request: "依頼",
+				steps: [step("a", "held-back", ["request"])],
+				output: { from: ["a"], deliver: "提示する" },
+			},
+			view,
+		);
+		expect(result.ok).toBe(false);
+		expect(result.issues).toEqual([
+			expect.objectContaining({
+				code: "component_not_offered",
+				path: "steps.0.bundle",
+				severity: "error",
+			}),
+		]);
 	});
 });
