@@ -468,6 +468,7 @@ export async function runFormat(
 					catalog.cards,
 				),
 				cardStyle: condition.cardStyle,
+				outputStyle: condition.outputStyle,
 				...(condition.shots === 1
 					? { workedExample: WORKED_EXAMPLES[format] }
 					: {}),

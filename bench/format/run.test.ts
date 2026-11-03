@@ -144,6 +144,7 @@ describe("bench:format wiring (synthetic recordings)", () => {
 			cardSet: "all",
 			cardStyle: "full",
 			shots: 0,
+			outputStyle: "default",
 		});
 		expect(report.tokenizer.available).toBe(false);
 		for (const cell of report.cells) {
@@ -220,7 +221,42 @@ describe("bench:format conditions (synthetic recordings)", () => {
 			cardSet: "all",
 			cardStyle: "compact",
 			shots: 0,
+			outputStyle: "default",
 		});
+		const cell = report.cells[0];
+		expect(cell?.status).toBe("scored");
+		expect(cell?.passed).toBe(true);
+	});
+
+	test("minjson condition: recordings bind to the minified-style prompt's digest", async () => {
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const { runsRoot, session } = setup((evalCase) =>
+			buildFormatPrompt({
+				evalCase,
+				format: "json",
+				cards: catalog.cards,
+				outputStyle: "minified",
+			}),
+		);
+		catalog.close();
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			condition: CONDITIONS.minjson,
+		});
+		expect(report.condition).toEqual({
+			id: "minjson",
+			cardSet: "all",
+			cardStyle: "full",
+			shots: 0,
+			outputStyle: "minified",
+		});
+		// The synthetic output is JSON.stringify output (already single-line), so it
+		// doubles as a minified recording here; what this test pins is the digest
+		// binding and the recorded condition, not the whitespace itself.
 		const cell = report.cells[0];
 		expect(cell?.status).toBe("scored");
 		expect(cell?.passed).toBe(true);
@@ -248,6 +284,7 @@ describe("bench:format conditions (synthetic recordings)", () => {
 				cardSet: "all",
 				cardStyle: "full",
 				shots: 0,
+				outputStyle: "default",
 			},
 			candidates: { "prime-count": subset },
 		});

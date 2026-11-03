@@ -14,34 +14,46 @@ import {
 } from "./conditions.ts";
 
 describe("condition registry", () => {
-	test("pins the three fixed conditions", () => {
+	test("pins the four fixed conditions", () => {
 		expect(BASELINE_CONDITION).toEqual({
 			id: "baseline",
 			cardSet: "all",
 			cardStyle: "full",
 			shots: 0,
+			outputStyle: "default",
 		});
 		expect(CONDITIONS.compact).toEqual({
 			id: "compact",
 			cardSet: "all",
 			cardStyle: "compact",
 			shots: 0,
+			outputStyle: "default",
 		});
 		expect(CONDITIONS.oneshot).toEqual({
 			id: "oneshot",
 			cardSet: "all",
 			cardStyle: "full",
 			shots: 1,
+			outputStyle: "default",
+		});
+		expect(CONDITIONS.minjson).toEqual({
+			id: "minjson",
+			cardSet: "all",
+			cardStyle: "full",
+			shots: 0,
+			outputStyle: "minified",
 		});
 		expect(Object.keys(CONDITIONS).sort()).toEqual([
 			"baseline",
 			"compact",
+			"minjson",
 			"oneshot",
 		]);
 	});
 
 	test("resolves by id and refuses unknown ids loudly", () => {
 		expect(resolveCondition("compact")).toBe(CONDITIONS.compact);
+		expect(resolveCondition("minjson")).toBe(CONDITIONS.minjson);
 		expect(() => resolveCondition("no-such-condition")).toThrow(
 			"unknown condition",
 		);
@@ -51,7 +63,13 @@ describe("condition registry", () => {
 		expect(subsetConditionId("0123456789abcdef")).toBe("subset:01234567");
 		expect(
 			summarizeCondition(
-				{ id: "subset:01234567", cardSet: "all", cardStyle: "full", shots: 0 },
+				{
+					id: "subset:01234567",
+					cardSet: "all",
+					cardStyle: "full",
+					shots: 0,
+					outputStyle: "default",
+				},
 				true,
 			),
 		).toEqual({
@@ -59,6 +77,7 @@ describe("condition registry", () => {
 			cardSet: "subset",
 			cardStyle: "full",
 			shots: 0,
+			outputStyle: "default",
 		});
 		expect(summarizeCondition(BASELINE_CONDITION, false).cardSet).toBe("all");
 	});

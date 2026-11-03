@@ -12,14 +12,17 @@
  * The P0c condition (now the registry's `baseline`, see `conditions.ts`): cards are rendered
  * with `renderCardsText`, the same rendering for all three formats, so the comparison
  * measures the definition format, not the card rendering. Other conditions vary only what
- * `conditions.ts` defines — which cards are offered, the rendering (`cardStyle`), and an
- * optional worked example appended to the prompt — never the shared instructions.
+ * `conditions.ts` defines — which cards are offered, the rendering (`cardStyle`), an
+ * optional worked example appended to the prompt — never the shared instructions. The one
+ * exception is the `minjson` condition's output style, which appends a single instruction
+ * line to the JSON format's rules (the only place a format's rules may vary by condition);
+ * the other formats' prompts stay byte-identical under it.
  */
 import type { ComponentCard } from "../../src/contracts/component.ts";
 import type { EvalCase } from "../cases/cases.ts";
 import { renderCardsText, renderCardsTextCompact } from "../formats/cards.ts";
 import type { FormatId } from "../formats/index.ts";
-import type { CardStyle } from "./conditions.ts";
+import type { CardStyle, OutputStyle } from "./conditions.ts";
 
 export const PROMPT_TEMPLATE_VERSION = "format-prompt-v1";
 export const CARDS_RENDERING = "text";
@@ -60,6 +63,13 @@ const FORMAT_INSTRUCTIONS: Record<FormatId, string> = {
 };
 
 /**
+ * The one extra rule of the `minjson` condition, appended to the JSON format's
+ * instructions (and to no other format's): write the JSON minified. It constrains
+ * whitespace only — keys, values and string contents are exactly the baseline's.
+ */
+export const MINIFIED_JSON_INSTRUCTION = `- JSONは空白・改行を最小限にした minified な形で書いてください。インデントや改行は入れず、全体を1行にしてください（文字列の中身はそのままにします）。`;
+
+/**
  * Build the one composing prompt of a (case, format) cell under a prompt condition.
  * Deterministic in its inputs. With no condition options this is the `baseline` condition
  * and the output is byte-identical to the pre-condition bench.
@@ -72,6 +82,12 @@ export function buildFormatPrompt(input: {
 	cardStyle?: CardStyle;
 	/** The condition's worked example for this format, appended after the cards. */
 	workedExample?: string;
+	/**
+	 * Output style of the condition (default: `default`). `minified` appends
+	 * `MINIFIED_JSON_INSTRUCTION` to the JSON format's instructions and is ignored
+	 * by the other formats, whose prompts stay byte-identical.
+	 */
+	outputStyle?: OutputStyle;
 }): FormatPrompt {
 	const { evalCase, format, cards } = input;
 	const materials =
@@ -100,8 +116,12 @@ export function buildFormatPrompt(input: {
 			"",
 			input.workedExample,
 		);
+	const formatInstructions =
+		format === "json" && input.outputStyle === "minified"
+			? `${FORMAT_INSTRUCTIONS.json}\n${MINIFIED_JSON_INSTRUCTION}`
+			: FORMAT_INSTRUCTIONS[format];
 	return {
-		system: `${SHARED_INSTRUCTIONS}\n\n${FORMAT_INSTRUCTIONS[format]}`,
+		system: `${SHARED_INSTRUCTIONS}\n\n${formatInstructions}`,
 		prompt: sections.join("\n"),
 	};
 }

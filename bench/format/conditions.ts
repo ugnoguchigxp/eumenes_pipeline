@@ -1,10 +1,11 @@
 /**
  * Prompt conditions of the format/selection comparisons (plan §10): a condition fixes WHICH
- * cards the composing side is offered, HOW they are rendered, and WHETHER the prompt carries
- * a worked example. Conditions are data, recorded in every run's config and summary, so two
- * runs are only ever compared like-for-like. The prompt digest is still computed from the
- * prompt text itself: change the condition and the digest changes, so a recording prepared
- * under one condition can never be replayed under another by accident.
+ * cards the composing side is offered, HOW they are rendered, WHETHER the prompt carries
+ * a worked example, and — for the json format only — the output style it asks for.
+ * Conditions are data, recorded in every run's config and summary, so two runs are only
+ * ever compared like-for-like. The prompt digest is still computed from the prompt text
+ * itself: change the condition and the digest changes, so a recording prepared under one
+ * condition can never be replayed under another by accident.
  *
  * The registry holds the fixed conditions. A per-case candidate subset (Router or oracle
  * output, supplied as a file) is not a registry entry: the CLI derives its condition id from
@@ -19,6 +20,13 @@ import type { FormatId } from "../formats/index.ts";
 /** How the offered cards are rendered into the prompt. */
 export type CardStyle = "full" | "compact";
 
+/**
+ * The output style the instructions ask for. `minified` is defined for the json format
+ * only (see `buildFormatPrompt`): it adds the minified-JSON instruction to the json
+ * format's rules and leaves the other formats' prompts byte-identical to `default`.
+ */
+export type OutputStyle = "default" | "minified";
+
 /** Which cards a condition offers: every offered card, or one fixed entry subset. */
 export type ConditionCardSet = "all" | { entries: readonly string[] };
 
@@ -28,6 +36,8 @@ export type FormatCondition = {
 	cardStyle: CardStyle;
 	/** Worked examples embedded in the prompt (0 or 1; see `WORKED_EXAMPLES`). */
 	shots: 0 | 1;
+	/** Output style asked for (json only; the other formats ignore `minified`). */
+	outputStyle: OutputStyle;
 };
 
 export const BASELINE_CONDITION: FormatCondition = {
@@ -35,6 +45,7 @@ export const BASELINE_CONDITION: FormatCondition = {
 	cardSet: "all",
 	cardStyle: "full",
 	shots: 0,
+	outputStyle: "default",
 };
 
 /** The fixed condition registry, by id. */
@@ -42,10 +53,30 @@ export const CONDITIONS: Readonly<{
 	baseline: FormatCondition;
 	compact: FormatCondition;
 	oneshot: FormatCondition;
+	minjson: FormatCondition;
 }> = {
 	baseline: BASELINE_CONDITION,
-	compact: { id: "compact", cardSet: "all", cardStyle: "compact", shots: 0 },
-	oneshot: { id: "oneshot", cardSet: "all", cardStyle: "full", shots: 1 },
+	compact: {
+		id: "compact",
+		cardSet: "all",
+		cardStyle: "compact",
+		shots: 0,
+		outputStyle: "default",
+	},
+	oneshot: {
+		id: "oneshot",
+		cardSet: "all",
+		cardStyle: "full",
+		shots: 1,
+		outputStyle: "default",
+	},
+	minjson: {
+		id: "minjson",
+		cardSet: "all",
+		cardStyle: "full",
+		shots: 0,
+		outputStyle: "minified",
+	},
 };
 
 /** Look a condition up by id; an unknown id is a bench error, never a silent default. */
@@ -68,6 +99,7 @@ export type ConditionSummary = {
 	cardSet: "all" | "subset";
 	cardStyle: CardStyle;
 	shots: 0 | 1;
+	outputStyle: OutputStyle;
 };
 
 export function summarizeCondition(
@@ -79,6 +111,7 @@ export function summarizeCondition(
 		cardSet: hasCandidates || condition.cardSet !== "all" ? "subset" : "all",
 		cardStyle: condition.cardStyle,
 		shots: condition.shots,
+		outputStyle: condition.outputStyle,
 	};
 }
 

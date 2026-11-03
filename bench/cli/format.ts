@@ -3,7 +3,7 @@
  * under one prompt condition, split by format and fixture dependence.
  *
  *   bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml]
- *     [--condition baseline|compact|oneshot] [--candidates <file.json>] [--repair] [--db <path>]
+ *     [--condition baseline|compact|oneshot|minjson] [--candidates <file.json>] [--repair] [--db <path>]
  *
  * The session names `data/runs/format/<name>/`: request files for cells without recordings
  * are written there, recordings are read from there. Exits 1 while any cell is missing,
@@ -132,7 +132,7 @@ const sumTokens = (values: (number | null)[]) => {
 	return `${counted.reduce((a, v) => a + (v ?? 0), 0)} (${counted.length}/${values.length} cells counted)`;
 };
 console.log(
-	`condition ${report.condition.id} (cardSet ${report.condition.cardSet}, style ${report.condition.cardStyle}, shots ${report.condition.shots}); ` +
+	`condition ${report.condition.id} (cardSet ${report.condition.cardSet}, style ${report.condition.cardStyle}, shots ${report.condition.shots}, output ${report.condition.outputStyle}); ` +
 		`tokenizer ${report.tokenizer.available ? `${report.tokenizer.repo ?? "unknown"}@${report.tokenizer.revision ?? "?"}` : "unavailable"}; ` +
 		`prompt tokens ${sumTokens(report.cells.map((c) => c.promptTokens))}, output tokens ${sumTokens(report.cells.map((c) => c.outputTokens))}`,
 );

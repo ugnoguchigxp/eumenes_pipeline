@@ -4,7 +4,7 @@ import { loadCases } from "../cases/cases.ts";
 import { renderCardsTextCompact } from "../formats/cards.ts";
 import { FORMAT_IDS } from "../formats/index.ts";
 import { WORKED_EXAMPLES } from "./conditions.ts";
-import { buildFormatPrompt } from "./prompt.ts";
+import { buildFormatPrompt, MINIFIED_JSON_INSTRUCTION } from "./prompt.ts";
 
 const catalog = loadBenchCatalog({ policy: "ready+partial" });
 const cases = loadCases();
@@ -119,6 +119,53 @@ describe("buildFormatPrompt", () => {
 				}).prompt,
 		);
 		expect(new Set(prompts).size).toBe(3);
+	});
+
+	test("minified output style appends one line to the json system and nothing else", () => {
+		const baseline = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		const minified = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+			outputStyle: "minified",
+		});
+		// The prompt (cards, request, materials) is untouched; the system gains exactly
+		// the minified instruction as its last line.
+		expect(minified.prompt).toBe(baseline.prompt);
+		expect(minified.system).toBe(
+			`${baseline.system}\n${MINIFIED_JSON_INSTRUCTION}`,
+		);
+		// An explicit default style is the baseline, byte for byte.
+		expect(
+			buildFormatPrompt({
+				evalCase: prime,
+				format: "json",
+				cards: catalog.cards,
+				outputStyle: "default",
+			}),
+		).toEqual(baseline);
+	});
+
+	test("minified output style leaves the other formats byte-identical", () => {
+		for (const format of ["md-yaml", "free-md"] as const) {
+			const baseline = buildFormatPrompt({
+				evalCase: prime,
+				format,
+				cards: catalog.cards,
+			});
+			expect(
+				buildFormatPrompt({
+					evalCase: prime,
+					format,
+					cards: catalog.cards,
+					outputStyle: "minified",
+				}),
+			).toEqual(baseline);
+		}
 	});
 
 	test("provided materials are listed by name and kind", () => {

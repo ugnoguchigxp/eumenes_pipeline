@@ -609,7 +609,7 @@ export function renderExportMarkdown(exp: RunExport): string {
 		`- kind: ${exp.run.kind} / status: ${exp.run.status} / parent: ${exp.run.parentRunId ?? "none"}`,
 	);
 	lines.push(
-		`- session: ${exp.summaryCrossCheck.session ?? "n/a"} / condition: ${exp.condition?.id ?? "n/a"} (cardSet ${exp.condition?.cardSet ?? "n/a"}, style ${exp.condition?.cardStyle ?? "n/a"}, shots ${exp.condition?.shots ?? "n/a"})`,
+		`- session: ${exp.summaryCrossCheck.session ?? "n/a"} / condition: ${exp.condition?.id ?? "n/a"} (cardSet ${exp.condition?.cardSet ?? "n/a"}, style ${exp.condition?.cardStyle ?? "n/a"}, shots ${exp.condition?.shots ?? "n/a"}, output ${exp.condition?.outputStyle ?? "n/a"})`,
 	);
 	lines.push(
 		`- created: ${exp.run.createdAt} / finished: ${exp.run.finishedAt ?? "n/a"} / exported: ${exp.exportedAt}`,
