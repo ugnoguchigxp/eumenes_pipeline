@@ -29,7 +29,9 @@
 		"pack": "bun scripts/pack.ts",
 		"contracts:extract": "bun scripts/extract-eumenes-contracts.ts",
 		"bench:catalog": "bun bench/cli/catalog.ts",
-		"bench:verify": "bun bench/cli/verify.ts"
+		"bench:verify": "bun bench/cli/verify.ts",
+		"bench:format": "bun bench/cli/format.ts",
+		"bench:selection": "bun bench/cli/selection.ts"
 	},
 	"dependencies": {
 		"zod": "4.4.3"
