@@ -1,0 +1,45 @@
+/**
+ * The short pipeline definition (plan §3): `request`, `steps`, `output`.
+ *
+ * PROVISIONAL. This is the shared internal data structure every description format (JSON, YAML)
+ * is parsed into before checking; P0b may change fields and limits. Formats never get their own
+ * schema: a parser yields `unknown`, and `checkDefinition` decides.
+ */
+import { z } from "zod";
+import { ENTRY_PATTERN } from "./component.ts";
+
+/** Reserved reference to the user's original request; never a step id. */
+export const REQUEST_REF = "request";
+/** Same upper bound as Eumenes' current pipelines (`PIPELINE_MAX_STEPS`). P0 fixes the first-version limit. */
+export const MAX_STEPS = 8;
+
+const stepId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
+const reference = z.string().min(1).max(40);
+
+export const pipelineStep = z.strictObject({
+	id: stepId,
+	/** The component identifier from the cards shown to the composing AI. */
+	bundle: z.string().regex(ENTRY_PATTERN),
+	/** The public entry, when the bundle offers several (plan §4: explicit, never implicit). */
+	entry: z.string().regex(ENTRY_PATTERN).optional(),
+	task: z.string().trim().min(1).max(2000),
+	/** The request and/or earlier steps whose whole result this step gets. No expressions. */
+	from: z.array(reference).max(MAX_STEPS + 1),
+	/** Natural-language description of the wanted result; not a type, not a promise. */
+	result: z.string().trim().min(1).max(500),
+});
+export type PipelineStep = z.infer<typeof pipelineStep>;
+
+export const pipelineDefinition = z.strictObject({
+	/** The user's request verbatim (not trimmed: kept as the original text). */
+	request: z.string().min(1).max(8000),
+	steps: z.array(pipelineStep).min(1).max(MAX_STEPS),
+	output: z.strictObject({
+		from: z
+			.array(reference)
+			.min(1)
+			.max(MAX_STEPS + 1),
+		deliver: z.string().trim().min(1).max(1000),
+	}),
+});
+export type PipelineDefinition = z.infer<typeof pipelineDefinition>;

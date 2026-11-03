@@ -1,0 +1,20 @@
+{
+	"snapshotKind": "eumenes-contracts-json-schema",
+	"file": "eumenes-contracts-2026-11-03.json",
+	"createdAt": "2026-11-03T12:18:16.719Z",
+	"sha256": "f6a2e691b206488ff086b23d7fd13db37397a68fc9d1a3f904f21c1d229e8293",
+	"counts": {
+		"builtin": 109,
+		"domain": 11,
+		"unresolvedDomainRefs": 2,
+		"adapters": 30,
+		"unrepresentable": 0
+	},
+	"source": {
+		"repository": "../eumenes",
+		"gitCommit": "98b188d2c61352d2278b1912a78e8cd465d37671",
+		"apiDirty": true,
+		"zodVersion": "4.4.3",
+		"catalog": "data/source/eumenes-catalog-2026-11-03.sqlite3"
+	}
+}

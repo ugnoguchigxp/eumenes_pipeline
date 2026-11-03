@@ -1,0 +1,22 @@
+{
+  "snapshotKind": "selected-catalog-tables",
+  "sourceDatabase": "../eumenes/data/eumenes.sqlite3",
+  "createdAt": "2026-11-03T20:25:25.865502+09:00",
+  "sqliteVersion": "3.54.1",
+  "consistency": "single read transaction, SQLite WAL-aware read-only source",
+  "tables": {
+    "capability_items": 254,
+    "capability_revisions": 523,
+    "capability_dependencies": 821,
+    "capability_toolchain_vectors": 912,
+    "capability_documents": 329,
+    "capability_artifact_pointers": 32
+  },
+  "notACompleteEumenesDatabase": true,
+  "toolchains": 27,
+  "enabledToolchains": 26,
+  "bundleIdsInDocuments": 38,
+  "sizeBytes": 3997696,
+  "sha256": "57b8d500128b5aa33c012139ba0648d955b442dd13c96319d23ff150ac295c06",
+  "evaluationStatus": "catalog copied; mock execution and selection evaluation not implemented"
+}

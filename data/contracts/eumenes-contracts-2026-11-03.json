@@ -1,0 +1,5991 @@
+{
+	"formatVersion": 1,
+	"source": {
+		"repository": "../eumenes",
+		"gitCommit": "98b188d2c61352d2278b1912a78e8cd465d37671",
+		"apiDirty": true,
+		"zodVersion": "4.4.3",
+		"catalog": "data/source/eumenes-catalog-2026-11-03.sqlite3"
+	},
+	"limits": [
+		"Zod refinements, transforms and custom checks are not represented; the bench checks structure only.",
+		"`unrepresentable: true` marks a schema where an unrepresentable part was widened to `{}` (any).",
+		"`schema:` refs are bundle JSON Schemas stored in the catalog snapshot itself and are read from there."
+	],
+	"builtin": {
+		"builtin:answerText": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"text": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					}
+				},
+				"required": [
+					"text"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserCaptureStart": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"tabRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshotのtabs[].tabRef"
+					},
+					"range": {
+						"type": "string",
+						"enum": [
+							"viewport",
+							"full-page"
+						],
+						"description": "viewportは今見えている範囲、full-pageはページ全体（各辺2500pxまで）"
+					}
+				},
+				"required": [
+					"tabRef",
+					"range"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserCaptureTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"captureId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshotのcaptures[].captureId"
+					}
+				},
+				"required": [
+					"captureId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserHistoryDelete": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"historyId": {
+						"type": "string",
+						"maxLength": 64
+					},
+					"expectedRevision": {
+						"type": "string",
+						"maxLength": 10
+					}
+				},
+				"required": [
+					"historyId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserHistoryDeleteInput": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"historyId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"historyId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserHistoryReplay": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"historyId": {
+						"type": "string",
+						"maxLength": 64
+					},
+					"expectedRevision": {
+						"type": "string",
+						"maxLength": 10
+					}
+				},
+				"required": [
+					"historyId",
+					"expectedRevision"
+				],
+				"additionalProperties": {
+					"type": "string",
+					"maxLength": 200
+				}
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserHistoryReplayInput": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"historyId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"values": {
+						"type": "object",
+						"propertyNames": {
+							"type": "string",
+							"pattern": "^[a-z][a-zA-Z0-9]{0,30}$"
+						},
+						"additionalProperties": {
+							"type": "string",
+							"maxLength": 200
+						}
+					}
+				},
+				"required": [
+					"historyId",
+					"expectedRevision",
+					"values"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserHistoryTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"historyId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+						"description": "REFERENCE.historyのhistoryId"
+					}
+				},
+				"required": [
+					"historyId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageCapture": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"range": {
+						"type": "string",
+						"enum": [
+							"viewport",
+							"full-page",
+							"element"
+						],
+						"description": "viewport=見えている範囲、full-page=ページ全体、element=一要素"
+					},
+					"observationRef": {
+						"description": "elementのときだけ",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"ref": {
+						"description": "elementのときだけ",
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$"
+					}
+				},
+				"required": [
+					"range"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageClick": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"effect": {
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						],
+						"description": "操作の影響。navigate=閲覧・移動・検索、input=入力欄の選択や値の入力、commit=送信・購入・公開・削除・保存（Eumenes自身の画面での保存を含む）"
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"effect"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageHover": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPagePress": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9+]{1,40}$",
+						"description": "キー名（Enter、Escape、ArrowDownなど）"
+					},
+					"effect": {
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						],
+						"description": "操作の影響。navigate=閲覧・移動・検索、input=入力欄の選択や値の入力、commit=送信・購入・公開・削除・保存（Eumenes自身の画面での保存を含む）"
+					}
+				},
+				"required": [
+					"key",
+					"effect"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageSelect": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"values": {
+						"minItems": 1,
+						"maxItems": 20,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 500
+						}
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"values"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageType": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"value": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2000,
+						"description": "入力する値"
+					},
+					"quote": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500,
+						"description": "valueの元にした、利用者の原文にある一節（原文のまま）"
+					},
+					"purpose": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "入力の用途の短い語"
+					},
+					"submit": {
+						"type": "boolean",
+						"description": "入力後にEnterを押すか"
+					},
+					"effect": {
+						"description": "submitがtrueのときは必須",
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						]
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"value",
+					"quote",
+					"purpose",
+					"submit"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageType2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"variable": {
+						"description": "Scriptの変数名。使うときvalue・quoteは書かない",
+						"type": "string",
+						"pattern": "^[a-z][a-zA-Z0-9]{0,30}$"
+					},
+					"value": {
+						"description": "入力する値",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2000
+					},
+					"quote": {
+						"description": "valueの元にした、利用者の原文にある一節（原文のまま）",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"purpose": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "入力の用途の短い語"
+					},
+					"submit": {
+						"type": "boolean",
+						"description": "入力後にEnterを押すか"
+					},
+					"effect": {
+						"description": "submitがtrueのときは必須",
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						]
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"purpose",
+					"submit"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageTypeValue": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"inputValueRef": {
+						"description": "REFERENCEのapprovedにある入力値のinputValueRef。使うときvalueとquoteは書かない",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"value": {
+						"description": "入力する値",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2000
+					},
+					"quote": {
+						"description": "valueの元にした、利用者の原文にある一節（原文のまま）",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"purpose": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "入力の用途の短い語"
+					},
+					"submit": {
+						"type": "boolean",
+						"description": "入力後にEnterを押すか"
+					},
+					"effect": {
+						"description": "submitがtrueのときは必須",
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						]
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"purpose",
+					"submit"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageTypeValue2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+						"description": "直近の観測のobservationRef"
+					},
+					"ref": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9_-]{1,32}$",
+						"description": "観測textの[ref=eN]のeN"
+					},
+					"element": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "要素の名前と役割（観測の表示どおり）"
+					},
+					"variable": {
+						"description": "Scriptの変数名。使うときvalue・quoteは書かない",
+						"type": "string",
+						"pattern": "^[a-z][a-zA-Z0-9]{0,30}$"
+					},
+					"value": {
+						"description": "入力する値",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2000
+					},
+					"quote": {
+						"description": "valueの元にした、利用者の原文にある一節（原文のまま）",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"purpose": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "入力の用途の短い語"
+					},
+					"submit": {
+						"type": "boolean",
+						"description": "入力後にEnterを押すか"
+					},
+					"effect": {
+						"description": "submitがtrueのときは必須",
+						"type": "string",
+						"enum": [
+							"navigate",
+							"input",
+							"commit"
+						]
+					},
+					"inputValueRef": {
+						"description": "approvedの入力値。使うときvalue・quote・variableは書かない",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+					}
+				},
+				"required": [
+					"observationRef",
+					"ref",
+					"element",
+					"purpose",
+					"submit"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserPageWait": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"text": {
+						"description": "現れるのを待つ文字",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					},
+					"textGone": {
+						"description": "消えるのを待つ文字",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					},
+					"seconds": {
+						"description": "待つ秒数",
+						"type": "number",
+						"exclusiveMinimum": 0,
+						"maximum": 30
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserReplayTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"replayId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"replayId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserResearch": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"request": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000
+					},
+					"url": {
+						"type": "string",
+						"maxLength": 2048,
+						"format": "uri"
+					}
+				},
+				"required": [
+					"request"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserResearchCollect": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"observationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"blockRefs": {
+						"minItems": 1,
+						"maxItems": 80,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^b[1-9][0-9]*$"
+						}
+					},
+					"purpose": {
+						"type": "string",
+						"enum": [
+							"candidates",
+							"facts"
+						]
+					},
+					"linkBlockRefs": {
+						"maxItems": 5,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^b[1-9][0-9]*$"
+						}
+					}
+				},
+				"required": [
+					"observationRef",
+					"blockRefs",
+					"purpose",
+					"linkBlockRefs"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserScriptPublish": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"summary": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 300
+					},
+					"steps": {
+						"minItems": 1,
+						"maxItems": 12,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"stepId": {
+									"type": "string",
+									"format": "uuid",
+									"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+								},
+								"label": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 160
+								},
+								"expectation": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 200
+								},
+								"state": {
+									"type": "string",
+									"enum": [
+										"pending",
+										"running",
+										"completed",
+										"skipped"
+									]
+								},
+								"evidenceRef": {
+									"type": "string",
+									"format": "uuid",
+									"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+								}
+							},
+							"required": [
+								"label",
+								"expectation",
+								"state"
+							],
+							"additionalProperties": false
+						}
+					},
+					"change": {
+						"type": "string",
+						"maxLength": 200
+					}
+				},
+				"required": [
+					"expectedRevision",
+					"summary",
+					"steps"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserScriptPublish2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "手続きの名称。変数の値を入れない"
+					},
+					"summary": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 300
+					},
+					"historyId": {
+						"description": "沿う履歴",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+					},
+					"variables": {
+						"description": "依頼や趣向で変わる値",
+						"maxItems": 5,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"name": {
+									"type": "string",
+									"pattern": "^[a-z][a-zA-Z0-9]{0,30}$"
+								},
+								"label": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 40
+								},
+								"value": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 200,
+									"description": "今回の値"
+								}
+							},
+							"required": [
+								"name",
+								"label",
+								"value"
+							],
+							"additionalProperties": false
+						}
+					},
+					"steps": {
+						"minItems": 1,
+						"maxItems": 12,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"stepId": {
+									"type": "string",
+									"format": "uuid",
+									"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+								},
+								"label": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 160
+								},
+								"expectation": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 200
+								},
+								"state": {
+									"type": "string",
+									"enum": [
+										"pending",
+										"running",
+										"completed",
+										"skipped"
+									]
+								},
+								"evidenceRef": {
+									"type": "string",
+									"format": "uuid",
+									"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$"
+								}
+							},
+							"required": [
+								"label",
+								"expectation",
+								"state"
+							],
+							"additionalProperties": false
+						}
+					},
+					"change": {
+						"type": "string",
+						"maxLength": 200
+					}
+				},
+				"required": [
+					"expectedRevision",
+					"title",
+					"summary",
+					"steps"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserTabOpen": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2048
+					}
+				},
+				"required": [
+					"url"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserTabTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"tabRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"tabRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserTaskBegin": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"request": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000,
+						"description": "利用者の依頼。対象・条件・入力する語句を原文から保持し、直前の会話で明確になった対象を補う。未指定の条件は足さない。"
+					},
+					"tabRef": {
+						"description": "操作するタブ。snapshotのtabs[].tabRef。省略は今のタブ",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"url": {
+						"description": "依頼が開くURLを指すときだけ",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2048
+					},
+					"continueFrom": {
+						"description": "承認待ち（needs_input）で止まった操作のtaskId。snapshotのtasks[].taskId。その続きを頼むときだけ",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"approvePending": {
+						"description": "continueFromの操作・値を、利用者が示された内容のとおりにはっきり許可したときだけtrue。迷うときは省く",
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"request"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserTaskStart": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"request": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000,
+						"description": "利用者の依頼。対象・条件・入力する語句を原文から保持し、直前の会話で明確になった対象を補う。未指定の条件は足さない。"
+					},
+					"tabRef": {
+						"description": "操作するタブ。snapshotのtabs[].tabRef。省略は今のタブ",
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"url": {
+						"description": "依頼が開くURLを指すときだけ",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 2048
+					}
+				},
+				"required": [
+					"request"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:browserTaskTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"taskId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshotのtasks[].taskId"
+					}
+				},
+				"required": [
+					"taskId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:claudeCodeRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000,
+						"pattern": "^[^\\u0000-\\u0008\\u000b-\\u001f\\u007f-\\u009f]*$",
+						"description": "Claude Code に渡す依頼文。利用者の指示・対象・条件をそのまま含め、要約や推測で変えない。"
+					},
+					"task": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "作業の短い名前（例: README の手順修正）。利用者の依頼の言葉から選び、完了の報告でこの名前を使う。"
+					},
+					"session": {
+						"description": "current（既定）は実行中のセッションへ続けて依頼する。new は利用者が別のセッションを明示した場合だけ。",
+						"type": "string",
+						"enum": [
+							"current",
+							"new"
+						]
+					}
+				},
+				"required": [
+					"prompt",
+					"task"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:cliRun": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"command": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000,
+						"pattern": "^[^\\u0000-\\u0008\\u000b-\\u001f\\u007f-\\u009f]*$",
+						"description": "登録されたプロジェクトで実行するシェルコマンド。秘密を含めない。"
+					},
+					"task": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "利用者に伝える短いタスク名"
+					},
+					"timeoutSeconds": {
+						"description": "実行期限の秒数（既定120、最大600）",
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 600
+					}
+				},
+				"required": [
+					"command",
+					"task"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:codexTaskConfigure": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"enabled": {
+						"type": "boolean"
+					},
+					"runnerId": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"workspaceId": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"resourceId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						]
+					}
+				},
+				"required": [
+					"expectedRevision",
+					"enabled",
+					"runnerId",
+					"workspaceId",
+					"resourceId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:codexTaskFollowup": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"note": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000,
+						"description": "追加の依頼。利用者の言葉のまま。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision",
+					"note"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:codexTaskRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:codexTaskRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "作業の短い名前。利用者の依頼の言葉から選び、通知でこの名前を使う。"
+					},
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 7850,
+						"description": "作業担当に渡す依頼内容。利用者の指示・対象・条件を省略や言い換えなしで含める。"
+					},
+					"beforeCardId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"description": "この id のカードの前に置く。null は列の末尾。"
+					}
+				},
+				"required": [
+					"title",
+					"prompt"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:computeArtifactTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"jobId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot.jobs[].idのEumenes発行ID"
+					},
+					"artifactId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "そのjobのartifacts[].id"
+					}
+				},
+				"required": [
+					"jobId",
+					"artifactId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:computeJobTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"jobId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot.jobs[].idのEumenes発行ID"
+					}
+				},
+				"required": [
+					"jobId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:computePythonSubmit": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"code": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 65536,
+						"description": "Pythonコード。答えをresultへ代入。進捗はreport(message, ratio)、成果物は/work/artifactsに保存。"
+					},
+					"inputs": {
+						"default": {},
+						"description": "利用者の数値・表などを渡すJSON object。コードからinputsで参照。",
+						"type": "object",
+						"propertyNames": {
+							"type": "string"
+						},
+						"additionalProperties": {
+							"$ref": "#/$defs/__schema0"
+						}
+					},
+					"timeoutSec": {
+						"default": 60,
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 60
+					},
+					"accelerator": {
+						"default": "auto",
+						"type": "string",
+						"enum": [
+							"cpu",
+							"auto"
+						]
+					}
+				},
+				"required": [
+					"code"
+				],
+				"additionalProperties": false,
+				"$defs": {
+					"__schema0": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "number"
+							},
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "null"
+							},
+							{
+								"type": "array",
+								"items": {
+									"$ref": "#/$defs/__schema0"
+								}
+							},
+							{
+								"type": "object",
+								"propertyNames": {
+									"type": "string"
+								},
+								"additionalProperties": {
+									"$ref": "#/$defs/__schema0"
+								}
+							}
+						]
+					}
+				}
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsDelegation": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsWorkAnswerV1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"taskRef": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9-]{1,64}$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"questionId": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9-]{1,64}$"
+					},
+					"answer": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					}
+				},
+				"required": [
+					"taskRef",
+					"expectedRevision",
+					"questionId",
+					"answer"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsWorkInspectV1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"taskRef": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9-]{1,64}$"
+					}
+				},
+				"required": [
+					"taskRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsWorkListV1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"offset": {
+						"default": 0,
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 100000
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsWorkStartV1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"projectRef": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9-]{1,64}$"
+					},
+					"projectRevision": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"connectionRevision": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"request": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					},
+					"completionConditions": {
+						"minItems": 1,
+						"maxItems": 20,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 1000
+						}
+					},
+					"operations": {
+						"minItems": 1,
+						"maxItems": 9,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"enum": [
+								"read",
+								"create_session",
+								"continue_session",
+								"edit",
+								"check",
+								"commit",
+								"push",
+								"publish",
+								"send"
+							]
+						}
+					},
+					"maxSessions": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 20
+					},
+					"runtimeSeconds": {
+						"type": "integer",
+						"minimum": 60,
+						"maximum": 7200
+					},
+					"startMode": {
+						"type": "string",
+						"enum": [
+							"register_only",
+							"start"
+						]
+					},
+					"sessionRefs": {
+						"maxItems": 20,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[A-Za-z0-9-]{1,64}$"
+						}
+					}
+				},
+				"required": [
+					"projectRef",
+					"projectRevision",
+					"connectionRevision",
+					"title",
+					"request",
+					"completionConditions",
+					"operations",
+					"maxSessions",
+					"runtimeSeconds",
+					"startMode",
+					"sessionRefs"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:dotsWorkStopV1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"taskRef": {
+						"type": "string",
+						"pattern": "^[A-Za-z0-9-]{1,64}$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"intent": {
+						"type": "string",
+						"enum": [
+							"pause",
+							"cancel"
+						]
+					}
+				},
+				"required": [
+					"taskRef",
+					"expectedRevision",
+					"intent"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:drawingPlan": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"create",
+							"open",
+							"library"
+						]
+					},
+					"referenceId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"revision": {
+						"anyOf": [
+							{
+								"type": "integer",
+								"exclusiveMinimum": 0,
+								"maximum": 9007199254740991
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					}
+				},
+				"required": [
+					"action",
+					"referenceId",
+					"revision",
+					"title"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:drawingRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:emptyInput": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:find": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"sourceRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					},
+					"cursor": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"sourceRef",
+					"query"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:guidedCandidates": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					},
+					"urls": {
+						"maxItems": 3,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"maxLength": 2048,
+							"format": "uri"
+						}
+					},
+					"detail": {
+						"default": "normal",
+						"type": "string",
+						"enum": [
+							"brief",
+							"normal"
+						]
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:guidedResearch": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					},
+					"urls": {
+						"maxItems": 3,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"maxLength": 2048,
+							"format": "uri"
+						}
+					},
+					"detail": {
+						"default": "normal",
+						"type": "string",
+						"enum": [
+							"brief",
+							"normal"
+						]
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:history": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					},
+					"detail": {
+						"default": "normal",
+						"type": "string",
+						"enum": [
+							"brief",
+							"normal"
+						]
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:historyRead": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"messageRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"before": {
+						"default": 2,
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9
+					},
+					"after": {
+						"default": 2,
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9
+					},
+					"cursor": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"messageRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:historySearch": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"default": "",
+						"type": "string",
+						"maxLength": 200
+					},
+					"from": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+					},
+					"until": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+					},
+					"speaker": {
+						"type": "string",
+						"enum": [
+							"user",
+							"assistant"
+						]
+					},
+					"cursor": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"limit": {
+						"default": 10,
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 20
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:imagePlan": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"generate",
+							"studio",
+							"library"
+						]
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"description": {
+						"type": "string",
+						"maxLength": 500
+					},
+					"prompt": {
+						"type": "string",
+						"maxLength": 8192
+					},
+					"width": {
+						"type": "integer",
+						"minimum": 100,
+						"maximum": 1280
+					},
+					"height": {
+						"type": "integer",
+						"minimum": 100,
+						"maximum": 1280
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"png",
+							"webp"
+						]
+					},
+					"seed": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"action",
+					"title",
+					"description",
+					"prompt",
+					"width",
+					"height",
+					"format",
+					"seed"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:imagePlanV2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"generate",
+							"studio",
+							"library"
+						]
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"description": {
+						"type": "string",
+						"maxLength": 500
+					},
+					"prompt": {
+						"type": "string",
+						"maxLength": 8192
+					},
+					"width": {
+						"type": "integer",
+						"minimum": 100,
+						"maximum": 1280
+					},
+					"height": {
+						"type": "integer",
+						"minimum": 100,
+						"maximum": 1280
+					},
+					"format": {
+						"type": "string",
+						"enum": [
+							"png",
+							"webp"
+						]
+					},
+					"seed": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"model": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					}
+				},
+				"required": [
+					"action",
+					"title",
+					"description",
+					"prompt",
+					"width",
+					"height",
+					"format",
+					"seed"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:imageRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanAdd": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "作業の短い名前。利用者の依頼の言葉から選び、通知でこの名前を使う。"
+					},
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 7850,
+						"description": "作業担当に渡す依頼内容。利用者の指示・対象・条件を省略や言い換えなしで含める。"
+					},
+					"beforeCardId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"description": "この id のカードの前に置く。null は列の末尾。"
+					}
+				},
+				"required": [
+					"title",
+					"prompt"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanCardAnswer": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					}
+				},
+				"required": [
+					"cardId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanCardRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanEdit": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "作業の短い名前。利用者の依頼の言葉から選び、通知でこの名前を使う。"
+					},
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 7850,
+						"description": "作業担当に渡す依頼内容。利用者の指示・対象・条件を省略や言い換えなしで含める。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanExecutorRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"executorId": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120,
+						"description": "snapshot.executors にある担当のID。利用者が指定した担当を選ぶ。未指定なら snapshot.defaultExecutorId を使ったと伝える。"
+					}
+				},
+				"required": [
+					"executorId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanFollowup": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"note": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000,
+						"description": "追加の依頼。利用者の言葉のまま。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision",
+					"note"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanGitRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"sourceRunId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"remoteId": {
+						"type": "string",
+						"pattern": "^[a-f0-9]{64}$"
+					},
+					"head": {
+						"type": "string",
+						"pattern": "^[a-f0-9]{40,64}$"
+					},
+					"snapshotDigest": {
+						"type": "string",
+						"pattern": "^[a-f0-9]{64}$"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanInspect": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"cardId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanList": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanMove": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"column": {
+						"type": "string",
+						"enum": [
+							"todo",
+							"finished"
+						],
+						"description": "移動先。finished に移すと Done。"
+					},
+					"beforeCardId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"description": "この id のカードの前に置く。null は列の末尾。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision",
+					"column",
+					"beforeCardId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanNoticeRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"noticeId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"noticeId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanSelectExecutor": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"cardId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshot に示されたカードの id。"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 9007199254740991,
+						"description": "snapshot に示されたそのカードの revision。"
+					},
+					"executorId": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120,
+						"description": "snapshot.executors にある担当のID。利用者が指定した担当を選ぶ。未指定なら snapshot.defaultExecutorId を使ったと伝える。"
+					}
+				},
+				"required": [
+					"cardId",
+					"expectedRevision",
+					"executorId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:kanbanSharedAdd": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 40,
+						"description": "作業の短い名前。利用者の依頼の言葉から選び、通知でこの名前を使う。"
+					},
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 7850,
+						"description": "作業担当に渡す依頼内容。利用者の指示・対象・条件を省略や言い換えなしで含める。"
+					},
+					"beforeCardId": {
+						"anyOf": [
+							{
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							{
+								"type": "null"
+							}
+						],
+						"description": "この id のカードの前に置く。null は列の末尾。"
+					},
+					"executorId": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120,
+						"description": "snapshot.executors にある担当のID。利用者が指定した担当を選ぶ。未指定なら snapshot.defaultExecutorId を使ったと伝える。"
+					}
+				},
+				"required": [
+					"title",
+					"prompt",
+					"executorId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:lookupV2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 400
+					},
+					"language": {
+						"default": "ja",
+						"type": "string",
+						"pattern": "^[a-z]{2}$"
+					},
+					"region": {
+						"type": "string",
+						"pattern": "^[A-Z]{2}$",
+						"description": "検索対象の国・地域をISO 3166-1 alpha-2で指定する。検索言語とは独立に選ぶ。"
+					},
+					"timeRange": {
+						"type": "string",
+						"enum": [
+							"day",
+							"week",
+							"month",
+							"year"
+						],
+						"description": "ページの公開・更新時刻の制限。値や予報の対象日とは別。公開期間を絞る依頼の場合だけ指定し、通常は省略する。"
+					}
+				},
+				"required": [
+					"query"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:model3dFind": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"maxLength": 100,
+						"description": "タイトル・元の文・タグを探す語。空白区切りで全て含むもの"
+					},
+					"tags": {
+						"maxItems": 8,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 24
+						},
+						"description": "全て付いているタグ。無ければ空配列"
+					}
+				},
+				"required": [
+					"query",
+					"tags"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:model3dGenerate": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"prompt": {
+						"type": "string",
+						"maxLength": 2000,
+						"description": "元画像として描くもの。一つの対象を全身が見える形で、無地の背景で書く（例: 白い背景に、青緑の小さなロボットを全身で描く）。sourceImageRefを使うときは空文字。"
+					},
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 80,
+						"description": "3Dモデルの短い日本語のタイトル"
+					},
+					"tags": {
+						"maxItems": 8,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 24
+						},
+						"description": "利用者が言った分類だけ。無ければ空配列"
+					},
+					"sourceImageRef": {
+						"description": "既存の画像を立体にするとき、snapshotのimages[].imageRef",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 128,
+						"pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+					}
+				},
+				"required": [
+					"prompt",
+					"title",
+					"tags"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:model3dJobTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"generationRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+						"description": "snapshotのgenerations[].generationRef"
+					}
+				},
+				"required": [
+					"generationRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:model3dTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"assetRef": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 128,
+						"pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+						"description": "snapshotのassets[].assetRef"
+					}
+				},
+				"required": [
+					"assetRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:model3dUpdate": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"assetRef": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 128,
+						"pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+						"description": "snapshotのassets[].assetRef"
+					},
+					"title": {
+						"description": "新しいタイトル。変えないなら省く",
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 80
+					},
+					"tags": {
+						"description": "変更後のタグの全件。追加・削除は今のタグに反映して渡す。変えないなら省く",
+						"maxItems": 8,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 24
+						}
+					}
+				},
+				"required": [
+					"assetRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:musicPlanV3": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"description": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"prompt": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 4000
+					},
+					"task": {
+						"type": "string",
+						"enum": [
+							"music",
+							"sound-effect"
+						]
+					},
+					"instrumental": {
+						"type": "boolean"
+					},
+					"durationSeconds": {
+						"type": "number",
+						"minimum": 1,
+						"maximum": 600
+					},
+					"lyrics": {
+						"type": "string",
+						"maxLength": 4000
+					},
+					"language": {
+						"type": "string",
+						"minLength": 2,
+						"maxLength": 32
+					},
+					"outputFormat": {
+						"type": "string",
+						"enum": [
+							"opus",
+							"wav",
+							"flac",
+							"mp3"
+						]
+					},
+					"quality": {
+						"type": "string",
+						"enum": [
+							"fast",
+							"balanced",
+							"high"
+						]
+					},
+					"bpm": {
+						"type": "integer",
+						"minimum": 20,
+						"maximum": 300
+					},
+					"key": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 32
+					},
+					"timeSignature": {
+						"type": "string",
+						"pattern": "^\\d{1,2}(?:\\/\\d{1,2})?$"
+					},
+					"seed": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 2147483647
+					},
+					"providerOptions": {
+						"type": "object",
+						"properties": {
+							"guidance_scale": {
+								"type": "number",
+								"minimum": 0,
+								"maximum": 10
+							}
+						},
+						"additionalProperties": false
+					}
+				},
+				"required": [
+					"title",
+					"description",
+					"prompt",
+					"task"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:musicPlaybackPlanV2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"title": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"q": {
+						"type": "string",
+						"maxLength": 512
+					},
+					"tags": {
+						"maxItems": 32,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 64
+						}
+					},
+					"favorite": {
+						"anyOf": [
+							{
+								"type": "boolean"
+							},
+							{
+								"type": "null"
+							}
+						]
+					},
+					"sort": {
+						"type": "string",
+						"enum": [
+							"createdAt",
+							"relevance"
+						]
+					},
+					"order": {
+						"type": "string",
+						"enum": [
+							"asc",
+							"desc"
+						]
+					},
+					"trackUris": {
+						"default": [],
+						"description": "依頼に添えられた曲（music.track）またはプレイリスト（music.playlist）のURI。写すだけで、作らない・書き換えない。なければ[]。",
+						"maxItems": 50,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 512,
+							"format": "eumenes-uri"
+						}
+					}
+				},
+				"required": [
+					"title",
+					"q",
+					"tags",
+					"favorite",
+					"sort",
+					"order"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:musicRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:ocrCorrectionRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"sourceId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"frameIndex": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 59
+					}
+				},
+				"required": [
+					"sourceId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:ocrTarget": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"id"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:pipelineSourceApply": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"workRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"text": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 65536
+					}
+				},
+				"required": [
+					"workRef",
+					"expectedRevision",
+					"text"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:pipelineTargetRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"target": {
+						"type": "string",
+						"pattern": "^pipeline\\.[a-z][a-z0-9-]{1,30}$"
+					}
+				},
+				"required": [
+					"target"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:pipelineWorkStep": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"workRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"workRef",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:read": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"maxLength": 2048,
+						"format": "uri"
+					}
+				},
+				"required": [
+					"url"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:readCandidate": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"maxLength": 2048,
+						"format": "uri"
+					},
+					"candidateRef": {
+						"type": "string",
+						"pattern": "^c[1-9][0-9]*$"
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:readSaved": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"sourceRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"cursor": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"start": {
+						"type": "string",
+						"const": "head"
+					},
+					"characters": {
+						"default": 2400,
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 2400
+					}
+				},
+				"required": [
+					"sourceRef"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:recipeFind": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200,
+						"description": "現在の依頼を対象と知りたい内容で短く表した文。"
+					}
+				},
+				"required": [
+					"query"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:recognitionManageV2": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"enum": [
+							"open",
+							"read",
+							"cancel",
+							"capture",
+							"ask"
+						]
+					},
+					"id": {
+						"type": "string",
+						"maxLength": 200
+					},
+					"frameIndex": {
+						"type": "integer",
+						"minimum": -1,
+						"maximum": 59
+					},
+					"source": {
+						"type": "string",
+						"enum": [
+							"camera",
+							"screen"
+						]
+					},
+					"question": {
+						"type": "string",
+						"maxLength": 500
+					}
+				},
+				"required": [
+					"action",
+					"id",
+					"frameIndex",
+					"source",
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:research": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"question": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000
+					},
+					"urls": {
+						"maxItems": 3,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"maxLength": 2048,
+							"format": "uri"
+						}
+					},
+					"detail": {
+						"default": "normal",
+						"type": "string",
+						"enum": [
+							"brief",
+							"normal"
+						]
+					}
+				},
+				"required": [
+					"question"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:resourceRead": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"uri": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 512,
+						"format": "eumenes-uri",
+						"description": "読むリソースのURI。提示されたものをそのまま写す。"
+					}
+				},
+				"required": [
+					"uri"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:stockQuote": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 60,
+						"description": "株価を知りたい会社名またはティッカー・証券コード。言われたとおりに書く（例: ソフトバンク、トヨタ自動車、AAPL、9434）。株価・円・「の」などの語は含めない。"
+					}
+				},
+				"required": [
+					"query"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerCancel": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"timerId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"timerId",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerCommand": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"oneOf": [
+					{
+						"type": "object",
+						"properties": {
+							"durationSeconds": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 86400
+							},
+							"label": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 80
+							},
+							"operation": {
+								"type": "string",
+								"const": "start"
+							}
+						},
+						"required": [
+							"durationSeconds",
+							"operation"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"timerId": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"state": {
+								"type": "string",
+								"enum": [
+									"active",
+									"elapsed",
+									"cancelled"
+								]
+							},
+							"operation": {
+								"type": "string",
+								"const": "list"
+							}
+						},
+						"required": [
+							"operation"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"timerId": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"expectedRevision": {
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 9007199254740991
+							},
+							"operation": {
+								"type": "string",
+								"const": "cancel"
+							}
+						},
+						"required": [
+							"timerId",
+							"expectedRevision",
+							"operation"
+						],
+						"additionalProperties": false
+					}
+				]
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerDurationAnswer": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"durationSeconds": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 86400
+					}
+				},
+				"required": [
+					"durationSeconds"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerHms": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"hours": {
+						"type": "string",
+						"pattern": "^\\d{1,5}$"
+					},
+					"minutes": {
+						"type": "string",
+						"pattern": "^\\d{1,5}$"
+					},
+					"seconds": {
+						"type": "string",
+						"pattern": "^\\d{1,5}$"
+					}
+				},
+				"required": [
+					"hours",
+					"minutes",
+					"seconds"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerList": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"timerId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"state": {
+						"type": "string",
+						"enum": [
+							"active",
+							"elapsed",
+							"cancelled"
+						]
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerStart": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"durationSeconds": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 86400
+					},
+					"label": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 80
+					}
+				},
+				"required": [
+					"durationSeconds"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:timerTargetAnswer": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"timerId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"timerId"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:toolchainRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"request": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 8000,
+						"description": "ユーザーの依頼。対象・日時・件数・条件を原文から保持し、直前の会話で明確になった対象を補う。未指定の条件は足さない。"
+					}
+				},
+				"required": [
+					"request"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiCompositionDelete": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"projectId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedSavedRevision": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"projectId",
+					"expectedSavedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiResponseFields": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"propertyNames": {
+					"type": "string"
+				},
+				"additionalProperties": {
+					"anyOf": [
+						{
+							"type": "string",
+							"maxLength": 2000
+						},
+						{
+							"type": "boolean"
+						}
+					]
+				}
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiSourceApply": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"workRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"text": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 100000
+					}
+				},
+				"required": [
+					"workRef",
+					"expectedRevision",
+					"text"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiSubmitRequest": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"projectId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedGeneration": {
+						"type": "integer",
+						"exclusiveMinimum": 0,
+						"maximum": 9007199254740991
+					},
+					"values": {
+						"type": "object",
+						"propertyNames": {
+							"type": "string"
+						},
+						"additionalProperties": {
+							"anyOf": [
+								{
+									"type": "string",
+									"maxLength": 2000
+								},
+								{
+									"type": "boolean"
+								}
+							]
+						}
+					}
+				},
+				"required": [
+					"projectId",
+					"expectedGeneration",
+					"values"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiTargetRef": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"target": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"target"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiWorkSave": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"workRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"expectedSavedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"workRef",
+					"expectedRevision",
+					"expectedSavedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:uiWorkStep": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"workRef": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					},
+					"expectedRevision": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					}
+				},
+				"required": [
+					"workRef",
+					"expectedRevision"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:weatherPlace": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"place": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 30,
+						"description": "天気を知りたい場所。依頼の地名をそのまま書く（例: 鎌倉、横浜、湘南、北海道）。市区町村・地域・都道府県のどれでもよい。"
+					},
+					"prefecture": {
+						"type": "string",
+						"minLength": 2,
+						"maxLength": 5,
+						"description": "その場所がある都道府県（例: 神奈川県）。依頼に無くても、知っている場所なら書く。"
+					},
+					"day": {
+						"type": "string",
+						"enum": [
+							"today",
+							"tomorrow",
+							"day_after"
+						],
+						"description": "天気を知りたい日。today=今日、tomorrow=明日、day_after=明後日。日付や曜日で言われたときは今日からの日数で選ぶ。"
+					}
+				},
+				"required": [
+					"place",
+					"prefecture",
+					"day"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:worldDocuments": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"query": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 120
+					},
+					"documentId": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 200
+					},
+					"offset": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 262144
+					}
+				},
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:worldFind": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"names": {
+						"minItems": 1,
+						"maxItems": 5,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 80
+						},
+						"description": "探す対象の名前や別名（1〜5件、各80文字まで）。依頼に出てくる名称をそのまま指定する。"
+					}
+				},
+				"required": [
+					"names"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"builtin:worldQuery": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"mode": {
+						"type": "string",
+						"enum": [
+							"snapshot",
+							"relevance",
+							"influence",
+							"dependencies",
+							"scenarios",
+							"gaps"
+						],
+						"description": "snapshot: 起点（entityIds、省略可）まわりの保存済みの主張を根拠つきで見る。relevance: entityIdに関係の深いもの。influence: entityIdを変えたときの影響。dependencies: entityIdの依存先。scenarios: 二つの仮定（overlays）の影響の比較。gaps: 調べる価値のある不足している情報。"
+					},
+					"entityId": {
+						"description": "relevance・influence・dependencies・scenarios で必須。起点にする対象のID。world.find が返したIDだけを使い、作らない。",
+						"type": "string",
+						"minLength": 1
+					},
+					"entityIds": {
+						"description": "snapshot・gaps の起点にする対象のID（任意、最大10件）。world.find が返したIDだけを使う。",
+						"minItems": 1,
+						"maxItems": 10,
+						"type": "array",
+						"items": {
+							"type": "string",
+							"minLength": 1
+						}
+					},
+					"depth": {
+						"description": "snapshot だけ。起点から辿る段数（0〜4）。",
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 4
+					},
+					"direction": {
+						"description": "influence・scenarios だけ。forward は起点が及ぼす影響（既定）、reverse は起点に及ぶ影響。",
+						"type": "string",
+						"enum": [
+							"forward",
+							"reverse"
+						]
+					},
+					"goalId": {
+						"description": "gaps だけ。目標の範囲に絞るときのID。",
+						"type": "string",
+						"minLength": 1
+					},
+					"overlays": {
+						"description": "scenarios で必須。比べる二つの仮定。保存されない。addEdgesは仮に足す関係、removeEdgeIdsは仮に外す関係のID。",
+						"type": "array",
+						"prefixItems": [
+							{
+								"type": "object",
+								"properties": {
+									"overlayId": {
+										"type": "string",
+										"minLength": 1
+									},
+									"addEdges": {
+										"maxItems": 100,
+										"type": "array",
+										"items": {}
+									},
+									"removeEdgeIds": {
+										"maxItems": 100,
+										"type": "array",
+										"items": {
+											"type": "string",
+											"minLength": 1
+										}
+									}
+								},
+								"required": [
+									"overlayId",
+									"addEdges",
+									"removeEdgeIds"
+								],
+								"additionalProperties": false
+							},
+							{
+								"type": "object",
+								"properties": {
+									"overlayId": {
+										"type": "string",
+										"minLength": 1
+									},
+									"addEdges": {
+										"maxItems": 100,
+										"type": "array",
+										"items": {}
+									},
+									"removeEdgeIds": {
+										"maxItems": 100,
+										"type": "array",
+										"items": {
+											"type": "string",
+											"minLength": 1
+										}
+									}
+								},
+								"required": [
+									"overlayId",
+									"addEdges",
+									"removeEdgeIds"
+								],
+								"additionalProperties": false
+							}
+						]
+					},
+					"scopeKey": {
+						"description": "指定しない。利用者が求めたときだけ。",
+						"type": "string",
+						"minLength": 1
+					},
+					"budget": {
+						"type": "object",
+						"properties": {
+							"causalDepth": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 3
+							},
+							"relevanceDepth": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 4
+							},
+							"entities": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 30
+							},
+							"relations": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 60
+							},
+							"paths": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 10
+							},
+							"candidates": {
+								"type": "integer",
+								"minimum": 2,
+								"maximum": 500
+							},
+							"expansions": {
+								"type": "integer",
+								"minimum": 2,
+								"maximum": 500
+							},
+							"presentationBytes": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 8192
+							}
+						},
+						"additionalProperties": false,
+						"description": "読み取りの上限。通常は指定しない。"
+					}
+				},
+				"required": [
+					"mode"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		}
+	},
+	"domain": {
+		"domain:browser.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"action"
+				],
+				"additionalProperties": {}
+			},
+			"unrepresentable": false
+		},
+		"domain:claude-code.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"attemptId": {
+						"type": "string"
+					},
+					"task": {
+						"type": "string"
+					},
+					"target": {
+						"type": "string",
+						"enum": [
+							"current",
+							"new"
+						]
+					}
+				},
+				"required": [
+					"attemptId",
+					"task",
+					"target"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"domain:compute.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string"
+					},
+					"jobId": {
+						"type": "string",
+						"format": "uuid",
+						"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+					}
+				},
+				"required": [
+					"action",
+					"jobId"
+				],
+				"additionalProperties": {}
+			},
+			"unrepresentable": false
+		},
+		"domain:docling.prepared@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string",
+						"const": "open"
+					},
+					"state": {
+						"type": "string",
+						"const": "ready_for_open"
+					}
+				},
+				"required": [
+					"action",
+					"state"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"domain:dots.work-receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"version": {
+						"type": "number",
+						"const": 1
+					},
+					"operation": {
+						"type": "string"
+					},
+					"value": {},
+					"revision": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991
+					},
+					"verification": {
+						"type": "string",
+						"const": "registered_in_eumenes"
+					}
+				},
+				"required": [
+					"version",
+					"operation"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"domain:kanban.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"type": "object",
+						"properties": {
+							"action": {
+								"type": "string",
+								"enum": [
+									"added",
+									"edited",
+									"moved",
+									"removed",
+									"run",
+									"followup",
+									"commit_push",
+									"commit",
+									"push",
+									"reviewed",
+									"cancelled",
+									"stop_requested",
+									"reset"
+								]
+							},
+							"cardId": {
+								"type": "string"
+							},
+							"revision": {
+								"type": "integer",
+								"minimum": 1,
+								"maximum": 9007199254740991
+							},
+							"title": {
+								"type": "string"
+							},
+							"column": {
+								"type": "string",
+								"enum": [
+									"todo",
+									"running",
+									"finished"
+								]
+							},
+							"runId": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"action",
+							"cardId",
+							"revision",
+							"title",
+							"column"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"action": {
+								"type": "string",
+								"const": "queue_resumed"
+							},
+							"queue": {
+								"type": "string",
+								"enum": [
+									"running",
+									"paused"
+								]
+							}
+						},
+						"required": [
+							"action",
+							"queue"
+						],
+						"additionalProperties": false
+					}
+				]
+			},
+			"unrepresentable": false
+		},
+		"domain:model3d.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"action": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"action"
+				],
+				"additionalProperties": {}
+			},
+			"unrepresentable": false
+		},
+		"domain:ocr.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"anyOf": [
+					{
+						"type": "object",
+						"properties": {
+							"id": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"conversationId": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"mime": {
+								"type": "string",
+								"enum": [
+									"image/jpeg",
+									"image/png",
+									"image/webp",
+									"video/mp4",
+									"video/quicktime",
+									"video/webm"
+								]
+							},
+							"state": {
+								"type": "string",
+								"enum": [
+									"queued",
+									"starting",
+									"running",
+									"cancelling",
+									"completed",
+									"failed",
+									"cancelled"
+								]
+							},
+							"revision": {
+								"type": "integer",
+								"minimum": -9007199254740991,
+								"maximum": 9007199254740991
+							},
+							"progress": {
+								"anyOf": [
+									{},
+									{
+										"type": "null"
+									}
+								]
+							},
+							"errorCode": {
+								"anyOf": [
+									{
+										"type": "string"
+									},
+									{
+										"type": "null"
+									}
+								]
+							},
+							"result": {
+								"anyOf": [
+									{
+										"anyOf": [
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "image"
+													},
+													"model": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 200
+													},
+													"width": {
+														"type": "integer",
+														"exclusiveMinimum": 0,
+														"maximum": 65536
+													},
+													"height": {
+														"type": "integer",
+														"exclusiveMinimum": 0,
+														"maximum": 65536
+													},
+													"text": {
+														"type": "string",
+														"maxLength": 1000000
+													},
+													"lines": {
+														"maxItems": 10000,
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"text": {
+																	"type": "string",
+																	"maxLength": 10000
+																},
+																"confidence": {
+																	"type": "number",
+																	"minimum": 0,
+																	"maximum": 1
+																},
+																"polygon": {
+																	"minItems": 4,
+																	"maxItems": 4,
+																	"type": "array",
+																	"items": {
+																		"type": "array",
+																		"prefixItems": [
+																			{
+																				"type": "number",
+																				"minimum": 0
+																			},
+																			{
+																				"type": "number",
+																				"minimum": 0
+																			}
+																		]
+																	}
+																}
+															},
+															"required": [
+																"text",
+																"confidence",
+																"polygon"
+															],
+															"additionalProperties": false
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"model",
+													"width",
+													"height",
+													"text",
+													"lines"
+												],
+												"additionalProperties": false
+											},
+											{
+												"type": "object",
+												"properties": {
+													"kind": {
+														"type": "string",
+														"const": "video"
+													},
+													"model": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 200
+													},
+													"video": {
+														"type": "object",
+														"properties": {
+															"width": {
+																"type": "integer",
+																"exclusiveMinimum": 0,
+																"maximum": 65536
+															},
+															"height": {
+																"type": "integer",
+																"exclusiveMinimum": 0,
+																"maximum": 65536
+															},
+															"durationSeconds": {
+																"type": "number",
+																"minimum": 0,
+																"maximum": 30
+															}
+														},
+														"required": [
+															"width",
+															"height"
+														],
+														"additionalProperties": false
+													},
+													"frames": {
+														"maxItems": 60,
+														"type": "array",
+														"items": {
+															"type": "object",
+															"properties": {
+																"timestampSeconds": {
+																	"type": "number",
+																	"minimum": 0,
+																	"maximum": 30
+																},
+																"text": {
+																	"type": "string",
+																	"maxLength": 1000000
+																},
+																"lines": {
+																	"maxItems": 10000,
+																	"type": "array",
+																	"items": {
+																		"type": "object",
+																		"properties": {
+																			"text": {
+																				"type": "string",
+																				"maxLength": 10000
+																			},
+																			"confidence": {
+																				"type": "number",
+																				"minimum": 0,
+																				"maximum": 1
+																			},
+																			"polygon": {
+																				"minItems": 4,
+																				"maxItems": 4,
+																				"type": "array",
+																				"items": {
+																					"type": "array",
+																					"prefixItems": [
+																						{
+																							"type": "number",
+																							"minimum": 0
+																						},
+																						{
+																							"type": "number",
+																							"minimum": 0
+																						}
+																					]
+																				}
+																			}
+																		},
+																		"required": [
+																			"text",
+																			"confidence",
+																			"polygon"
+																		],
+																		"additionalProperties": false
+																	}
+																}
+															},
+															"required": [
+																"timestampSeconds",
+																"text",
+																"lines"
+															],
+															"additionalProperties": false
+														}
+													}
+												},
+												"required": [
+													"kind",
+													"model",
+													"video",
+													"frames"
+												],
+												"additionalProperties": false
+											}
+										]
+									},
+									{
+										"type": "null"
+									}
+								]
+							},
+							"createdAt": {
+								"type": "number"
+							},
+							"updatedAt": {
+								"type": "number"
+							},
+							"canRecheck": {
+								"type": "boolean"
+							},
+							"capacityWait": {
+								"type": "object",
+								"properties": {
+									"startedAt": {
+										"type": "number"
+									},
+									"count": {
+										"type": "integer",
+										"minimum": -9007199254740991,
+										"maximum": 9007199254740991
+									}
+								},
+								"required": [
+									"startedAt",
+									"count"
+								],
+								"additionalProperties": false
+							}
+						},
+						"required": [
+							"id",
+							"conversationId",
+							"name",
+							"mime",
+							"state",
+							"revision",
+							"progress",
+							"errorCode",
+							"result",
+							"createdAt",
+							"updatedAt"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"action": {
+								"type": "string",
+								"const": "open"
+							},
+							"state": {
+								"type": "string",
+								"const": "ready_for_input"
+							}
+						},
+						"required": [
+							"action",
+							"state"
+						],
+						"additionalProperties": false
+					}
+				]
+			},
+			"unrepresentable": false
+		},
+		"domain:shell.run-receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"attemptId": {
+						"type": "string"
+					},
+					"task": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"attemptId",
+					"task"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		},
+		"domain:timers.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"oneOf": [
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"type": "string",
+								"const": "timer_action"
+							},
+							"action": {
+								"type": "string",
+								"const": "started"
+							},
+							"operationId": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"serverNow": {
+								"type": "string",
+								"format": "date-time",
+								"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+							},
+							"timer": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									},
+									"revision": {
+										"type": "integer",
+										"minimum": -9007199254740991,
+										"maximum": 9007199254740991
+									},
+									"state": {
+										"type": "string",
+										"enum": [
+											"active",
+											"paused",
+											"elapsed",
+											"cancelled"
+										]
+									},
+									"label": {
+										"type": "string"
+									},
+									"durationSeconds": {
+										"type": "integer",
+										"minimum": -9007199254740991,
+										"maximum": 9007199254740991
+									},
+									"startedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+									},
+									"dueAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+									},
+									"cancelledAt": {
+										"anyOf": [
+											{
+												"type": "string",
+												"format": "date-time",
+												"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"pausedAt": {
+										"anyOf": [
+											{
+												"type": "string",
+												"format": "date-time",
+												"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"remainingSeconds": {
+										"type": "integer",
+										"minimum": 0,
+										"maximum": 9007199254740991
+									},
+									"conversationId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"originRunId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"originMessageId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"errorCode": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"bodyExpired": {
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"id",
+									"revision",
+									"state",
+									"label",
+									"durationSeconds",
+									"startedAt",
+									"dueAt",
+									"cancelledAt",
+									"remainingSeconds",
+									"conversationId",
+									"originRunId",
+									"originMessageId",
+									"errorCode",
+									"bodyExpired"
+								],
+								"additionalProperties": false
+							},
+							"artifact": {
+								"type": "object",
+								"properties": {
+									"kind": {
+										"type": "string",
+										"const": "timer"
+									},
+									"version": {
+										"type": "number",
+										"const": 1
+									},
+									"timerId": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									}
+								},
+								"required": [
+									"kind",
+									"version",
+									"timerId"
+								],
+								"additionalProperties": false
+							}
+						},
+						"required": [
+							"kind",
+							"action",
+							"operationId",
+							"serverNow",
+							"timer",
+							"artifact"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"type": "string",
+								"const": "timer_action"
+							},
+							"action": {
+								"type": "string",
+								"const": "listed"
+							},
+							"operationId": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"serverNow": {
+								"type": "string",
+								"format": "date-time",
+								"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+							},
+							"items": {
+								"type": "array",
+								"items": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"revision": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"state": {
+											"type": "string",
+											"enum": [
+												"active",
+												"paused",
+												"elapsed",
+												"cancelled"
+											]
+										},
+										"label": {
+											"type": "string"
+										},
+										"durationSeconds": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"startedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+										},
+										"dueAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+										},
+										"cancelledAt": {
+											"anyOf": [
+												{
+													"type": "string",
+													"format": "date-time",
+													"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"pausedAt": {
+											"anyOf": [
+												{
+													"type": "string",
+													"format": "date-time",
+													"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"remainingSeconds": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										},
+										"conversationId": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"originRunId": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"originMessageId": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"errorCode": {
+											"anyOf": [
+												{
+													"type": "string"
+												},
+												{
+													"type": "null"
+												}
+											]
+										},
+										"bodyExpired": {
+											"type": "boolean"
+										}
+									},
+									"required": [
+										"id",
+										"revision",
+										"state",
+										"label",
+										"durationSeconds",
+										"startedAt",
+										"dueAt",
+										"cancelledAt",
+										"remainingSeconds",
+										"conversationId",
+										"originRunId",
+										"originMessageId",
+										"errorCode",
+										"bodyExpired"
+									],
+									"additionalProperties": false
+								}
+							},
+							"nextCursor": {
+								"anyOf": [
+									{
+										"type": "string"
+									},
+									{
+										"type": "null"
+									}
+								]
+							}
+						},
+						"required": [
+							"kind",
+							"action",
+							"operationId",
+							"serverNow",
+							"items",
+							"nextCursor"
+						],
+						"additionalProperties": false
+					},
+					{
+						"type": "object",
+						"properties": {
+							"kind": {
+								"type": "string",
+								"const": "timer_action"
+							},
+							"action": {
+								"type": "string",
+								"enum": [
+									"cancelled",
+									"dismissed",
+									"unchanged",
+									"paused",
+									"resumed"
+								]
+							},
+							"operationId": {
+								"type": "string",
+								"format": "uuid",
+								"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+							},
+							"serverNow": {
+								"type": "string",
+								"format": "date-time",
+								"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+							},
+							"timer": {
+								"type": "object",
+								"properties": {
+									"id": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									},
+									"revision": {
+										"type": "integer",
+										"minimum": -9007199254740991,
+										"maximum": 9007199254740991
+									},
+									"state": {
+										"type": "string",
+										"enum": [
+											"active",
+											"paused",
+											"elapsed",
+											"cancelled"
+										]
+									},
+									"label": {
+										"type": "string"
+									},
+									"durationSeconds": {
+										"type": "integer",
+										"minimum": -9007199254740991,
+										"maximum": 9007199254740991
+									},
+									"startedAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+									},
+									"dueAt": {
+										"type": "string",
+										"format": "date-time",
+										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+									},
+									"cancelledAt": {
+										"anyOf": [
+											{
+												"type": "string",
+												"format": "date-time",
+												"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"pausedAt": {
+										"anyOf": [
+											{
+												"type": "string",
+												"format": "date-time",
+												"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"remainingSeconds": {
+										"type": "integer",
+										"minimum": 0,
+										"maximum": 9007199254740991
+									},
+									"conversationId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"originRunId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"originMessageId": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"errorCode": {
+										"anyOf": [
+											{
+												"type": "string"
+											},
+											{
+												"type": "null"
+											}
+										]
+									},
+									"bodyExpired": {
+										"type": "boolean"
+									}
+								},
+								"required": [
+									"id",
+									"revision",
+									"state",
+									"label",
+									"durationSeconds",
+									"startedAt",
+									"dueAt",
+									"cancelledAt",
+									"remainingSeconds",
+									"conversationId",
+									"originRunId",
+									"originMessageId",
+									"errorCode",
+									"bodyExpired"
+								],
+								"additionalProperties": false
+							}
+						},
+						"required": [
+							"kind",
+							"action",
+							"operationId",
+							"serverNow",
+							"timer"
+						],
+						"additionalProperties": false
+					}
+				]
+			},
+			"unrepresentable": false
+		},
+		"domain:ui-compositions.receipt@1": {
+			"jsonSchema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"projectId": {
+						"type": "string"
+					},
+					"state": {
+						"type": "string"
+					},
+					"responseId": {
+						"type": "string"
+					},
+					"workRef": {
+						"type": "string"
+					},
+					"revision": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991
+					},
+					"savedRevision": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991
+					},
+					"title": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"projectId",
+					"state"
+				],
+				"additionalProperties": false
+			},
+			"unrepresentable": false
+		}
+	},
+	"unresolvedDomainRefs": [
+		"domain:steward.receipt@1",
+		"domain:world-query.receipt@1"
+	],
+	"adapters": {
+		"adapter:usage@1": {
+			"owner": "usage",
+			"availability": "availability:usage@1",
+			"operations": [
+				{
+					"operationId": "usage.rate-save",
+					"inputSchemaRef": "schema:usage-rate@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:usage.dashboard@1"
+			],
+			"projections": []
+		},
+		"adapter:docling@1": {
+			"owner": "docling",
+			"availability": "availability:docling@1",
+			"operations": [
+				{
+					"operationId": "docling.prepare",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "read"
+				}
+			],
+			"queries": [
+				"query:docling.launcher@1"
+			],
+			"projections": [
+				"projection:docling.prepared@1"
+			]
+		},
+		"adapter:dots-delegation@1": {
+			"owner": "dots",
+			"availability": "availability:dots-delegation@1",
+			"operations": [
+				{
+					"operationId": "dots.answer",
+					"inputSchemaRef": "builtin:dotsWorkAnswerV1",
+					"effect": "write"
+				},
+				{
+					"operationId": "dots.inspect",
+					"inputSchemaRef": "builtin:dotsWorkInspectV1",
+					"effect": "read"
+				},
+				{
+					"operationId": "dots.list",
+					"inputSchemaRef": "builtin:dotsWorkListV1",
+					"effect": "read"
+				},
+				{
+					"operationId": "dots.project-role",
+					"inputSchemaRef": "schema:dots-project-role@3",
+					"effect": "write"
+				},
+				{
+					"operationId": "dots.settings-apply",
+					"inputSchemaRef": "schema:dots-work-settings-apply@3",
+					"effect": "write"
+				},
+				{
+					"operationId": "dots.start",
+					"inputSchemaRef": "builtin:dotsWorkStartV1",
+					"effect": "write"
+				},
+				{
+					"operationId": "dots.stop",
+					"inputSchemaRef": "builtin:dotsWorkStopV1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:dots.activity@1",
+				"query:dots.connection@1",
+				"query:dots.connections@1",
+				"query:dots.jobs@1",
+				"query:dots.projects@1",
+				"query:dots.roles@1",
+				"query:dots.settings@1",
+				"query:dots.work@1"
+			],
+			"projections": [
+				"projection:dots-work-result@1"
+			]
+		},
+		"adapter:dots-messaging@1": {
+			"owner": "dots",
+			"availability": "availability:dots-messaging@1",
+			"operations": [],
+			"queries": [
+				"query:dots-messaging.view@1"
+			],
+			"projections": []
+		},
+		"adapter:shell@1": {
+			"owner": "shell",
+			"availability": "availability:shell@1",
+			"operations": [
+				{
+					"operationId": "shell.run",
+					"inputSchemaRef": "builtin:cliRun",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:shell.sessions@1"
+			],
+			"projections": [
+				"projection:shell.run-result@1"
+			]
+		},
+		"adapter:task-execution@1": {
+			"owner": "agent-runtime",
+			"availability": "availability:task-execution@1",
+			"operations": [
+				{
+					"operationId": "todos.archive",
+					"inputSchemaRef": "schema:todo-screen-archive@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:agent-runtime.todos@1"
+			],
+			"projections": []
+		},
+		"adapter:pipelines@1": {
+			"owner": "pipelines",
+			"availability": "availability:pipelines@1",
+			"operations": [
+				{
+					"operationId": "pipelines.publish",
+					"inputSchemaRef": "builtin:pipelineWorkStep",
+					"effect": "write"
+				},
+				{
+					"operationId": "pipelines.source.apply",
+					"inputSchemaRef": "builtin:pipelineSourceApply",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:pipelines.studio@1"
+			],
+			"projections": []
+		},
+		"adapter:timers@1": {
+			"owner": "timers",
+			"availability": "availability:timers@1",
+			"operations": [
+				{
+					"operationId": "timers.cancel",
+					"inputSchemaRef": "builtin:timerCancel",
+					"effect": "write"
+				},
+				{
+					"operationId": "timers.list-with-receipt",
+					"inputSchemaRef": "builtin:timerList",
+					"effect": "read"
+				},
+				{
+					"operationId": "timers.pause",
+					"inputSchemaRef": "builtin:timerCancel",
+					"effect": "write"
+				},
+				{
+					"operationId": "timers.resume",
+					"inputSchemaRef": "builtin:timerCancel",
+					"effect": "write"
+				},
+				{
+					"operationId": "timers.start",
+					"inputSchemaRef": "builtin:timerStart",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:timers.current@1",
+				"query:timers.question@1",
+				"query:timers.setup@1"
+			],
+			"projections": [
+				"projection:timer-result@1"
+			]
+		},
+		"adapter:ocr@1": {
+			"owner": "ocr",
+			"availability": "availability:ocr@1",
+			"operations": [
+				{
+					"operationId": "ocr.cancel",
+					"inputSchemaRef": "builtin:ocrTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "ocr.open",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "read"
+				},
+				{
+					"operationId": "ocr.read",
+					"inputSchemaRef": "builtin:ocrTarget",
+					"effect": "read"
+				}
+			],
+			"queries": [
+				"query:ocr.list@1"
+			],
+			"projections": [
+				"projection:ocr-result@1"
+			]
+		},
+		"adapter:model3d@1": {
+			"owner": "model3d",
+			"availability": "availability:model3d@1",
+			"operations": [
+				{
+					"operationId": "model3d.cancel",
+					"inputSchemaRef": "builtin:model3dJobTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "model3d.delete",
+					"inputSchemaRef": "builtin:model3dTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "model3d.find",
+					"inputSchemaRef": "builtin:model3dFind",
+					"effect": "read"
+				},
+				{
+					"operationId": "model3d.generate",
+					"inputSchemaRef": "builtin:model3dGenerate",
+					"effect": "write"
+				},
+				{
+					"operationId": "model3d.open",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "read"
+				},
+				{
+					"operationId": "model3d.show",
+					"inputSchemaRef": "builtin:model3dTarget",
+					"effect": "read"
+				},
+				{
+					"operationId": "model3d.update",
+					"inputSchemaRef": "builtin:model3dUpdate",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:model3d.workspace@1"
+			],
+			"projections": [
+				"projection:model3d-result@1"
+			]
+		},
+		"adapter:compute@1": {
+			"owner": "compute",
+			"availability": "availability:compute@1",
+			"operations": [
+				{
+					"operationId": "compute.artifact",
+					"inputSchemaRef": "builtin:computeArtifactTarget",
+					"effect": "read"
+				},
+				{
+					"operationId": "compute.cancel",
+					"inputSchemaRef": "builtin:computeJobTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "compute.status",
+					"inputSchemaRef": "builtin:computeJobTarget",
+					"effect": "read"
+				},
+				{
+					"operationId": "compute.submit",
+					"inputSchemaRef": "builtin:computePythonSubmit",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:compute.workspace@1"
+			],
+			"projections": [
+				"projection:compute-result@1"
+			]
+		},
+		"adapter:browser@1": {
+			"owner": "browser",
+			"availability": "availability:browser@1",
+			"operations": [
+				{
+					"operationId": "browser.capture.cancel",
+					"inputSchemaRef": "builtin:browserCaptureTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.capture.start",
+					"inputSchemaRef": "builtin:browserCaptureStart",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.capture.status",
+					"inputSchemaRef": "builtin:browserCaptureTarget",
+					"effect": "read"
+				},
+				{
+					"operationId": "browser.connect",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.disconnect",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.history.delete",
+					"inputSchemaRef": "builtin:browserHistoryDeleteInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.history.replay",
+					"inputSchemaRef": "builtin:browserHistoryReplayInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.history.replay.cancel",
+					"inputSchemaRef": "builtin:browserReplayTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.tab.close",
+					"inputSchemaRef": "builtin:browserTabTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.tab.focus",
+					"inputSchemaRef": "builtin:browserTabTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.tab.open",
+					"inputSchemaRef": "builtin:browserTabOpen",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.task.begin",
+					"inputSchemaRef": "builtin:browserTaskBegin",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.task.cancel",
+					"inputSchemaRef": "builtin:browserTaskTarget",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.task.scripted",
+					"inputSchemaRef": "builtin:browserTaskBegin",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.task.start",
+					"inputSchemaRef": "builtin:browserTaskStart",
+					"effect": "write"
+				},
+				{
+					"operationId": "browser.task.status",
+					"inputSchemaRef": "builtin:browserTaskTarget",
+					"effect": "read"
+				},
+				{
+					"operationId": "browser.workspace.open",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "read"
+				}
+			],
+			"queries": [
+				"query:browser.workspace@1"
+			],
+			"projections": [
+				"projection:browser.capture-result@1",
+				"projection:browser.task-result@1"
+			]
+		},
+		"adapter:settings@1": {
+			"owner": "settings",
+			"availability": "availability:settings@1",
+			"operations": [
+				{
+					"operationId": "settings.apply",
+					"inputSchemaRef": "schema:settings-apply@3",
+					"effect": "write"
+				},
+				{
+					"operationId": "settings.apply-v4",
+					"inputSchemaRef": "schema:settings-apply@4",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:settings.asr-languages@1",
+				"query:settings.asr-resources@1",
+				"query:settings.connections@1",
+				"query:settings.document@1",
+				"query:settings.live-connections@1",
+				"query:settings.llm-resources@1",
+				"query:settings.resources@1",
+				"query:settings.routes@1",
+				"query:settings.tts-resources@1"
+			],
+			"projections": []
+		},
+		"adapter:records@1": {
+			"owner": "records",
+			"availability": "availability:records@1",
+			"operations": [
+				{
+					"operationId": "records.recipe-delete",
+					"inputSchemaRef": "schema:records-recipe-delete@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "records.recipe-state",
+					"inputSchemaRef": "schema:records-recipe-state@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:records.diagnostics@1",
+				"query:records.export@1",
+				"query:records.recipes@1",
+				"query:records.selections@1",
+				"query:records.usage@1"
+			],
+			"projections": []
+		},
+		"adapter:inference@1": {
+			"owner": "inference",
+			"availability": "availability:inference@1",
+			"operations": [
+				{
+					"operationId": "inference.probe-cancel",
+					"inputSchemaRef": "schema:inference-probe-cancel@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "inference.probe-start",
+					"inputSchemaRef": "schema:inference-probe-start@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:inference.larm@1",
+				"query:inference.last-usage@1",
+				"query:inference.probe-targets@1",
+				"query:inference.probes@1"
+			],
+			"projections": []
+		},
+		"adapter:music-screen@1": {
+			"owner": "music",
+			"availability": "availability:music-screen@1",
+			"operations": [],
+			"queries": [
+				"query:music-screen.list@1"
+			],
+			"projections": []
+		},
+		"adapter:image-screen@1": {
+			"owner": "image",
+			"availability": "availability:image-screen@1",
+			"operations": [],
+			"queries": [
+				"query:image-screen.list@1"
+			],
+			"projections": []
+		},
+		"adapter:ui-compositions@1": {
+			"owner": "ui-compositions",
+			"availability": "availability:ui-compositions@1",
+			"operations": [
+				{
+					"operationId": "ui-compositions.delete",
+					"inputSchemaRef": "builtin:uiCompositionDelete",
+					"effect": "write"
+				},
+				{
+					"operationId": "ui-compositions.redo",
+					"inputSchemaRef": "builtin:uiWorkStep",
+					"effect": "write"
+				},
+				{
+					"operationId": "ui-compositions.save",
+					"inputSchemaRef": "builtin:uiWorkSave",
+					"effect": "write"
+				},
+				{
+					"operationId": "ui-compositions.source.apply",
+					"inputSchemaRef": "builtin:uiSourceApply",
+					"effect": "write"
+				},
+				{
+					"operationId": "ui-compositions.submit",
+					"inputSchemaRef": "builtin:uiSubmitRequest",
+					"effect": "write"
+				},
+				{
+					"operationId": "ui-compositions.undo",
+					"inputSchemaRef": "builtin:uiWorkStep",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:ui-compositions.form@1",
+				"query:ui-compositions.studio@1"
+			],
+			"projections": [
+				"projection:ui-compositions.result@1"
+			]
+		},
+		"adapter:object-recognition-screen@1": {
+			"owner": "object-recognition",
+			"availability": "availability:object-recognition-screen@1",
+			"operations": [],
+			"queries": [
+				"query:object-recognition-screen.list@1"
+			],
+			"projections": []
+		},
+		"adapter:google-accounts@1": {
+			"owner": "google-accounts",
+			"availability": "availability:google-accounts@1",
+			"operations": [],
+			"queries": [
+				"query:google-accounts.status@1"
+			],
+			"projections": []
+		},
+		"adapter:tts-dictionary@1": {
+			"owner": "tts-dictionary",
+			"availability": "availability:tts-dictionary@1",
+			"operations": [
+				{
+					"operationId": "tts-dictionary.delete",
+					"inputSchemaRef": "schema:tts-dictionary-delete@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "tts-dictionary.save",
+					"inputSchemaRef": "schema:tts-dictionary-save@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "tts-dictionary.update",
+					"inputSchemaRef": "schema:tts-dictionary-update@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:tts-dictionary.entries@1"
+			],
+			"projections": []
+		},
+		"adapter:memory@1": {
+			"owner": "memory",
+			"availability": "availability:memory@1",
+			"operations": [
+				{
+					"operationId": "memory.set-enabled",
+					"inputSchemaRef": "schema:memory-set-enabled@1",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:memory.context@1",
+				"query:memory.item-history@1",
+				"query:memory.items@1",
+				"query:memory.short-term@1",
+				"query:memory.status@1",
+				"query:memory.steward-decisions@1",
+				"query:memory.steward-events@1",
+				"query:memory.tendencies@1"
+			],
+			"projections": []
+		},
+		"adapter:world@1": {
+			"owner": "world",
+			"availability": "availability:world@1",
+			"operations": [],
+			"queries": [
+				"query:world.claims-page@1",
+				"query:world.claims@1",
+				"query:world.documents-page@1",
+				"query:world.forgets@1",
+				"query:world.status@1",
+				"query:world.status@2"
+			],
+			"projections": []
+		},
+		"adapter:service-tests@1": {
+			"owner": "service-tests",
+			"availability": "availability:service-tests@1",
+			"operations": [
+				{
+					"operationId": "service-tests.cancel",
+					"inputSchemaRef": "schema:service-tests-run@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "service-tests.diagnose",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "service-tests.refresh",
+					"inputSchemaRef": "builtin:emptyInput",
+					"effect": "write"
+				},
+				{
+					"operationId": "service-tests.retry-artifact",
+					"inputSchemaRef": "schema:service-tests-run@1",
+					"effect": "write"
+				},
+				{
+					"operationId": "service-tests.start",
+					"inputSchemaRef": "schema:service-tests-start@2",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:service-tests.catalog@1",
+				"query:service-tests.health@1",
+				"query:service-tests.runs@1",
+				"query:service-tests.status@1",
+				"query:service-tests.targets@1"
+			],
+			"projections": []
+		},
+		"adapter:terminals@1": {
+			"owner": "terminals",
+			"availability": "availability:terminals@1",
+			"operations": [
+				{
+					"operationId": "claude-code.request",
+					"inputSchemaRef": "builtin:claudeCodeRequest",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:terminals.sessions@1"
+			],
+			"projections": [
+				"projection:claude-code.result@1"
+			]
+		},
+		"adapter:kanban@1": {
+			"owner": "kanban",
+			"availability": "availability:kanban@1",
+			"operations": [
+				{
+					"operationId": "kanban.add",
+					"inputSchemaRef": "builtin:kanbanAdd",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.cancel",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.commit-push",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.edit",
+					"inputSchemaRef": "builtin:kanbanEdit",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.followup",
+					"inputSchemaRef": "builtin:kanbanFollowup",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.list",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "read"
+				},
+				{
+					"operationId": "kanban.move",
+					"inputSchemaRef": "builtin:kanbanMove",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.remove",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.reset",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.resume-queue",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.review",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.run",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.stop",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:kanban.board@1"
+			],
+			"projections": [
+				"projection:kanban.result@1"
+			]
+		},
+		"adapter:kanban@2": {
+			"owner": "kanban",
+			"availability": "availability:kanban@1",
+			"operations": [
+				{
+					"operationId": "kanban.add",
+					"inputSchemaRef": "builtin:kanbanAdd",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.cancel",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.commit-push",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.edit",
+					"inputSchemaRef": "builtin:kanbanEdit",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.followup",
+					"inputSchemaRef": "builtin:kanbanFollowup",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.list",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "read"
+				},
+				{
+					"operationId": "kanban.move",
+					"inputSchemaRef": "builtin:kanbanMove",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.remove",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.reset",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.resume-queue",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.review",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.run",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.add",
+					"inputSchemaRef": "builtin:kanbanSharedAdd",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.add-run",
+					"inputSchemaRef": "builtin:kanbanSharedAdd",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.cancel",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.commit",
+					"inputSchemaRef": "builtin:kanbanGitRequest",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.commit-push",
+					"inputSchemaRef": "builtin:kanbanGitRequest",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.edit",
+					"inputSchemaRef": "builtin:kanbanEdit",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.followup",
+					"inputSchemaRef": "builtin:kanbanFollowup",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.list",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "read"
+				},
+				{
+					"operationId": "kanban.shared.move",
+					"inputSchemaRef": "builtin:kanbanMove",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.push",
+					"inputSchemaRef": "builtin:kanbanGitRequest",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.remove",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.reset",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.resume-queue",
+					"inputSchemaRef": "builtin:kanbanExecutorRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.review",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.run",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.select-executor",
+					"inputSchemaRef": "builtin:kanbanSelectExecutor",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.shared.stop",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "kanban.stop",
+					"inputSchemaRef": "builtin:kanbanCardRef",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:kanban.activity@1",
+				"query:kanban.board@1",
+				"query:kanban.board@2",
+				"query:kanban.detail@2",
+				"query:kanban.executors@1"
+			],
+			"projections": [
+				"projection:kanban.result@1"
+			]
+		},
+		"adapter:codex-tasks@1": {
+			"owner": "codex-tasks",
+			"availability": "availability:codex-tasks@1",
+			"operations": [
+				{
+					"operationId": "codex-tasks.cancel",
+					"inputSchemaRef": "builtin:codexTaskRef",
+					"effect": "write"
+				},
+				{
+					"operationId": "codex-tasks.configure",
+					"inputSchemaRef": "builtin:codexTaskConfigure",
+					"effect": "write"
+				},
+				{
+					"operationId": "codex-tasks.followup",
+					"inputSchemaRef": "builtin:codexTaskFollowup",
+					"effect": "write"
+				},
+				{
+					"operationId": "codex-tasks.list",
+					"inputSchemaRef": "builtin:kanbanList",
+					"effect": "read"
+				},
+				{
+					"operationId": "codex-tasks.request",
+					"inputSchemaRef": "builtin:codexTaskRequest",
+					"effect": "write"
+				},
+				{
+					"operationId": "codex-tasks.stop",
+					"inputSchemaRef": "builtin:codexTaskRef",
+					"effect": "write"
+				}
+			],
+			"queries": [
+				"query:codex-tasks.settings@1"
+			],
+			"projections": [
+				"projection:codex-tasks.result@1"
+			]
+		},
+		"adapter:weather@1": {
+			"owner": "weather",
+			"availability": "availability:weather@1",
+			"operations": [
+				{
+					"operationId": "weather.forecast",
+					"inputSchemaRef": "builtin:weatherPlace",
+					"effect": "read"
+				}
+			],
+			"queries": [],
+			"projections": []
+		},
+		"adapter:stock@1": {
+			"owner": "stock",
+			"availability": "availability:stock@1",
+			"operations": [
+				{
+					"operationId": "stock.quote",
+					"inputSchemaRef": "builtin:stockQuote",
+					"effect": "read"
+				}
+			],
+			"queries": [],
+			"projections": []
+		}
+	}
+}

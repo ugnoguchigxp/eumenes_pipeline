@@ -1,0 +1,33 @@
+[install]
+peer = false
+# Same supply-chain rule as Eumenes: a release must be at least 7 days old.
+minimumReleaseAge = 604800
+
+# `bun fmt` (scripts `format` / `format:check`), same settings as Eumenes.
+[fmt]
+useTabs = true
+tabWidth = 2
+printWidth = 80
+singleQuote = false
+jsxSingleQuote = false
+quoteProps = "as-needed"
+trailingComma = "all"
+semi = true
+arrowParens = "always"
+bracketSameLine = false
+bracketSpacing = true
+sortPackageJson = false
+ignorePatterns = [
+	"**/*.md",
+	"node_modules/**",
+	"dist/**",
+	"artifacts/**",
+	"data/**",
+	"vendor/**",
+	".serena/**",
+	".claude/**",
+]
+
+[test]
+# Tests never reach real tools or the network; see bench/mock/guard.ts.
+preload = ["./bench/test-preload.ts"]

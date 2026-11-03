@@ -1,0 +1,10 @@
+node_modules/
+dist/
+artifacts/
+# Bench outputs: per-run records and the work database are reproducible, not source.
+data/runs/
+data/work/
+*.sqlite3-wal
+*.sqlite3-shm
+*.sqlite3-journal
+.serena/

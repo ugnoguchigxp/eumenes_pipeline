@@ -1,0 +1,22 @@
+{
+  "package": "eumenes_router",
+  "version": "0.0.1",
+  "artifact": "eumenes_router-0.0.1-3329927c411b.tgz",
+  "sha256": "891b611727661b18982950dfea2809aa341aa7f52ec2e88de213481b56ed5bd5",
+  "sizeBytes": 33646,
+  "sourceRepository": "../eumenes_router",
+  "sourceGitCommit": "828e172bceed43df41a987e69a37b718f57baede",
+  "sourceDigest": "3329927c411be77cb1e96551789add7e0403013e113d05b6727675a12317fd39",
+  "repositoryDirty": true,
+  "runtimeSourceDirty": false,
+  "builtAt": "2026-11-03T20:27:18.822972+09:00",
+  "build": "isolated staging copy; TypeScript build; bun pm pack --ignore-scripts; upstream unchanged",
+  "verification": {
+    "typescriptBuild": "passed",
+    "archiveContents": "passed",
+    "freshConsumerInstall": "passed",
+    "publicExportsAndSyntheticSmoke": "passed",
+    "routerAccuracy": "not measured",
+    "liveInference": "not run"
+  }
+}

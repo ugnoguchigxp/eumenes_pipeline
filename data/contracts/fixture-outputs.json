@@ -1,0 +1,40 @@
+{
+	"formatVersion": 1,
+	"origin": "fixture",
+	"reviewed": false,
+	"note": "Bench-only output contracts for entries whose catalog revision declares none. Never catalog evidence; report results that depend on them separately (plan §4). Each schema states its basis. Confirm or replace in P0a.",
+	"outputs": {
+		"fixture:image.create.result@1": {
+			"basis": "Eumenes pipelineMaterial kind=image {id,title} (api/domains/capabilities/contracts/pipelines.ts): how the current pipelines hand a generated image on.",
+			"schema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"kind": { "type": "string", "const": "image" },
+					"id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$" },
+					"title": { "type": "string", "minLength": 1, "maxLength": 200 }
+				},
+				"required": ["kind", "id", "title"],
+				"additionalProperties": false
+			}
+		},
+		"fixture:music.create.result@1": {
+			"basis": "Eumenes pipelineMaterial kind=music {id,title} (api/domains/capabilities/contracts/pipelines.ts): how the current pipelines hand a generated track on.",
+			"schema": {
+				"$schema": "https://json-schema.org/draft/2020-12/schema",
+				"type": "object",
+				"properties": {
+					"kind": { "type": "string", "const": "music" },
+					"id": { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$" },
+					"title": { "type": "string", "minLength": 1, "maxLength": 200 }
+				},
+				"required": ["kind", "id", "title"],
+				"additionalProperties": false
+			}
+		}
+	},
+	"entries": {
+		"image.create": "fixture:image.create.result@1",
+		"music.create": "fixture:music.create.result@1"
+	}
+}

@@ -1,0 +1,39 @@
+# P0a 部品棚卸し（自動生成）
+
+`bun run bench:catalog` が生成する。手で編集しない。判断の根拠は契約上の事実（実行種別・binding・adapter・schema参照）のみで、題名や説明文からは判断していない。
+
+- スナップショット: `data/source/eumenes-catalog-2026-11-03.sqlite3` (sha256 `57b8d500128b5aa3…`)
+- 契約: Eumenes `98b188d2c613` (api dirty: true), fixture reviewed: false
+- 提示方針: `ready+partial`、catalogVersion `3be9a125394cf42b…`
+- 件数: 全27件、有効26件 → ready 13・partial 11・excluded 3
+- 有効件数に対する対応率: ready 50%、partial込み 92%
+
+| entry | bundle | 実行種別 | 対応 | 入力の出所 | 出力 | effects | 理由 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `browser.capture` | `browser.capture` | command | ready | eumenes-code | `domain:browser.receipt@1` (eumenes-code) | read, write | output domain:browser.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `browser.operate` | `browser.capture` | command | ready | eumenes-code | `domain:browser.receipt@1` (eumenes-code) | read, write | output domain:browser.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `claude-code.repair` | `terminals-screen` | command | ready | eumenes-code | `domain:claude-code.receipt@1` (eumenes-code) | write | output domain:claude-code.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `claude-code.request` | `terminals-screen` | command | ready | eumenes-code | `domain:claude-code.receipt@1` (eumenes-code) | write | output domain:claude-code.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `cli.run` | `cli` | command | ready | eumenes-code | `domain:shell.run-receipt@1` (eumenes-code) | write | output domain:shell.run-receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `codex-tasks.manage` | `codex-tasks` | command | ready | eumenes-code | `domain:kanban.receipt@1` (eumenes-code) | read, write | output domain:kanban.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `compute.python` | `compute` | command | ready | eumenes-code | `domain:compute.receipt@1` (eumenes-code) | read, write | output domain:compute.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `docling.desk` | `docling-desk` | command | ready | eumenes-code | `domain:docling.prepared@1` (eumenes-code) | read | output domain:docling.prepared@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `dots.delegate` | `dots-delegation` | command | ready | eumenes-code | `domain:dots.work-receipt@1` (eumenes-code) | read, write | output domain:dots.work-receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `excalidraw.edit` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `history.research` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `image.create` | — | unbound | partial | eumenes-code | `fixture:image.create.result@1` (fixture) | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / output contract is the bench fixture fixture:image.create.result@1 (unreviewed) / no bundle document links this entry: bundle is unknown |
+| `kanban.manage` | `kanban-shared` | command | ready | eumenes-code | `domain:kanban.receipt@1` (eumenes-code) | read, write | output domain:kanban.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `model3d.studio` | `model3d` | command | ready | eumenes-code | `domain:model3d.receipt@1` (eumenes-code) | read, write | output domain:model3d.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `music.create` | — | unbound | partial | eumenes-code | `fixture:music.create.result@1` (fixture) | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / output contract is the bench fixture fixture:music.create.result@1 (unreviewed) / no bundle document links this entry: bundle is unknown |
+| `music.library` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `object-recognition.manage` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `ocr.manage` | `ocr-visual-analysis` | command | ready | eumenes-code | `domain:ocr.receipt@1` (eumenes-code) | read, write | output domain:ocr.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `pipeline.studio` | `pipeline-studio` | session | excluded | missing | 要約・参照のみ | 不明 | session binding: needs a continuing dialogue that a step would hide (plan §4, §12) / pipeline entry: using it inside a pipeline would recurse (plan §4) / no output schema declared: a completed step hands on its summary and references only |
+| `stock.quote` | `stock-quote` | instant | partial | eumenes-code | 要約・参照のみ | read | no output schema declared: a completed step hands on its summary and references only |
+| `task.execute` | `task-execution` | task | excluded | missing | `schema:task.result@2` (catalog) | 不明 | disabled in the registry / execution kind "task" is outside the first version's step contract (command, instant, unbound) |
+| `timers.manage` | `timers` | command | ready | eumenes-code | `domain:timers.receipt@1` (eumenes-code) | read, write | output domain:timers.receipt@1 is the accepted operation's receipt; the completed work's content is not in the catalog |
+| `ui.compose` | `ui-compositions` | session | excluded | missing | 要約・参照のみ | 不明 | session binding: needs a continuing dialogue that a step would hide (plan §4, §12) / no output schema declared: a completed step hands on its summary and references only |
+| `weather.forecast` | `weather-forecast` | instant | partial | eumenes-code | 要約・参照のみ | read | no output schema declared: a completed step hands on its summary and references only |
+| `web.search` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `web.service-search` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
+| `world.query` | — | unbound | partial | eumenes-code | 要約・参照のみ | 不明 | no binding revision (legacy toolchain): execution contract and effects are not declared / no output schema declared: a completed step hands on its summary and references only / no bundle document links this entry: bundle is unknown |
