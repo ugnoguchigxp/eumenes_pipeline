@@ -4,7 +4,7 @@
  *
  *   bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml]
  *     [--condition baseline|compact|oneshot|minjson] [--candidates <file.json>] [--repair]
- *     [--restore-syntax] [--db <path>]
+ *     [--restore-syntax] [--normalize-ids] [--db <path>]
  *
  * The session names `data/runs/format/<name>/`: request files for cells without recordings
  * are written there, recordings are read from there. Exits 1 while any cell is missing,
@@ -16,6 +16,11 @@
  * parser (`json` format only): an output the strict parser rejects is restored once and
  * re-parsed strictly; recordings are never rewritten, and the summary records per cell
  * whether restore recovered the parse.
+ * `--normalize-ids` adds one deterministic step-id normalization stage at the authoring
+ * gate: a definition that fails the `AuthoringOutcome` contract ONLY on step-id shape
+ * has its offending ids (and their references) rewritten to the contract pattern and
+ * is re-validated; a collision refuses the rewrite. Recordings are never rewritten,
+ * and the summary records per cell whether normalization recovered the gate.
  * `--candidates` takes a JSON file `{ [caseId]: entryId[] }` of per-case offered subsets;
  * the run then records its condition as `subset:<digest of the file, first 8 hex>`.
  * No model is called and nothing is reached: the guard's only allowance is the local
@@ -46,6 +51,7 @@ const { values } = parseArgs({
 		candidates: { type: "string" },
 		repair: { type: "boolean" },
 		"restore-syntax": { type: "boolean" },
+		"normalize-ids": { type: "boolean" },
 		db: { type: "string" },
 	},
 });
@@ -99,6 +105,7 @@ const report = await runFormat({
 	condition,
 	...(values.repair ? { repair: true } : {}),
 	...(values["restore-syntax"] ? { restoreSyntax: true } : {}),
+	...(values["normalize-ids"] ? { normalizeIds: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
@@ -140,6 +147,14 @@ if (report.restore) {
 	for (const cell of report.cells)
 		if (cell.syntaxRestored)
 			console.log(`  restored: ${cell.caseId} / ${cell.format}`);
+}
+if (report.normalize) {
+	console.log(
+		`id normalization: attempted ${report.normalize.attempted}, recovered ${report.normalize.recovered} (composing cells; raw recordings unchanged)`,
+	);
+	for (const cell of report.cells)
+		if (cell.idsNormalized)
+			console.log(`  normalized: ${cell.caseId} / ${cell.format}`);
 }
 const sumTokens = (values: (number | null)[]) => {
 	if (!report.tokenizer.available) return "n/a (tokenizer unavailable)";

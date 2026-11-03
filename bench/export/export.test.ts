@@ -259,6 +259,60 @@ describe("bench:export (synthetic recordings)", () => {
 		expect(renderExportMarkdown(exp)).toContain("## Syntax restore");
 	});
 
+	test("a normalized cell exports its flag, its saved definition and the normalize totals", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "export-normalized-"));
+		const dbPath = join(runsRoot, "work.sqlite3");
+		const session = "synthetic-export-normalize";
+		const dir = join(runsRoot, session);
+		mkdirSync(join(dir, "recordings"), { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const evalCase = loadCases().find((c) => c.id === "prime-count");
+		if (!evalCase) throw new Error("case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		// A snake_case step id (and its reference): an authoring failure on id
+		// shape alone; without normalization this output cannot pass the gate.
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({
+					purpose: "compose",
+					system,
+					prompt,
+				}),
+				output: primeOutput.replaceAll('"count"', '"prime_count"'),
+			}),
+		);
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath,
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			normalizeIds: true,
+		});
+		expect(report.normalize).toEqual({ attempted: 1, recovered: 1 });
+
+		const exp = buildRunExport({ runId: report.runId, dbPath, runsRoot });
+		const cell = exp.cells[0];
+		expect(cell?.idsNormalized).toBe(true);
+		expect(cell?.passed).toBe(true);
+		// The saved definition is re-derived through the same gate: rewritten ids.
+		expect(cell?.definition?.steps[0]?.id).toBe("prime-count");
+		expect(cell?.definition?.steps[0]?.bundle).toBe("compute.python");
+		expect(exp.normalize).toEqual({ attempted: 1, recovered: 1 });
+		expect(exp.config.normalizeIds).toBe(true);
+		expect(exp.config.normalizeVersion).toBe("step-id-normalize-v1");
+		expect(exp.summaryCrossCheck.totalsEqual).toBe(true);
+		expect(exp.summaryCrossCheck.normalizeEqual).toBe(true);
+		expect(exp.summaryCrossCheck.differences).toEqual([]);
+		expect(renderExportMarkdown(exp)).toContain("## Step-id normalization");
+	});
+
 	test("an unknown run id fails loudly", () => {
 		const root = mkdtempSync(join(tmpdir(), "export-unknown-"));
 		const dbPath = join(root, "bench.sqlite3");

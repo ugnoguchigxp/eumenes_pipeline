@@ -589,6 +589,89 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		expect(dup.restore).toEqual({ attempted: 1, recovered: 0 });
 	});
 
+	test("normalize-ids: an id-shape failure is recovered only with the flag", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-normalize-"));
+		const session = "normalize-wiring";
+		const dir = join(runsRoot, session);
+		const recordingsDir = join(dir, "recordings");
+		mkdirSync(recordingsDir, { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const cases = loadCases();
+		const prime = cases.find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		const digest = inferenceDigest({ purpose: "compose", system, prompt });
+		const writeOutput = (name: string, output: string) =>
+			writeFileSync(
+				join(recordingsDir, name),
+				JSON.stringify({ promptDigest: digest, output }),
+			);
+		// The valid definition with a snake_case step id (and its reference):
+		// an authoring failure on id shape alone.
+		writeOutput(
+			"prime-count--json.json",
+			primeOutput.replaceAll('"count"', '"prime_count"'),
+		);
+		const run = (normalizeIds: boolean) =>
+			runFormat({
+				session,
+				runsRoot,
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json"],
+				...(normalizeIds ? { normalizeIds: true } : {}),
+			});
+
+		// Without the flag: the authoring failure stands (pre-normalization bench),
+		// and neither the report nor the summary mentions normalization at all.
+		const plain = await run(false);
+		expect(plain.cells[0]?.status).toBe("scored");
+		expect(plain.cells[0]?.authoringOk).toBe(false);
+		expect(plain.cells[0]?.passed).toBe(false);
+		expect(plain.cells[0]?.idsNormalized).toBeUndefined();
+		expect(plain.normalize).toBeUndefined();
+		const plainSummary = JSON.parse(
+			readFileSync(join(dir, "summary.json"), "utf8"),
+		) as { normalize?: unknown; cells: Record<string, unknown>[] };
+		expect(plainSummary.normalize).toBeUndefined();
+		expect(plainSummary.cells[0]).not.toHaveProperty("idsNormalized");
+
+		// With the flag: the same recording passes the gate through the rewritten
+		// definition and the cell is flagged; the recording is byte-identical.
+		const recordingPath = join(recordingsDir, "prime-count--json.json");
+		const recordingBefore = readFileSync(recordingPath, "utf8");
+		const normalized = await run(true);
+		expect(normalized.cells[0]?.authoringOk).toBe(true);
+		expect(normalized.cells[0]?.passed).toBe(true);
+		expect(normalized.cells[0]?.idsNormalized).toBe(true);
+		expect(normalized.normalize).toEqual({ attempted: 1, recovered: 1 });
+		expect(readFileSync(recordingPath, "utf8")).toBe(recordingBefore);
+		const summary = JSON.parse(
+			readFileSync(join(dir, "summary.json"), "utf8"),
+		) as {
+			normalize?: { attempted: number; recovered: number };
+			cells: { idsNormalized?: boolean }[];
+		};
+		expect(summary.normalize).toEqual({ attempted: 1, recovered: 1 });
+		expect(summary.cells[0]?.idsNormalized).toBe(true);
+
+		// An id whose rewrite would land on the reserved `request` reference is
+		// refused: attempted, not recovered, and the authoring failure stands.
+		writeOutput(
+			"prime-count--json.json",
+			primeOutput.replaceAll('"count"', '"Request"'),
+		);
+		const refused = await run(true);
+		expect(refused.cells[0]?.authoringOk).toBe(false);
+		expect(refused.cells[0]?.idsNormalized).toBe(false);
+		expect(refused.normalize).toEqual({ attempted: 1, recovered: 0 });
+	});
+
 	test("candidates naming an unoffered entry fail before the run starts", async () => {
 		await expect(
 			runFormat({

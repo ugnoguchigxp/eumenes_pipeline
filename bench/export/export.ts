@@ -40,21 +40,30 @@
  * belongs to the run. A restored cell's saved definition is re-derived through the
  * same restore the runner applied, so the export shows the definition the runner
  * actually scored — the raw output in the db stays untouched either way.
+ *
+ * Step-id normalization (opt-in runner stage) is surfaced the same way: an
+ * `ids_normalized` criterion per trial and `normalizeIds` / `normalizeVersion` in
+ * the config become per-cell flags and recomputed totals (the recompute re-runs
+ * the deterministic gate over the recorded outputs), cross-checked against the
+ * summary's `normalize` block. A normalized cell's saved definition is re-derived
+ * through the same gate, so it shows the rewritten ids the runner scored.
  */
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { authoringOutcome } from "../../src/contracts/authoring.ts";
 import type { PipelineDefinition } from "../../src/contracts/definition.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, sha256 } from "../catalog/load.ts";
 import { DEFAULT_CASES_DIR, loadCases } from "../cases/cases.ts";
 import type { ConditionSummary } from "../format/conditions.ts";
 import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
+import { validateAuthoring } from "../formats/normalize-ids.ts";
+import type { ParseResult } from "../formats/outcome.ts";
 import { parseJsonWithRestore } from "../formats/restore.ts";
 import {
 	DEFAULT_RUNS_ROOT,
 	type FormatGroupSummary,
+	type FormatNormalizeSummary,
 	type FormatRepairSummary,
 	type FormatRestoreSummary,
 	type RepairVerdict,
@@ -107,6 +116,11 @@ export type ExportCell = {
 	 * null when the run recorded no `syntax_restored` criterion (non-restore runs).
 	 */
 	syntaxRestored: boolean | null;
+	/**
+	 * The composing attempt's authoring gate was recovered by step-id normalization;
+	 * null when the run recorded no `ids_normalized` criterion (non-normalization runs).
+	 */
+	idsNormalized: boolean | null;
 	outputDigest: string | null;
 	error: string | null;
 	/** Tokenizer counts from the session summary; null when no matching summary exists. */
@@ -124,6 +138,8 @@ export type ExportRepair = {
 	definition: PipelineDefinition | null;
 	/** The repair attempt's parse was recovered by syntax restore; null as on cells. */
 	syntaxRestored: boolean | null;
+	/** The repair attempt's authoring gate was recovered by step-id normalization; null as on cells. */
+	idsNormalized: boolean | null;
 	promptTokens: number | null;
 	outputTokens: number | null;
 };
@@ -139,6 +155,7 @@ export type SummaryCrossCheck = {
 	cellsEqual: boolean | null;
 	repairEqual: boolean | null;
 	restoreEqual: boolean | null;
+	normalizeEqual: boolean | null;
 	differences: string[];
 };
 
@@ -184,6 +201,8 @@ export type RunExport = {
 	repair?: FormatRepairSummary;
 	/** Syntax-restore totals recomputed from the trials' criteria; restore runs only. */
 	restore?: FormatRestoreSummary;
+	/** Step-id normalization totals recomputed by re-running the gate; normalization runs only. */
+	normalize?: FormatNormalizeSummary;
 	summaryCrossCheck: SummaryCrossCheck;
 };
 
@@ -200,31 +219,40 @@ type TrialRow = {
 };
 
 /**
+ * The parse of a trial's recorded output, re-derived the way the runner derived it.
+ * When the trial's parse was recovered by syntax restore (`restored`), the derivation
+ * goes through the same restore, mirroring the runner; the raw text is never altered.
+ */
+function deriveParse(
+	format: string,
+	outputText: string | null,
+	restored = false,
+): ParseResult | null {
+	if (!outputText || !(format in FORMAT_PARSERS)) return null;
+	return restored && format === "json"
+		? parseJsonWithRestore(outputText).result
+		: FORMAT_PARSERS[format as FormatId](outputText);
+}
+
+/**
  * The definition a trial authored, in its saved form: re-derive it exactly the way the
  * runner did (format parser → `AuthoringOutcome` contract) and keep it only when the
  * outcome is a valid `ready`. Anything else — unparseable, needs_input, unsupported,
  * contract violation — has no saved definition (null), however suggestive the raw text.
- * When the trial's parse was recovered by syntax restore (`restored`), the derivation
- * goes through the same restore, mirroring the runner; the raw text is never altered.
+ * When the trial's authoring gate was recovered by step-id normalization
+ * (`idsNormalized`), the derivation runs the same gate with the stage on, so the
+ * saved form carries the rewritten ids the runner scored.
  */
 function savedDefinition(
 	format: string,
 	outputText: string | null,
 	restored = false,
+	idsNormalized = false,
 ): PipelineDefinition | null {
-	if (!outputText || !(format in FORMAT_PARSERS)) return null;
-	const parse =
-		restored && format === "json"
-			? parseJsonWithRestore(outputText).result
-			: FORMAT_PARSERS[format as FormatId](outputText);
-	if (!parse.ok || parse.outcome.kind !== "ready") return null;
-	const authored = authoringOutcome.safeParse({
-		status: "ready",
-		definition: parse.outcome.definition,
-	});
-	return authored.success && authored.data.status === "ready"
-		? authored.data.definition
-		: null;
+	const parse = deriveParse(format, outputText, restored);
+	if (!parse) return null;
+	const gate = validateAuthoring(parse, { normalizeIds: idsNormalized });
+	return gate.outcome?.status === "ready" ? gate.outcome.definition : null;
 }
 
 const emptyGroup = (): FormatGroupSummary => ({
@@ -301,6 +329,7 @@ type SummaryCell = {
 	authoringOk?: boolean;
 	passed?: boolean;
 	syntaxRestored?: boolean;
+	idsNormalized?: boolean;
 	promptTokens: number | null;
 	outputTokens: number | null;
 	repair?: {
@@ -308,6 +337,7 @@ type SummaryCell = {
 		before: RepairVerdict;
 		after?: RepairVerdict;
 		syntaxRestored?: boolean;
+		idsNormalized?: boolean;
 		promptTokens: number | null;
 		outputTokens: number | null;
 	};
@@ -320,6 +350,7 @@ type SessionSummary = {
 	totals: FormatGroupSummary;
 	repair?: FormatRepairSummary;
 	restore?: FormatRestoreSummary;
+	normalize?: FormatNormalizeSummary;
 	cells: SummaryCell[];
 };
 
@@ -437,11 +468,19 @@ export function buildRunExport(options: {
 		): boolean | null =>
 			"syntax_restored" in criteria ? criteria.syntax_restored === 1 : null;
 
+		// Step-id normalization, likewise: config flag + the `ids_normalized` criterion.
+		const normalizeRun = config.normalizeIds === true;
+		const normalizedOf = (
+			criteria: Record<string, number | null>,
+		): boolean | null =>
+			"ids_normalized" in criteria ? criteria.ids_normalized === 1 : null;
+
 		const cells: ExportCell[] = composeTrials.map((trial) => {
 			const { criteria, score, checks, model } = detailOf(trial);
 			const status = cellStatus(trial);
 			const scored = status === "scored";
 			const syntaxRestored = scored ? restoredOf(criteria) : null;
+			const idsNormalized = scored ? normalizedOf(criteria) : null;
 			return {
 				caseId: trial.case_id,
 				format: trial.condition,
@@ -458,9 +497,11 @@ export function buildRunExport(options: {
 							trial.condition,
 							trial.output_text,
 							syntaxRestored === true,
+							idsNormalized === true,
 						)
 					: null,
 				syntaxRestored,
+				idsNormalized,
 				outputDigest: trial.output_digest,
 				error: trial.error,
 				promptTokens: null,
@@ -477,6 +518,7 @@ export function buildRunExport(options: {
 			const { criteria, score } = detailOf(trial);
 			const status = cellStatus(trial);
 			const syntaxRestored = status === "scored" ? restoredOf(criteria) : null;
+			const idsNormalized = status === "scored" ? normalizedOf(criteria) : null;
 			repairByCell.set(key, {
 				status,
 				trialId: trial.trial_id,
@@ -491,9 +533,11 @@ export function buildRunExport(options: {
 								trial.condition,
 								trial.output_text,
 								syntaxRestored === true,
+								idsNormalized === true,
 							)
 						: null,
 				syntaxRestored,
+				idsNormalized,
 				promptTokens: null,
 				outputTokens: null,
 			});
@@ -539,6 +583,30 @@ export function buildRunExport(options: {
 			};
 		}
 
+		// Normalization totals recomputed exactly: the gate is deterministic, so
+		// re-running it over each scored composing trial's recorded output (through
+		// the same restore the runner applied, when it did) reproduces the runner's
+		// attempted / recovered counts without trusting the summary.
+		let normalizeSummary: FormatNormalizeSummary | undefined;
+		if (normalizeRun) {
+			let attempted = 0;
+			let recovered = 0;
+			for (const trial of composeTrials) {
+				if (cellStatus(trial) !== "scored") continue;
+				const { criteria } = detailOf(trial);
+				const parse = deriveParse(
+					trial.condition,
+					trial.output_text,
+					restoredOf(criteria) === true,
+				);
+				if (!parse) continue;
+				const gate = validateAuthoring(parse, { normalizeIds: true });
+				if (gate.normalizeAttempted) attempted += 1;
+				if (gate.idsNormalized) recovered += 1;
+			}
+			normalizeSummary = { attempted, recovered };
+		}
+
 		// The session summary: token source and cross-check target, when it is this run's.
 		const session = typeof config.session === "string" ? config.session : null;
 		const cross: SummaryCrossCheck = {
@@ -550,6 +618,7 @@ export function buildRunExport(options: {
 			cellsEqual: null,
 			repairEqual: null,
 			restoreEqual: null,
+			normalizeEqual: null,
 			differences: [],
 		};
 		let repairSummary: FormatRepairSummary | undefined;
@@ -604,6 +673,12 @@ export function buildRunExport(options: {
 							`cell ${cell.caseId}/${cell.format}: syntaxRestored summary=${s.syntaxRestored ?? null} db=${cell.syntaxRestored}`,
 						);
 					}
+					if ((s.idsNormalized ?? null) !== cell.idsNormalized) {
+						cellDiffs += 1;
+						cross.differences.push(
+							`cell ${cell.caseId}/${cell.format}: idsNormalized summary=${s.idsNormalized ?? null} db=${cell.idsNormalized}`,
+						);
+					}
 					if (s.repair || cell.repair) {
 						if (!s.repair || !cell.repair) {
 							repairDiffs += 1;
@@ -643,6 +718,14 @@ export function buildRunExport(options: {
 								repairDiffs += 1;
 								cross.differences.push(
 									`cell ${cell.caseId}/${cell.format}: repair syntaxRestored summary=${s.repair.syntaxRestored ?? null} db=${cell.repair.syntaxRestored}`,
+								);
+							}
+							if (
+								(s.repair.idsNormalized ?? null) !== cell.repair.idsNormalized
+							) {
+								repairDiffs += 1;
+								cross.differences.push(
+									`cell ${cell.caseId}/${cell.format}: repair idsNormalized summary=${s.repair.idsNormalized ?? null} db=${cell.repair.idsNormalized}`,
 								);
 							}
 						}
@@ -696,6 +779,14 @@ export function buildRunExport(options: {
 					if (!cross.restoreEqual)
 						cross.differences.push("restore totals differ from the summary");
 				}
+				if (summary.normalize) {
+					cross.normalizeEqual =
+						normalizeSummary !== undefined &&
+						canonicalJson(normalizeSummary) ===
+							canonicalJson(summary.normalize);
+					if (!cross.normalizeEqual)
+						cross.differences.push("normalize totals differ from the summary");
+				}
 			}
 		}
 
@@ -733,6 +824,7 @@ export function buildRunExport(options: {
 			totals,
 			...(repairSummary ? { repair: repairSummary } : {}),
 			...(restoreSummary ? { restore: restoreSummary } : {}),
+			...(normalizeSummary ? { normalize: normalizeSummary } : {}),
 			summaryCrossCheck: cross,
 		};
 	} finally {
@@ -805,6 +897,14 @@ export function renderExportMarkdown(exp: RunExport): string {
 			`attempted ${exp.restore.attempted} composing cells, recovered ${exp.restore.recovered}; per-cell flags are in the JSON export (raw outputs unchanged in the work db).`,
 		);
 	}
+	if (exp.normalize) {
+		lines.push("");
+		lines.push("## Step-id normalization");
+		lines.push("");
+		lines.push(
+			`attempted ${exp.normalize.attempted} composing cells, recovered ${exp.normalize.recovered}; per-cell flags are in the JSON export (raw outputs unchanged in the work db).`,
+		);
+	}
 	lines.push("");
 	lines.push("## Cases (gold provenance)");
 	lines.push("");
@@ -838,7 +938,7 @@ export function renderExportMarkdown(exp: RunExport): string {
 		`- summary found: ${cross.summaryFound ? "yes" : "no"} / belongs to this run: ${cross.runMatches ? "yes" : `no (summary run: ${cross.summaryRunId ?? "n/a"})`}`,
 	);
 	lines.push(
-		`- totals equal: ${yn(cross.totalsEqual)} / cells equal: ${yn(cross.cellsEqual)} / repair equal: ${yn(cross.repairEqual)} / restore equal: ${yn(cross.restoreEqual)}`,
+		`- totals equal: ${yn(cross.totalsEqual)} / cells equal: ${yn(cross.cellsEqual)} / repair equal: ${yn(cross.repairEqual)} / restore equal: ${yn(cross.restoreEqual)} / normalize equal: ${yn(cross.normalizeEqual)}`,
 	);
 	for (const d of cross.differences) lines.push(`- difference: ${d}`);
 	lines.push("");

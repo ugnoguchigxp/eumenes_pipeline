@@ -50,19 +50,34 @@
  * whether it recovered the parse (cell flag + run totals + a `syntax_restored` score
  * criterion), so the raw parse rate stays separable. Off by default: a run without
  * it is byte-for-byte the pre-restore bench.
+ *
+ * Step-id normalization (opt-in, `normalizeIds: true`): a parsed `ready` outcome that
+ * fails the authoring gate ONLY on step-id shape (the contract pattern — snake_case
+ * above all) gets one deterministic rewrite of the offending ids and their references
+ * (`bench/formats/normalize-ids.ts`), then the same gate again. It is the same family
+ * as syntax restore — a mechanical failure class removed without a model call — one
+ * level up: where restore fixes the text's syntax, normalization fixes the parsed
+ * definition's id shape, and only when the rewrite is injective (a collision, or a
+ * landing on the reserved `request` reference, leaves the original failure standing,
+ * errors unchanged, so a later repair round still sees the model's own mistake).
+ * Each attempt records whether normalization was offered and whether it recovered
+ * the gate (cell flag + run totals + an `ids_normalized` score criterion), so the
+ * raw authoring rate stays separable. Off by default: a run without it is
+ * byte-for-byte the pre-normalization bench.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkDefinition, type CheckResult } from "../../src/check.ts";
-import {
-	authoringOutcome,
-	type AuthoringOutcome,
-} from "../../src/contracts/authoring.ts";
+import type { AuthoringOutcome } from "../../src/contracts/authoring.ts";
 import type { ComponentCard } from "../../src/contracts/component.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import { FORMAT_PARSERS, FORMAT_IDS, type FormatId } from "../formats/index.ts";
+import {
+	ID_NORMALIZE_VERSION,
+	validateAuthoring,
+} from "../formats/normalize-ids.ts";
 import type { ParseResult } from "../formats/outcome.ts";
 import { parseJsonWithRestore, RESTORE_ENGINE } from "../formats/restore.ts";
 import {
@@ -122,6 +137,11 @@ export type FormatCellReport = {
 	 * Present only in restore runs (for scored cells); the raw output is unchanged.
 	 */
 	syntaxRestored?: boolean;
+	/**
+	 * The composing attempt's authoring gate was recovered by step-id normalization.
+	 * Present only in normalization runs (for scored cells); the raw output is unchanged.
+	 */
+	idsNormalized?: boolean;
 	/** The one repair round of a mechanically failed cell; present only in repair runs. */
 	repair?: FormatCellRepair;
 };
@@ -131,6 +151,14 @@ export type FormatRestoreSummary = {
 	/** Composing cells whose raw output failed the strict parser and were offered restore. */
 	attempted: number;
 	/** Of those, cells whose parse the restored text recovered. */
+	recovered: number;
+};
+
+/** Run totals of the step-id normalization stage; present only in normalization runs. */
+export type FormatNormalizeSummary = {
+	/** Composing cells whose authoring gate failed on step-id shape alone and were offered normalization. */
+	attempted: number;
+	/** Of those, cells whose gate the rewritten definition recovered. */
 	recovered: number;
 };
 
@@ -155,6 +183,8 @@ export type FormatCellRepair = {
 	outputTokens: number | null;
 	/** The repair attempt's parse was recovered by syntax restore; present only in restore runs. */
 	syntaxRestored?: boolean;
+	/** The repair attempt's authoring gate was recovered by step-id normalization; present only in normalization runs. */
+	idsNormalized?: boolean;
 };
 
 export type FormatRepairSummary = {
@@ -213,6 +243,8 @@ export type FormatRunReport = {
 	repair?: FormatRepairSummary;
 	/** Syntax-restore totals over the composing cells; present only in restore runs. */
 	restore?: FormatRestoreSummary;
+	/** Step-id normalization totals over the composing cells; present only in normalization runs. */
+	normalize?: FormatNormalizeSummary;
 };
 
 const emptyGroup = (): FormatGroupSummary => ({
@@ -256,35 +288,13 @@ function addCell(group: FormatGroupSummary, cell: FormatCellReport): void {
 }
 
 /**
- * The P0b contract gate: a parsed outcome still has to be a valid `AuthoringOutcome`.
- * On failure the schema's own issues are kept (path + message, verbatim) — they are the
- * machine errors a repair round may be shown.
+ * The P0b contract gate lives in `bench/formats/normalize-ids.ts`
+ * (`validateAuthoring`): a parsed outcome still has to be a valid
+ * `AuthoringOutcome`, and — in normalization runs — a failure on step-id shape
+ * alone gets the one deterministic rewrite described in the module header. On
+ * failure the schema's own issues are kept (path + message, verbatim) — they are
+ * the machine errors a repair round may be shown.
  */
-function parseAuthoring(parse: ParseResult): {
-	outcome: AuthoringOutcome | null;
-	issues: string[];
-} {
-	if (!parse.ok) return { outcome: null, issues: [] };
-	const outcome = parse.outcome;
-	const candidate =
-		outcome.kind === "ready"
-			? { status: "ready", definition: outcome.definition }
-			: outcome.kind === "needs_input"
-				? {
-						status: "needs_input",
-						questions: outcome.questions,
-						...(outcome.note !== undefined ? { note: outcome.note } : {}),
-					}
-				: { status: "unsupported", reasons: outcome.reasons };
-	const parsed = authoringOutcome.safeParse(candidate);
-	if (parsed.success) return { outcome: parsed.data, issues: [] };
-	return {
-		outcome: null,
-		issues: parsed.error.issues.map(
-			(issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`,
-		),
-	};
-}
 
 /** One evaluated attempt: everything the evaluator path produced for one output text. */
 type EvaluatedAttempt = {
@@ -300,6 +310,10 @@ type EvaluatedAttempt = {
 	restoreAttempted: boolean;
 	/** The restored text recovered the parse; `parse` is the restored parse. */
 	syntaxRestored: boolean;
+	/** The authoring gate failed on step-id shape alone and normalization was offered (normalization runs only). */
+	normalizeAttempted: boolean;
+	/** The rewritten definition recovered the authoring gate; `authored` is the normalized outcome. */
+	idsNormalized: boolean;
 };
 
 /**
@@ -406,6 +420,13 @@ export type FormatRunOptions = {
 	 * shape, same recorded criteria.
 	 */
 	restoreSyntax?: boolean;
+	/**
+	 * One deterministic step-id normalization stage at the authoring gate (see the
+	 * module header). Off by default: a run without it is byte-for-byte the
+	 * pre-normalization bench — same prompts, same digests, same summary shape,
+	 * same recorded criteria.
+	 */
+	normalizeIds?: boolean;
 };
 
 /** The cards one cell offers, in catalog order, under the condition and any candidates. */
@@ -544,6 +565,9 @@ export async function runFormat(
 			...(options.restoreSyntax
 				? { restoreSyntax: true, restoreEngine: RESTORE_ENGINE }
 				: {}),
+			...(options.normalizeIds
+				? { normalizeIds: true, normalizeVersion: ID_NORMALIZE_VERSION }
+				: {}),
 		},
 		inputs: {
 			snapshotSha256: catalog.snapshot.sha256,
@@ -578,6 +602,7 @@ export async function runFormat(
 					outputs,
 					evaluations,
 					restoreSyntax: options.restoreSyntax === true,
+					normalizeIds: options.normalizeIds === true,
 				}),
 			);
 		}
@@ -600,6 +625,7 @@ export async function runFormat(
 					repairPromptTexts,
 					repairOutputTexts,
 					restoreSyntax: options.restoreSyntax === true,
+					normalizeIds: options.normalizeIds === true,
 					cellKey: cellKey({ caseId: cell.evalCase.id, format: cell.format }),
 				});
 			}
@@ -693,6 +719,15 @@ export async function runFormat(
 			recovered: attempts.filter((a) => a.syntaxRestored).length,
 		};
 	}
+	// Normalization totals, likewise over the composing attempts only.
+	let normalizeSummary: FormatNormalizeSummary | undefined;
+	if (options.normalizeIds) {
+		const attempts = [...evaluations.values()];
+		normalizeSummary = {
+			attempted: attempts.filter((a) => a.normalizeAttempted).length,
+			recovered: attempts.filter((a) => a.idsNormalized).length,
+		};
+	}
 	const report: FormatRunReport = {
 		runId,
 		sessionDir,
@@ -703,6 +738,7 @@ export async function runFormat(
 		totals,
 		...(repairSummary ? { repair: repairSummary } : {}),
 		...(restoreSummary ? { restore: restoreSummary } : {}),
+		...(normalizeSummary ? { normalize: normalizeSummary } : {}),
 	};
 	writeFileSync(
 		join(sessionDir, "summary.json"),
@@ -715,6 +751,7 @@ export async function runFormat(
 				totals,
 				...(repairSummary ? { repair: repairSummary } : {}),
 				...(restoreSummary ? { restore: restoreSummary } : {}),
+				...(normalizeSummary ? { normalize: normalizeSummary } : {}),
 				cells: cells.map((cell) => ({
 					caseId: cell.caseId,
 					format: cell.format,
@@ -728,6 +765,9 @@ export async function runFormat(
 					outputTokens: cell.outputTokens,
 					...(cell.syntaxRestored !== undefined
 						? { syntaxRestored: cell.syntaxRestored }
+						: {}),
+					...(cell.idsNormalized !== undefined
+						? { idsNormalized: cell.idsNormalized }
 						: {}),
 					...(cell.repair ? { repair: cell.repair } : {}),
 				})),
@@ -759,6 +799,8 @@ type CellContext = {
 	evaluations: Map<string, EvaluatedAttempt>;
 	/** Offer the syntax-restore stage to failed strict parses (restore runs only). */
 	restoreSyntax: boolean;
+	/** Offer the step-id normalization stage to id-only authoring failures (normalization runs only). */
+	normalizeIds: boolean;
 };
 
 /**
@@ -779,6 +821,8 @@ async function evaluateAttempt(ctx: {
 	text: string;
 	/** Offer the deterministic syntax-restore stage to a failed strict parse (`json` only). */
 	restoreSyntax: boolean;
+	/** Offer the deterministic step-id normalization stage to an id-only authoring failure. */
+	normalizeIds: boolean;
 }): Promise<EvaluatedAttempt> {
 	const { evalCase, format } = ctx;
 	let parse: ParseResult;
@@ -792,7 +836,12 @@ async function evaluateAttempt(ctx: {
 	} else {
 		parse = FORMAT_PARSERS[format](ctx.text);
 	}
-	const { outcome: authored, issues: authoringIssues } = parseAuthoring(parse);
+	const {
+		outcome: authored,
+		issues: authoringIssues,
+		normalizeAttempted,
+		idsNormalized,
+	} = validateAuthoring(parse, { normalizeIds: ctx.normalizeIds });
 	const attempt: AttemptResults = { parse };
 	let check: CheckResult | undefined;
 	if (authored?.status === "ready") {
@@ -840,6 +889,14 @@ async function evaluateAttempt(ctx: {
 			criterion: "syntax_restored",
 			value: syntaxRestored ? 1 : 0,
 		});
+	// Normalization runs likewise record the normalization fact as its own
+	// criterion, so the raw authoring rate stays separable from the normalized one.
+	if (ctx.normalizeIds)
+		ctx.work.recordScore(ctx.trialId, {
+			scorer: FORMAT_SCORER,
+			criterion: "ids_normalized",
+			value: idsNormalized ? 1 : 0,
+		});
 	return {
 		parse,
 		authored,
@@ -849,6 +906,8 @@ async function evaluateAttempt(ctx: {
 		passed,
 		restoreAttempted,
 		syntaxRestored,
+		normalizeAttempted,
+		idsNormalized,
 	};
 }
 
@@ -924,6 +983,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}`,
 		text: result.text,
 		restoreSyntax: ctx.restoreSyntax,
+		normalizeIds: ctx.normalizeIds,
 	});
 	ctx.evaluations.set(`${evalCase.id}\0${format}`, evaluated);
 	ctx.work.finishTrial(trialId, {
@@ -937,6 +997,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		passed: evaluated.passed,
 		score: evaluated.score,
 		...(ctx.restoreSyntax ? { syntaxRestored: evaluated.syntaxRestored } : {}),
+		...(ctx.normalizeIds ? { idsNormalized: evaluated.idsNormalized } : {}),
 	};
 }
 
@@ -965,6 +1026,8 @@ type RepairContext = {
 	repairOutputTexts: Map<string, string>;
 	/** Offer the syntax-restore stage to the repair attempt's parse as well. */
 	restoreSyntax: boolean;
+	/** Offer the step-id normalization stage to the repair attempt's authoring gate as well. */
+	normalizeIds: boolean;
 	cellKey: string;
 };
 
@@ -1062,8 +1125,10 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}:repair`,
 		text: result.text,
 		restoreSyntax: ctx.restoreSyntax,
+		normalizeIds: ctx.normalizeIds,
 	});
 	if (ctx.restoreSyntax) repair.syntaxRestored = after.syntaxRestored;
+	if (ctx.normalizeIds) repair.idsNormalized = after.idsNormalized;
 	ctx.work.finishTrial(trialId, {
 		status: "completed",
 		outputText: result.text,
