@@ -43,7 +43,13 @@ export type ComponentCard = {
 	avoidWhen: string[];
 	/** JSON Schema of typed arguments, only for entries that take them (instant bindings). */
 	arguments?: Record<string, unknown>;
-	/** The result contract a completed step hands on. */
+	/**
+	 * The output contract the catalog declares for this entry. Caution (confirmed in P0a from
+	 * the Eumenes code): for command bindings this schema describes the acceptance receipt
+	 * (e.g. `{action, jobId}`), not the value a completed step hands on. A job-type entry's
+	 * completed output is a domain result record whose schema is not in the catalog; what
+	 * later steps actually receive is the summary and the host-issued references.
+	 */
 	output: { schemaRef: string | null; origin: ContractOrigin };
 	/** Whether the entry's operations read only or may also write. */
 	effects: Array<"read" | "write">;

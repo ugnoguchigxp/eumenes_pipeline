@@ -22,6 +22,15 @@ export {
 	type PipelineStep,
 } from "./contracts/definition.ts";
 export {
+	authoringOutcome,
+	type AuthoringOutcome,
+} from "./contracts/authoring.ts";
+export {
+	CONTRACT_VERSION,
+	documentRecord,
+	type DocumentRecord,
+} from "./contracts/record.ts";
+export {
 	STEP_STATES,
 	isAdoptable,
 	type ReferenceKind,

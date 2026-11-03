@@ -25,6 +25,18 @@ export const pipelineStep = z.strictObject({
 	task: z.string().trim().min(1).max(2000),
 	/** The request and/or earlier steps whose whole result this step gets. No expressions. */
 	from: z.array(reference).max(MAX_STEPS + 1),
+	/**
+	 * Typed arguments for an entry that declares them (instant bindings): literal JSON values
+	 * only, never expressions. Choosing the values is the composing AI's semantic judgement;
+	 * checking them against the entry's declared schema is code's job (plan §5). When omitted,
+	 * the entry structures its arguments from the task and the handed-on materials itself.
+	 */
+	arguments: z
+		.record(z.string(), z.json())
+		.refine((value) => Object.keys(value).length <= 32, {
+			message: "at most 32 argument keys",
+		})
+		.optional(),
 	/** Natural-language description of the wanted result; not a type, not a promise. */
 	result: z.string().trim().min(1).max(500),
 });

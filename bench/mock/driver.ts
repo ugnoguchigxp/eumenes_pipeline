@@ -107,6 +107,7 @@ export async function runPlan(
 				entry: step.entry,
 				revisionId: step.revisionId,
 				request: step.task,
+				...(step.arguments !== undefined ? { arguments: step.arguments } : {}),
 				references: step.from.flatMap(resolve),
 				source,
 				deadline,

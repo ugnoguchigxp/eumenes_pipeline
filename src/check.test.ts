@@ -19,6 +19,24 @@ const catalog = createCatalogView(
 			execution: "unbound",
 			support: "partial",
 		}),
+		record("weather", {
+			bundle: "weather-kit",
+			execution: "instant",
+			// Reduced `builtin:weatherPlace` (descriptions dropped).
+			argumentsSchema: {
+				type: "object",
+				properties: {
+					place: { type: "string", minLength: 1, maxLength: 30 },
+					prefecture: { type: "string", minLength: 2, maxLength: 5 },
+					day: {
+						type: "string",
+						enum: ["today", "tomorrow", "day_after"],
+					},
+				},
+				required: ["place", "prefecture", "day"],
+				additionalProperties: false,
+			},
+		}),
 	],
 	{ version: "v-test", offer: (r) => r.support !== "excluded" },
 );
@@ -184,6 +202,76 @@ describe("checkDefinition", () => {
 			catalog,
 		);
 		expect(result.issues[0]?.candidates).toEqual(["draw", "sing"]);
+	});
+});
+
+describe("step arguments", () => {
+	const validArgs = {
+		place: "鎌倉",
+		prefecture: "神奈川県",
+		day: "tomorrow",
+	};
+	const weatherStep = (extra = {}) => step("w", "weather", ["request"], extra);
+
+	test("valid arguments pass and are carried into the plan verbatim", () => {
+		const result = checkDefinition(
+			definition([weatherStep({ arguments: validArgs })], ["w"]),
+			catalog,
+		);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.plan.steps[0]?.arguments).toEqual(validArgs);
+	});
+
+	test("arguments for an entry that declares no schema are rejected", () => {
+		expect(
+			errorCodes(
+				definition(
+					[step("a", "solo", ["request"], { arguments: { x: 1 } })],
+					["a"],
+				),
+			),
+		).toContain("unexpected_arguments");
+	});
+
+	test("an enum violation is invalid_arguments", () => {
+		expect(
+			errorCodes(
+				definition(
+					[
+						weatherStep({
+							arguments: { ...validArgs, day: "next_week" },
+						}),
+					],
+					["w"],
+				),
+			),
+		).toContain("invalid_arguments");
+	});
+
+	test("a missing required argument is invalid_arguments", () => {
+		expect(
+			errorCodes(
+				definition(
+					[
+						weatherStep({
+							arguments: {
+								place: validArgs.place,
+								prefecture: validArgs.prefecture,
+							},
+						}),
+					],
+					["w"],
+				),
+			),
+		).toContain("invalid_arguments");
+	});
+
+	test("omitted arguments pass: the entry structures them itself", () => {
+		const result = checkDefinition(definition([weatherStep()], ["w"]), catalog);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(result.plan.steps[0]?.arguments).toBeUndefined();
 	});
 });
 

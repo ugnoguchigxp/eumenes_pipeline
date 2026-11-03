@@ -15,6 +15,8 @@ export function record(
 		execution?: ExecutionKind;
 		support?: Support;
 		output?: string | null;
+		/** JSON Schema of typed arguments (instant entries). */
+		argumentsSchema?: Record<string, unknown>;
 	} = {},
 ): ComponentRecord {
 	const output = options.output === undefined ? null : options.output;
@@ -26,6 +28,9 @@ export function record(
 			summary: `${entry} summary`,
 			useWhen: [],
 			avoidWhen: [],
+			...(options.argumentsSchema !== undefined
+				? { arguments: options.argumentsSchema }
+				: {}),
 			output: {
 				schemaRef: output,
 				origin: output ? "eumenes-code" : "missing",

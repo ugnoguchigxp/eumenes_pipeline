@@ -3,6 +3,7 @@
  * plan the host runs (plan §3, §5). Code checks schema, references, order and contracts only; it
  * never judges whether a step fits the request (that is the LLM's and the evaluator's job).
  */
+import { z } from "zod";
 import type { CatalogView } from "./catalog.ts";
 import type { ContractOrigin, ExecutionKind } from "./contracts/component.ts";
 import {
@@ -23,6 +24,9 @@ export type IssueCode =
 	| "ambiguous_entry"
 	| "entry_not_in_bundle"
 	| "component_not_offered"
+	| "unexpected_arguments"
+	| "invalid_arguments"
+	| "arguments_unchecked"
 	| "unused_result";
 
 export type Issue = {
@@ -43,8 +47,15 @@ export type PlannedStep = {
 	execution: ExecutionKind;
 	task: string;
 	from: string[];
+	/** Typed arguments the definition states for the entry, carried verbatim (plan §5). */
+	arguments?: Record<string, unknown>;
 	expectedResult: string;
-	/** The result contract a completed step must satisfy; the host checks it before handing it on. */
+	/**
+	 * The catalog-declared output contract for the entry. For command bindings this is the
+	 * acceptance receipt's schema, not the completed output's (P0a, confirmed from the
+	 * Eumenes code): the host hands on the summary and references, and validates a completed
+	 * output against this schema only where the entry's route actually returns one.
+	 */
 	output: { schemaRef: string | null; origin: ContractOrigin };
 };
 
@@ -64,6 +75,35 @@ export type CheckResult =
 			issues: Issue[];
 	  }
 	| { ok: false; issues: Issue[] };
+
+type ArgumentsCheck =
+	{ kind: "ok" } | { kind: "invalid"; detail: string } | { kind: "unchecked" };
+
+/**
+ * Type-check stated arguments against the entry's declared JSON Schema, the same way the bench
+ * validates contract values (`z.fromJSONSchema`). A schema whose constructs the converter does
+ * not support is reported as `unchecked`, never silently passed.
+ */
+function checkArguments(
+	schema: Record<string, unknown>,
+	value: Record<string, unknown>,
+): ArgumentsCheck {
+	let validator: z.ZodType;
+	try {
+		validator = z.fromJSONSchema(
+			schema as Parameters<typeof z.fromJSONSchema>[0],
+		);
+	} catch {
+		return { kind: "unchecked" };
+	}
+	const result = validator.safeParse(value);
+	if (result.success) return { kind: "ok" };
+	const detail = result.error.issues
+		.slice(0, 3)
+		.map((issue) => `${issue.path.join(".") || "(root)"}: ${issue.message}`)
+		.join("; ");
+	return { kind: "invalid", detail };
+}
 
 export function checkDefinition(
 	input: unknown,
@@ -147,6 +187,31 @@ export function checkDefinition(
 			return;
 		}
 		const { record } = resolved;
+		if (step.arguments !== undefined) {
+			const argsSchema = record.card.arguments;
+			if (!argsSchema)
+				error(
+					"unexpected_arguments",
+					`steps.${index}.arguments`,
+					`${record.card.entry} declares no arguments schema`,
+				);
+			else {
+				const checked = checkArguments(argsSchema, step.arguments);
+				if (checked.kind === "unchecked")
+					issues.push({
+						code: "arguments_unchecked",
+						path: `steps.${index}.arguments`,
+						message: `the arguments schema of ${record.card.entry} uses constructs this checker cannot validate; the arguments were not type-checked`,
+						severity: "warning",
+					});
+				else if (checked.kind === "invalid")
+					error(
+						"invalid_arguments",
+						`steps.${index}.arguments`,
+						`arguments do not satisfy the schema of ${record.card.entry}: ${checked.detail}`,
+					);
+			}
+		}
 		steps.push({
 			stepId: step.id,
 			entry: record.card.entry,
@@ -155,6 +220,7 @@ export function checkDefinition(
 			execution: record.execution,
 			task: step.task,
 			from: step.from,
+			...(step.arguments !== undefined ? { arguments: step.arguments } : {}),
 			expectedResult: step.result,
 			output: { ...record.card.output },
 		});
