@@ -2,7 +2,7 @@
 	"name": "eumenes-pipeline",
 	"version": "0.0.0",
 	"private": true,
-	"license": "UNLICENSED",
+	"license": "MIT",
 	"type": "module",
 	"sideEffects": false,
 	"packageManager": "bun@1.4.4",

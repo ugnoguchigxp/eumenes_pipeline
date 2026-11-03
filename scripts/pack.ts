@@ -90,6 +90,9 @@ const packed = [...listing.matchAll(/^packed\s+\S+\s+(\S+)$/gm)].map(
 );
 const allowed = (path: string) =>
 	path === "package.json" ||
+	// npm-style packing always adds these; they are package metadata, not source or data.
+	path === "README.md" ||
+	path === "LICENSE" ||
 	(path.startsWith("dist/") &&
 		(path.endsWith(".js") || path.endsWith(".d.ts")));
 const unexpected = packed.filter((p) => !allowed(p));
