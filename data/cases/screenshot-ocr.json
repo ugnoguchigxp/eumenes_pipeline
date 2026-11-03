@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage"]},"id":"screenshot-ocr","notes":"利用者が資料を渡すケース。資料はrequest参照に同梱される前提で、新規の撮影ではなく読み取りの入口を選ぶ","providedMaterials":[{"kind":"image","name":"画面の画像"}],"request":"添付した画面の画像から、写っている文字を読み取ってください","usesFixtureContracts":false}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.capture"]},"id":"browser-shot","notes":"同じbundleに操作系の入口（browser.operate）もある中で、撮影の入口を選べるかを見る","providedMaterials":[],"request":"今開いているタブのページ全体を、画像として保存してください","usesFixtureContracts":false}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"bank-transfer","notes":"送金・銀行手続きを行う部品はカタログにない。近い部品で代替したことにせず、対応できない旨を返すのが正解","providedMaterials":[],"request":"家賃の振込を銀行で済ませてください","usesFixtureContracts":false}
