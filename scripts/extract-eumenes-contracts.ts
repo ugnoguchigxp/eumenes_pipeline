@@ -20,7 +20,6 @@ import { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
 
 const { values } = parseArgs({
@@ -114,7 +113,8 @@ if (catalogSha256 !== catalogManifest.sha256)
 	throw new Error(
 		`catalog snapshot digest mismatch: ${catalogSha256} != manifest ${catalogManifest.sha256}`,
 	);
-const catalog = new Database(`${pathToFileURL(catalogPath).href}?immutable=1`, {
+// Read-only open by plain path (same rule and reason as bench/catalog/snapshot.ts).
+const catalog = new Database(catalogPath, {
 	readonly: true,
 });
 const domainRefs = new Set<string>();

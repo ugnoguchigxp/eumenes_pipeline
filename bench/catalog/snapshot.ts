@@ -1,15 +1,15 @@
 /**
  * Read-only access to the catalog snapshot copied from Eumenes (plan §4).
  *
- * The snapshot is evidence: it is opened `immutable` and read-only, and its SHA-256 must match the
- * manifest written when it was copied. Anything the bench derives (indexes, mock calls, results)
+ * The snapshot is evidence: it is opened read-only so the file is never written, and its SHA-256
+ * must match the manifest written when it was copied. Anything the bench derives (indexes, mock
+ * calls, results)
  * goes to the work database (`bench/store/work-db.ts`), never into this file.
  */
 import { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
 
 export const DEFAULT_SNAPSHOT =
 	"data/source/eumenes-catalog-2026-11-03.sqlite3";
@@ -96,8 +96,10 @@ export function openSnapshot(
 		throw new Error(
 			`catalog snapshot digest mismatch: ${sha256} != manifest ${manifest.sha256}`,
 		);
-	// `immutable=1` makes SQLite skip locking and WAL handling: the file is never written.
-	const db = new Database(`${pathToFileURL(absolute).href}?immutable=1`, {
+	// Open by plain path with a read-only connection: the file is never written. (A `file:` URL
+	// with `immutable=1` was used before, but some Bun builds cannot open `file:` URLs at all;
+	// integrity is guaranteed by the SHA-256 check above, not by the open mode.)
+	const db = new Database(absolute, {
 		readonly: true,
 		strict: true,
 	});
