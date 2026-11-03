@@ -85,10 +85,20 @@ describe("bench:export (synthetic recordings)", () => {
 		expect(good?.authoringOk).toBe(true);
 		expect(good?.score?.stateMatch).toBe(true);
 		expect(good?.model).toBe("agent-model");
+		// Saved form: the recording's output is minified JSON, yet the export carries
+		// the definition as structured data (the CLI serializes the export pretty) —
+		// same content, readable saved form, raw output untouched in the db.
+		expect(good?.definition?.steps).toHaveLength(1);
+		expect(good?.definition?.steps[0]?.id).toBe("count");
+		expect(good?.definition?.steps[0]?.bundle).toBe("compute.python");
+		expect(JSON.parse(JSON.stringify(good?.definition))).toEqual(
+			JSON.parse(primeOutput),
+		);
 		const missing = exp.cells.find((c) => c.caseId === "stock-quote");
 		expect(missing?.status).toBe("missing");
 		expect(missing?.passed).toBeNull();
 		expect(missing?.score).toBeNull();
+		expect(missing?.definition).toBeNull();
 
 		// Totals recomputed from the db reproduce the runner's own summary numbers.
 		expect(exp.totals).toEqual(report.totals);
@@ -180,9 +190,12 @@ describe("bench:export (synthetic recordings)", () => {
 		const exp = buildRunExport({ runId: second.runId, dbPath, runsRoot });
 		const cell = exp.cells[0];
 		expect(cell?.passed).toBe(false);
+		// The broken compose output has no saved definition; the repaired one does.
+		expect(cell?.definition).toBeNull();
 		expect(cell?.repair?.status).toBe("scored");
 		expect(cell?.repair?.before.passed).toBe(false);
 		expect(cell?.repair?.after?.passed).toBe(true);
+		expect(cell?.repair?.definition?.steps[0]?.id).toBe("count");
 		expect(exp.repair).toMatchObject({
 			attempted: 1,
 			scored: 1,

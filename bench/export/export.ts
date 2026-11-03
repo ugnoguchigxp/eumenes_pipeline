@@ -23,14 +23,26 @@
  * in their config. The export reports the recorded `contractVersion` when the run has
  * one (null for the older runs — never back-filled) and, separately, the exporting code's
  * `CONTRACT_VERSION`, labelled as export-time.
+ *
+ * Saved form of definitions (user decision, 2026-11-04): generation may be minified to
+ * save tokens, but a definition is SAVED in pretty-printed JSON. The export is the
+ * bench's saved artifact, so each cell that authored a valid definition carries it here
+ * as structured data — the CLI writes this document with indentation, which makes the
+ * saved form pretty regardless of how compact the model's raw output was (and whatever
+ * wire format it used). The raw outputs themselves stay untouched in the work db and
+ * the session recordings: they are evidence, not the saved form. The same rule binds
+ * the host at integration time (the persisted `DocumentRecord` is pretty JSON).
  */
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { authoringOutcome } from "../../src/contracts/authoring.ts";
+import type { PipelineDefinition } from "../../src/contracts/definition.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, sha256 } from "../catalog/load.ts";
 import { DEFAULT_CASES_DIR, loadCases } from "../cases/cases.ts";
 import type { ConditionSummary } from "../format/conditions.ts";
+import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
 import {
 	DEFAULT_RUNS_ROOT,
 	type FormatGroupSummary,
@@ -73,6 +85,13 @@ export type ExportCell = {
 	checks: { code: string; path: string; severity: string; message: string }[];
 	/** The recorded inference's model name (`agent-model` for recorded replay). */
 	model: string | null;
+	/**
+	 * The authored definition in its saved form, when the cell's output parsed and
+	 * satisfied the `AuthoringOutcome` contract as `ready`; null otherwise (the raw
+	 * output remains in the work db). Serialized by the CLI as pretty-printed JSON
+	 * even when the model wrote minified output (see the module header).
+	 */
+	definition: PipelineDefinition | null;
 	outputDigest: string | null;
 	error: string | null;
 	/** Tokenizer counts from the session summary; null when no matching summary exists. */
@@ -86,6 +105,8 @@ export type ExportRepair = {
 	trialId: string;
 	before: RepairVerdict;
 	after: RepairVerdict | null;
+	/** The repaired definition in its saved form, under the same rule as cells. */
+	definition: PipelineDefinition | null;
 	promptTokens: number | null;
 	outputTokens: number | null;
 };
@@ -153,9 +174,32 @@ type TrialRow = {
 	attempt: number;
 	phase: string;
 	status: string;
+	output_text: string | null;
 	output_digest: string | null;
 	error: string | null;
 };
+
+/**
+ * The definition a trial authored, in its saved form: re-derive it exactly the way the
+ * runner did (format parser → `AuthoringOutcome` contract) and keep it only when the
+ * outcome is a valid `ready`. Anything else — unparseable, needs_input, unsupported,
+ * contract violation — has no saved definition (null), however suggestive the raw text.
+ */
+function savedDefinition(
+	format: string,
+	outputText: string | null,
+): PipelineDefinition | null {
+	if (!outputText || !(format in FORMAT_PARSERS)) return null;
+	const parse = FORMAT_PARSERS[format as FormatId](outputText);
+	if (!parse.ok || parse.outcome.kind !== "ready") return null;
+	const authored = authoringOutcome.safeParse({
+		status: "ready",
+		definition: parse.outcome.definition,
+	});
+	return authored.success && authored.data.status === "ready"
+		? authored.data.definition
+		: null;
+}
 
 const emptyGroup = (): FormatGroupSummary => ({
 	cells: 0,
@@ -311,7 +355,7 @@ export function buildRunExport(options: {
 		// Trials and their recorded detail.
 		const trials = db
 			.query<TrialRow, [string]>(
-				"SELECT trial_id, case_id, condition, attempt, phase, status, output_digest, error FROM trials WHERE run_id = ? ORDER BY case_id, condition, attempt",
+				"SELECT trial_id, case_id, condition, attempt, phase, status, output_text, output_digest, error FROM trials WHERE run_id = ? ORDER BY case_id, condition, attempt",
 			)
 			.all(options.runId);
 		const scoresOf = (trialId: string) =>
@@ -370,6 +414,9 @@ export function buildRunExport(options: {
 				criteria,
 				checks,
 				model,
+				definition: scored
+					? savedDefinition(trial.condition, trial.output_text)
+					: null,
 				outputDigest: trial.output_digest,
 				error: trial.error,
 				promptTokens: null,
@@ -392,6 +439,10 @@ export function buildRunExport(options: {
 				after:
 					status === "scored"
 						? verdictOf(score, criteria.authoring === 1, criteria.passed === 1)
+						: null,
+				definition:
+					status === "scored"
+						? savedDefinition(trial.condition, trial.output_text)
 						: null,
 				promptTokens: null,
 				outputTokens: null,
@@ -619,6 +670,9 @@ export function renderExportMarkdown(exp: RunExport): string {
 	);
 	lines.push(
 		`- contract version recorded by the run: ${exp.provenance.contractVersion ?? "none (pre-P3 run; the digests above are its pins)"} / at export: ${exp.provenance.contractVersionAtExport}`,
+	);
+	lines.push(
+		"- definitions: cells that authored a valid definition carry it in the JSON export in saved form (pretty-printed JSON, even when the model wrote minified output); raw outputs stay in the work db and recordings",
 	);
 	lines.push("");
 	lines.push("## Totals (recomputed from the work db)");
