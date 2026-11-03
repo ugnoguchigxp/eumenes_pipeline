@@ -14,7 +14,7 @@ import {
 } from "./conditions.ts";
 
 describe("condition registry", () => {
-	test("pins the four fixed conditions", () => {
+	test("pins the five fixed conditions", () => {
 		expect(BASELINE_CONDITION).toEqual({
 			id: "baseline",
 			cardSet: "all",
@@ -43,12 +43,35 @@ describe("condition registry", () => {
 			shots: 0,
 			outputStyle: "minified",
 		});
+		expect(CONDITIONS.threshold).toEqual({
+			id: "threshold",
+			cardSet: "all",
+			cardStyle: "full",
+			shots: 0,
+			outputStyle: "default",
+			guidance: "threshold-v1",
+		});
 		expect(Object.keys(CONDITIONS).sort()).toEqual([
 			"baseline",
 			"compact",
 			"minjson",
 			"oneshot",
+			"threshold",
 		]);
+	});
+
+	test("the summary records guidance only on guidance conditions", () => {
+		expect(summarizeCondition(CONDITIONS.threshold, false)).toEqual({
+			id: "threshold",
+			cardSet: "all",
+			cardStyle: "full",
+			shots: 0,
+			outputStyle: "default",
+			guidance: "threshold-v1",
+		});
+		expect(summarizeCondition(BASELINE_CONDITION, false)).not.toHaveProperty(
+			"guidance",
+		);
 	});
 
 	test("resolves by id and refuses unknown ids loudly", () => {

@@ -3,8 +3,8 @@
  * under one prompt condition, split by format and fixture dependence.
  *
  *   bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml]
- *     [--condition baseline|compact|oneshot|minjson] [--candidates <file.json>] [--repair]
- *     [--restore-syntax] [--normalize-ids] [--db <path>]
+ *     [--condition baseline|compact|oneshot|minjson|threshold] [--candidates <file.json>]
+ *     [--repair] [--restore-syntax] [--normalize-ids] [--triage] [--db <path>]
  *
  * The session names `data/runs/format/<name>/`: request files for cells without recordings
  * are written there, recordings are read from there. Exits 1 while any cell is missing,
@@ -21,6 +21,12 @@
  * has its offending ids (and their references) rewritten to the contract pattern and
  * is re-validated; a collision refuses the rewrite. Recordings are never rewritten,
  * and the summary records per cell whether normalization recovered the gate.
+ * `--triage` adds one recorded pre-pass per case that judges only whether the
+ * request's information is sufficient; the conclusion is appended to the composing
+ * prompt. Triage requests land in `<session>/triage-requests/`, triage recordings
+ * are read from `<session>/triage-recordings/`, and a case without a usable
+ * conclusion blocks its composing cells (reported missing, like a missing
+ * composing recording).
  * `--candidates` takes a JSON file `{ [caseId]: entryId[] }` of per-case offered subsets;
  * the run then records its condition as `subset:<digest of the file, first 8 hex>`.
  * No model is called and nothing is reached: the guard's only allowance is the local
@@ -52,6 +58,7 @@ const { values } = parseArgs({
 		repair: { type: "boolean" },
 		"restore-syntax": { type: "boolean" },
 		"normalize-ids": { type: "boolean" },
+		triage: { type: "boolean" },
 		db: { type: "string" },
 	},
 });
@@ -106,6 +113,7 @@ const report = await runFormat({
 	...(values.repair ? { repair: true } : {}),
 	...(values["restore-syntax"] ? { restoreSyntax: true } : {}),
 	...(values["normalize-ids"] ? { normalizeIds: true } : {}),
+	...(values.triage ? { triage: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
@@ -155,6 +163,13 @@ if (report.normalize) {
 	for (const cell of report.cells)
 		if (cell.idsNormalized)
 			console.log(`  normalized: ${cell.caseId} / ${cell.format}`);
+}
+if (report.triage) {
+	const t = report.triage;
+	console.log(
+		`triage: cases ${t.cases} (concluded ${t.concluded}: proceed ${t.proceed}, needs_input ${t.needsInput}; missing ${t.missing}, digest-mismatch ${t.digestMismatch}, invalid ${t.invalid})` +
+			` | triage prompt tokens ${t.promptTokens ?? "n/a"}, output tokens ${t.outputTokens ?? "n/a"}`,
+	);
 }
 const sumTokens = (values: (number | null)[]) => {
 	if (!report.tokenizer.available) return "n/a (tokenizer unavailable)";

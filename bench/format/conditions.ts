@@ -21,6 +21,15 @@ import type { FormatId } from "../formats/index.ts";
 export type CardStyle = "full" | "compact";
 
 /**
+ * An optional guidance block appended to the shared instructions (its text lives
+ * in `prompt.ts`). `threshold-v1` states the general convention for when a request
+ * counts as missing information (`needs_input`) versus when unspecified detail is
+ * left to the steps — the accuracy follow-up 2 condition A. Guidance is condition
+ * data like everything else here: recorded in the run config via the summary.
+ */
+export type GuidanceId = "threshold-v1";
+
+/**
  * The output style the instructions ask for. `minified` is defined for the json format
  * only (see `buildFormatPrompt`): it adds the minified-JSON instruction to the json
  * format's rules and leaves the other formats' prompts byte-identical to `default`.
@@ -38,6 +47,8 @@ export type FormatCondition = {
 	shots: 0 | 1;
 	/** Output style asked for (json only; the other formats ignore `minified`). */
 	outputStyle: OutputStyle;
+	/** Guidance block appended to the shared instructions; absent on most conditions. */
+	guidance?: GuidanceId;
 };
 
 export const BASELINE_CONDITION: FormatCondition = {
@@ -54,6 +65,7 @@ export const CONDITIONS: Readonly<{
 	compact: FormatCondition;
 	oneshot: FormatCondition;
 	minjson: FormatCondition;
+	threshold: FormatCondition;
 }> = {
 	baseline: BASELINE_CONDITION,
 	compact: {
@@ -76,6 +88,14 @@ export const CONDITIONS: Readonly<{
 		cardStyle: "full",
 		shots: 0,
 		outputStyle: "minified",
+	},
+	threshold: {
+		id: "threshold",
+		cardSet: "all",
+		cardStyle: "full",
+		shots: 0,
+		outputStyle: "default",
+		guidance: "threshold-v1",
 	},
 };
 
@@ -100,6 +120,8 @@ export type ConditionSummary = {
 	cardStyle: CardStyle;
 	shots: 0 | 1;
 	outputStyle: OutputStyle;
+	/** Present only on guidance conditions, so other summaries keep their shape. */
+	guidance?: GuidanceId;
 };
 
 export function summarizeCondition(
@@ -112,6 +134,7 @@ export function summarizeCondition(
 		cardStyle: condition.cardStyle,
 		shots: condition.shots,
 		outputStyle: condition.outputStyle,
+		...(condition.guidance ? { guidance: condition.guidance } : {}),
 	};
 }
 

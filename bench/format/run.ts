@@ -64,10 +64,22 @@
  * the gate (cell flag + run totals + an `ids_normalized` score criterion), so the
  * raw authoring rate stays separable. Off by default: a run without it is
  * byte-for-byte the pre-normalization bench.
+ *
+ * Triage (opt-in, `triage: true`): before composing, one short recorded call per
+ * case judges only whether the request's information is sufficient
+ * (`bench/format/triage.ts`); its conclusion is appended to the composing prompt
+ * as an advisory section, and the composer keeps the final judgment. Triage has
+ * its own traffic — requests under `<session>/triage-requests/`, recordings under
+ * `<session>/triage-recordings/`, trials recorded as phase `triage` — and a case
+ * without a usable triage conclusion blocks its composing cells (reported
+ * missing / digest-mismatch / inference-error, exactly like a missing composing
+ * recording) rather than composing without the pre-pass the condition promises.
+ * Off by default: a run without it is byte-for-byte the pre-triage bench.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkDefinition, type CheckResult } from "../../src/check.ts";
+import type { InferenceResult } from "../../src/ports.ts";
 import type { AuthoringOutcome } from "../../src/contracts/authoring.ts";
 import type { ComponentCard } from "../../src/contracts/component.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
@@ -85,6 +97,7 @@ import {
 	inferenceDigest,
 	RecordedInference,
 	REPAIR_PURPOSE,
+	TRIAGE_PURPOSE,
 	type RecordingFile,
 } from "../infer/recorded.ts";
 import { runPlan } from "../mock/driver.ts";
@@ -107,8 +120,17 @@ import {
 import {
 	buildFormatPrompt,
 	CARDS_RENDERING,
+	GUIDANCE_TEXTS,
 	PROMPT_TEMPLATE_VERSION,
 } from "./prompt.ts";
+import {
+	buildTriagePrompt,
+	parseTriageOutput,
+	TRIAGE_TEMPLATE_VERSION,
+	triageNoteText,
+	type TriageConclusion,
+	type TriageVerdict,
+} from "./triage.ts";
 
 export const DEFAULT_RUNS_ROOT = "data/runs/format";
 export const FORMAT_SCORER = "bench-format-v1";
@@ -142,8 +164,29 @@ export type FormatCellReport = {
 	 * Present only in normalization runs (for scored cells); the raw output is unchanged.
 	 */
 	idsNormalized?: boolean;
+	/** The triage pre-pass conclusion this cell's prompt carried; present only in triage runs. */
+	triage?: { verdict: TriageVerdict; questions: string[] };
 	/** The one repair round of a mechanically failed cell; present only in repair runs. */
 	repair?: FormatCellRepair;
+};
+
+/** Run totals of the triage pre-pass; present only in triage runs. Counts are per case. */
+export type FormatTriageSummary = {
+	/** Cases the run covers (one triage call each). */
+	cases: number;
+	/** Cases whose triage call produced a usable conclusion. */
+	concluded: number;
+	proceed: number;
+	needsInput: number;
+	/** Cases with no triage recording (their composing cells are blocked as missing). */
+	missing: number;
+	digestMismatch: number;
+	/** Cases whose triage output was served but is not a valid verdict document. */
+	invalid: number;
+	/** Total triage prompt tokens over concluded/missing-counted calls; null when any could not be counted. */
+	promptTokens: number | null;
+	/** Total triage output tokens over the calls that produced an output; null likewise. */
+	outputTokens: number | null;
 };
 
 /** Run totals of the syntax-restore stage; present only in restore runs. */
@@ -245,6 +288,8 @@ export type FormatRunReport = {
 	restore?: FormatRestoreSummary;
 	/** Step-id normalization totals over the composing cells; present only in normalization runs. */
 	normalize?: FormatNormalizeSummary;
+	/** Triage pre-pass totals; present only in triage runs. */
+	triage?: FormatTriageSummary;
 };
 
 const emptyGroup = (): FormatGroupSummary => ({
@@ -427,6 +472,12 @@ export type FormatRunOptions = {
 	 * same recorded criteria.
 	 */
 	normalizeIds?: boolean;
+	/**
+	 * One triage pre-pass per case whose conclusion the composing prompt carries
+	 * (see the module header). Off by default: a run without it is byte-for-byte
+	 * the pre-triage bench.
+	 */
+	triage?: boolean;
 };
 
 /** The cards one cell offers, in catalog order, under the condition and any candidates. */
@@ -468,6 +519,12 @@ export async function runFormat(
 		mkdirSync(repairRequestsDir, { recursive: true });
 		mkdirSync(repairRecordingsDir, { recursive: true });
 	}
+	const triageRequestsDir = join(sessionDir, "triage-requests");
+	const triageRecordingsDir = join(sessionDir, "triage-recordings");
+	if (options.triage) {
+		mkdirSync(triageRequestsDir, { recursive: true });
+		mkdirSync(triageRecordingsDir, { recursive: true });
+	}
 
 	const catalog = loadBenchCatalog({ policy: "ready+partial" });
 	const allCases = loadCases(options.casesDir);
@@ -508,6 +565,99 @@ export async function runFormat(
 	);
 	const provenance = tokenizerProvenance();
 
+	// Triage resolution (triage runs only): one recorded call per case, resolved
+	// BEFORE the composing prompts are built, because a concluded case's prompt
+	// carries the conclusion. The calls are recorded as work-db trials once the
+	// run exists (below); here only files and recordings are touched.
+	type TriageResolution = {
+		evalCase: EvalCase;
+		system: string;
+		prompt: string;
+		state:
+			| "concluded"
+			| "missing"
+			| "digest-mismatch"
+			| "invalid"
+			| "inference-error";
+		conclusion?: TriageConclusion;
+		/** The served inference result, when a recording answered the call. */
+		result?: InferenceResult;
+		error?: string;
+	};
+	const triageResolutions = new Map<string, TriageResolution>();
+	if (options.triage) {
+		const triageRecordings =
+			RecordedInference.fromDirectory(triageRecordingsDir);
+		for (const evalCase of cases) {
+			const built = buildTriagePrompt(evalCase);
+			const request = {
+				purpose: TRIAGE_PURPOSE,
+				system: built.system,
+				prompt: built.prompt,
+			};
+			const digest = inferenceDigest(request);
+			const fileName = `${evalCase.id}.json`;
+			const base = { evalCase, system: built.system, prompt: built.prompt };
+			const recording = triageRecordings.files.get(fileName);
+			if (!recording) {
+				writeFileSync(
+					join(triageRequestsDir, fileName),
+					`${JSON.stringify(
+						{
+							caseId: evalCase.id,
+							purpose: TRIAGE_PURPOSE,
+							system: built.system,
+							prompt: built.prompt,
+							promptDigest: digest,
+						},
+						null,
+						"\t",
+					)}\n`,
+				);
+				triageResolutions.set(evalCase.id, {
+					...base,
+					state: "missing",
+					error: `missing triage recording; request written to triage-requests/${fileName}`,
+				});
+				continue;
+			}
+			if (recording.promptDigest !== digest) {
+				triageResolutions.set(evalCase.id, {
+					...base,
+					state: "digest-mismatch",
+					error: `triage recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
+				});
+				continue;
+			}
+			const result = await triageRecordings.inference.complete(request);
+			if (!result.ok) {
+				triageResolutions.set(evalCase.id, {
+					...base,
+					state: "inference-error",
+					result,
+					error: result.error,
+				});
+				continue;
+			}
+			const conclusion = parseTriageOutput(result.text);
+			if (conclusion)
+				triageResolutions.set(evalCase.id, {
+					...base,
+					state: "concluded",
+					conclusion,
+					result,
+				});
+			else
+				triageResolutions.set(evalCase.id, {
+					...base,
+					state: "invalid",
+					result,
+					error:
+						'triage output is not a verdict document (expected {"verdict": "proceed"} or {"verdict": "needs_input", "questions": [...]})',
+				});
+		}
+	}
+
 	// Build every prompt up front and count them in one batch: the prompt of a cell does
 	// not depend on its recording, and one helper call keeps the counting cheap.
 	type PreparedCell = {
@@ -516,10 +666,15 @@ export async function runFormat(
 		system: string;
 		prompt: string;
 		promptTokens: number | null;
+		/** The triage conclusion the prompt carries (triage runs, concluded cases). */
+		triageConclusion?: TriageConclusion;
+		/** Why this cell cannot compose (triage runs, unconcluded cases). */
+		triageBlocked?: { status: FormatCellStatus; error: string };
 	};
 	const prepared: PreparedCell[] = [];
 	for (const evalCase of cases)
 		for (const format of formats) {
+			const triage = triageResolutions.get(evalCase.id);
 			const built = buildFormatPrompt({
 				evalCase,
 				format,
@@ -534,8 +689,33 @@ export async function runFormat(
 				...(condition.shots === 1
 					? { workedExample: WORKED_EXAMPLES[format] }
 					: {}),
+				...(condition.guidance
+					? { guidanceText: GUIDANCE_TEXTS[condition.guidance] }
+					: {}),
+				...(triage?.conclusion
+					? { triageNote: triageNoteText(triage.conclusion) }
+					: {}),
 			});
-			prepared.push({ evalCase, format, ...built, promptTokens: null });
+			prepared.push({
+				evalCase,
+				format,
+				...built,
+				promptTokens: null,
+				...(triage?.conclusion ? { triageConclusion: triage.conclusion } : {}),
+				...(triage && !triage.conclusion
+					? {
+							triageBlocked: {
+								status:
+									triage.state === "missing"
+										? ("missing" as const)
+										: triage.state === "digest-mismatch"
+											? ("digest-mismatch" as const)
+											: ("inference-error" as const),
+								error: `triage pre-pass unavailable: ${triage.error ?? triage.state}`,
+							},
+						}
+					: {}),
+			});
 		}
 	const promptCounts = countTokens(
 		prepared.map((cell) => `${cell.system}\n${cell.prompt}`),
@@ -568,6 +748,9 @@ export async function runFormat(
 			...(options.normalizeIds
 				? { normalizeIds: true, normalizeVersion: ID_NORMALIZE_VERSION }
 				: {}),
+			...(options.triage
+				? { triage: true, triageTemplate: TRIAGE_TEMPLATE_VERSION }
+				: {}),
 		},
 		inputs: {
 			snapshotSha256: catalog.snapshot.sha256,
@@ -587,24 +770,84 @@ export async function runFormat(
 		`${cell.caseId}\0${cell.format}`;
 	let sweepDone = false;
 	try {
+		// Record the triage calls as this run's trials (phase `triage`, one per case).
+		if (options.triage) {
+			for (const resolution of triageResolutions.values()) {
+				const trialId = work.startTrial({
+					runId,
+					caseId: resolution.evalCase.id,
+					condition: "triage",
+					attempt: 1,
+					phase: "triage",
+				});
+				if (resolution.result)
+					work.recordModelCall(trialId, TRIAGE_PURPOSE, resolution.result);
+				if (resolution.state === "concluded")
+					work.finishTrial(trialId, {
+						status: "completed",
+						outputText: resolution.result?.ok
+							? resolution.result.text
+							: undefined,
+					});
+				else if (resolution.state === "missing")
+					work.finishTrial(trialId, {
+						status: "interrupted",
+						error: resolution.error,
+					});
+				else
+					work.finishTrial(trialId, {
+						status: "failed",
+						error: resolution.error,
+					});
+			}
+		}
 		const { inference, files } = RecordedInference.fromDirectory(recordingsDir);
 		for (const cell of prepared) {
-			cells.push(
-				await runCell({
-					...cell,
-					files,
-					inference,
-					requestsDir,
-					catalog,
-					work,
+			if (cell.triageBlocked) {
+				// No usable triage conclusion: the composing cell is blocked, recorded
+				// as its own interrupted/failed trial, never silently composed.
+				const trialId = work.startTrial({
 					runId,
-					seed,
-					outputs,
-					evaluations,
-					restoreSyntax: options.restoreSyntax === true,
-					normalizeIds: options.normalizeIds === true,
-				}),
-			);
+					caseId: cell.evalCase.id,
+					condition: cell.format,
+					attempt: 1,
+					phase: "compose",
+				});
+				work.finishTrial(trialId, {
+					status:
+						cell.triageBlocked.status === "missing" ? "interrupted" : "failed",
+					error: cell.triageBlocked.error,
+				});
+				cells.push({
+					caseId: cell.evalCase.id,
+					format: cell.format,
+					fixtureDependent: cell.evalCase.usesFixtureContracts,
+					status: cell.triageBlocked.status,
+					promptTokens: cell.promptTokens,
+					outputTokens: null,
+				});
+				continue;
+			}
+			const report = await runCell({
+				...cell,
+				files,
+				inference,
+				requestsDir,
+				catalog,
+				work,
+				runId,
+				seed,
+				outputs,
+				evaluations,
+				restoreSyntax: options.restoreSyntax === true,
+				normalizeIds: options.normalizeIds === true,
+			});
+			if (cell.triageConclusion)
+				report.triage = {
+					verdict: cell.triageConclusion.verdict,
+					questions: cell.triageConclusion.questions,
+				};
+			cells.push(report);
 		}
 		if (options.repair) {
 			const repairRecordings =
@@ -728,6 +971,38 @@ export async function runFormat(
 			recovered: attempts.filter((a) => a.idsNormalized).length,
 		};
 	}
+	// Triage totals over the per-case resolutions, with the calls' token cost
+	// counted the same way as the composing traffic (null where uncountable).
+	let triageSummary: FormatTriageSummary | undefined;
+	if (options.triage) {
+		const resolutions = [...triageResolutions.values()];
+		const sumOrNull = (values: (number | null)[]) =>
+			values.some((v) => v === null)
+				? null
+				: values.reduce<number>((a, v) => a + (v ?? 0), 0);
+		const triagePromptCounts = countTokens(
+			resolutions.map((r) => `${r.system}\n${r.prompt}`),
+		);
+		const withOutput = resolutions.filter((r) => r.result?.ok);
+		const triageOutputCounts = countTokens(
+			withOutput.map((r) => (r.result?.ok ? r.result.text : "")),
+		);
+		triageSummary = {
+			cases: resolutions.length,
+			concluded: resolutions.filter((r) => r.state === "concluded").length,
+			proceed: resolutions.filter((r) => r.conclusion?.verdict === "proceed")
+				.length,
+			needsInput: resolutions.filter(
+				(r) => r.conclusion?.verdict === "needs_input",
+			).length,
+			missing: resolutions.filter((r) => r.state === "missing").length,
+			digestMismatch: resolutions.filter((r) => r.state === "digest-mismatch")
+				.length,
+			invalid: resolutions.filter((r) => r.state === "invalid").length,
+			promptTokens: sumOrNull(triagePromptCounts),
+			outputTokens: withOutput.length === 0 ? 0 : sumOrNull(triageOutputCounts),
+		};
+	}
 	const report: FormatRunReport = {
 		runId,
 		sessionDir,
@@ -739,6 +1014,7 @@ export async function runFormat(
 		...(repairSummary ? { repair: repairSummary } : {}),
 		...(restoreSummary ? { restore: restoreSummary } : {}),
 		...(normalizeSummary ? { normalize: normalizeSummary } : {}),
+		...(triageSummary ? { triage: triageSummary } : {}),
 	};
 	writeFileSync(
 		join(sessionDir, "summary.json"),
@@ -752,6 +1028,7 @@ export async function runFormat(
 				...(repairSummary ? { repair: repairSummary } : {}),
 				...(restoreSummary ? { restore: restoreSummary } : {}),
 				...(normalizeSummary ? { normalize: normalizeSummary } : {}),
+				...(triageSummary ? { triage: triageSummary } : {}),
 				cells: cells.map((cell) => ({
 					caseId: cell.caseId,
 					format: cell.format,
@@ -769,6 +1046,7 @@ export async function runFormat(
 					...(cell.idsNormalized !== undefined
 						? { idsNormalized: cell.idsNormalized }
 						: {}),
+					...(cell.triage ? { triage: cell.triage } : {}),
 					...(cell.repair ? { repair: cell.repair } : {}),
 				})),
 			},

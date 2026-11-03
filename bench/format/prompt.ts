@@ -22,7 +22,7 @@ import type { ComponentCard } from "../../src/contracts/component.ts";
 import type { EvalCase } from "../cases/cases.ts";
 import { renderCardsText, renderCardsTextCompact } from "../formats/cards.ts";
 import type { FormatId } from "../formats/index.ts";
-import type { CardStyle, OutputStyle } from "./conditions.ts";
+import type { CardStyle, GuidanceId, OutputStyle } from "./conditions.ts";
 
 export const PROMPT_TEMPLATE_VERSION = "format-prompt-v1";
 export const CARDS_RENDERING = "text";
@@ -70,6 +70,26 @@ const FORMAT_INSTRUCTIONS: Record<FormatId, string> = {
 export const MINIFIED_JSON_INSTRUCTION = `- JSONは空白・改行を最小限にした minified な形で書いてください。インデントや改行は入れず、全体を1行にしてください（文字列の中身はそのままにします）。`;
 
 /**
+ * The guidance block of the `threshold` condition (accuracy follow-up 2,
+ * condition A): the general convention for the needs_input threshold, appended
+ * to the shared instructions of every format. It states principles only — when
+ * the request's TARGET is unidentifiable (ask) versus when only the means or
+ * the delivery details are unspecified (proceed) — and names no evaluation
+ * case, no entry and no expected answer.
+ */
+export const THRESHOLD_GUIDANCE = `判断の規約（確認が必要な場合と、進めてよい場合）:
+- 「確認が必要」にするのは、依頼の対象そのものが特定できない場合だけです。対象が違えば手順も結果も変わるのに、依頼文と渡された資料からでは対象を1つに決められない場合がこれに当たります。
+- 対象が特定できていれば、進め方や届け方の細部が未指定でも、確認で止めずに手順を作ります。保存先・宛先・ファイル名・書式のような細部は、手順への依頼文の中で標準的な扱いに委ねてよいものです。
+- 利用者が資料を渡している場合は、その資料が不足を埋める前提で読みます。資料の名前や種類から対象が特定できるなら、確認は不要です。
+- 既に開いているページや端末上にあるファイルなど、依頼が現在の文脈にあるものを指している場合は、その文脈で対象は特定できているものとして扱います。
+- 逆に、対象が特定できないのに候補を勝手に1つ選んで手順を作ることはしません。確認の質問は、対象を特定するために必要なものだけに絞ります。`;
+
+/** Guidance texts by id (see `GuidanceId` in `conditions.ts`). */
+export const GUIDANCE_TEXTS: Record<GuidanceId, string> = {
+	"threshold-v1": THRESHOLD_GUIDANCE,
+};
+
+/**
  * Build the one composing prompt of a (case, format) cell under a prompt condition.
  * Deterministic in its inputs. With no condition options this is the `baseline` condition
  * and the output is byte-identical to the pre-condition bench.
@@ -88,6 +108,18 @@ export function buildFormatPrompt(input: {
 	 * by the other formats, whose prompts stay byte-identical.
 	 */
 	outputStyle?: OutputStyle;
+	/**
+	 * The condition's guidance block (see `GUIDANCE_TEXTS`), appended to the shared
+	 * instructions of every format. Absent on the baseline condition, whose prompts
+	 * stay byte-identical to the pre-guidance bench.
+	 */
+	guidanceText?: string;
+	/**
+	 * A pre-pass conclusion section (the triage stage of accuracy follow-up 2),
+	 * appended as the prompt's final section. Built by the runner from the triage
+	 * recording of the same case; absent outside triage runs.
+	 */
+	triageNote?: string;
 }): FormatPrompt {
 	const { evalCase, format, cards } = input;
 	const materials =
@@ -116,12 +148,15 @@ export function buildFormatPrompt(input: {
 			"",
 			input.workedExample,
 		);
+	if (input.triageNote !== undefined) sections.push("", input.triageNote);
 	const formatInstructions =
 		format === "json" && input.outputStyle === "minified"
 			? `${FORMAT_INSTRUCTIONS.json}\n${MINIFIED_JSON_INSTRUCTION}`
 			: FORMAT_INSTRUCTIONS[format];
 	return {
-		system: `${SHARED_INSTRUCTIONS}\n\n${formatInstructions}`,
+		system: input.guidanceText
+			? `${SHARED_INSTRUCTIONS}\n\n${input.guidanceText}\n\n${formatInstructions}`
+			: `${SHARED_INSTRUCTIONS}\n\n${formatInstructions}`,
 		prompt: sections.join("\n"),
 	};
 }

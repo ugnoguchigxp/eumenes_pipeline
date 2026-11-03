@@ -11,11 +11,12 @@ import { join } from "node:path";
 import { loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import type { FormatId } from "../formats/index.ts";
-import { inferenceDigest } from "../infer/recorded.ts";
+import { inferenceDigest, TRIAGE_PURPOSE } from "../infer/recorded.ts";
 import { CONDITIONS } from "./conditions.ts";
 import { buildFormatPrompt } from "./prompt.ts";
 import { runFormat } from "./run.ts";
 import { SYNTHETIC_OUTPUTS } from "./synthetic.ts";
+import { buildTriagePrompt, triageNoteText } from "./triage.ts";
 
 /**
  * End-to-end wiring check with SYNTHETIC outputs (`synthetic.ts`): prompt → recording →
@@ -670,6 +671,96 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		expect(refused.cells[0]?.authoringOk).toBe(false);
 		expect(refused.cells[0]?.idsNormalized).toBe(false);
 		expect(refused.normalize).toEqual({ attempted: 1, recovered: 0 });
+	});
+
+	test("triage: a case composes only with a usable pre-pass conclusion", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-triage-"));
+		const session = "triage-wiring";
+		const dir = join(runsRoot, session);
+		mkdirSync(join(dir, "recordings"), { recursive: true });
+		mkdirSync(join(dir, "triage-recordings"), { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const prime = loadCases().find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const triageBuilt = buildTriagePrompt(prime);
+		const triageDigest = inferenceDigest({
+			purpose: TRIAGE_PURPOSE,
+			system: triageBuilt.system,
+			prompt: triageBuilt.prompt,
+		});
+		const noted = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+			triageNote: triageNoteText({ verdict: "proceed", questions: [] }),
+		});
+		catalog.close();
+		const run = () =>
+			runFormat({
+				session,
+				runsRoot,
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json"],
+				triage: true,
+			});
+
+		// No triage recording: the composing cell is blocked as missing and the
+		// triage request is written; nothing is composed without the pre-pass.
+		const blocked = await run();
+		expect(blocked.cells[0]?.status).toBe("missing");
+		expect(blocked.triage).toMatchObject({
+			cases: 1,
+			concluded: 0,
+			missing: 1,
+		});
+		expect(existsSync(join(dir, "triage-requests", "prime-count.json"))).toBe(
+			true,
+		);
+
+		// A proceed verdict: the composing prompt carries the note (a different
+		// digest), and a recording for that digest scores normally.
+		writeFileSync(
+			join(dir, "triage-recordings", "prime-count.json"),
+			JSON.stringify({
+				promptDigest: triageDigest,
+				output: '{"verdict": "proceed"}',
+			}),
+		);
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({
+					purpose: "compose",
+					system: noted.system,
+					prompt: noted.prompt,
+				}),
+				output: primeOutput,
+			}),
+		);
+		const scored = await run();
+		expect(scored.cells[0]?.passed).toBe(true);
+		expect(scored.cells[0]?.triage).toEqual({
+			verdict: "proceed",
+			questions: [],
+		});
+		expect(scored.triage).toMatchObject({
+			concluded: 1,
+			proceed: 1,
+			needsInput: 0,
+		});
+
+		// An invalid verdict document blocks the cell as an inference error.
+		writeFileSync(
+			join(dir, "triage-recordings", "prime-count.json"),
+			JSON.stringify({
+				promptDigest: triageDigest,
+				output: "たぶん進めてよいと思います",
+			}),
+		);
+		const invalid = await run();
+		expect(invalid.cells[0]?.status).toBe("inference-error");
+		expect(invalid.triage).toMatchObject({ concluded: 0, invalid: 1 });
 	});
 
 	test("candidates naming an unoffered entry fail before the run starts", async () => {

@@ -39,6 +39,14 @@ export const COMPOSE_PURPOSE = "compose";
  */
 export const REPAIR_PURPOSE = "repair";
 
+/**
+ * Purpose of the triage calls (`bench/format/triage.ts`): one pre-pass call per case
+ * that judges only whether the request's information is sufficient, whose conclusion
+ * the composing prompt then carries. Triage recordings live in their own directory,
+ * never mixed with compose ones.
+ */
+export const TRIAGE_PURPOSE = "triage";
+
 export const recordingFile = z.strictObject({
 	promptDigest: z.string().regex(/^[a-f0-9]{64}$/),
 	output: z.string(),
