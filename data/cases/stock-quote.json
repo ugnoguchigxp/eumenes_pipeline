@@ -1,1 +1,1 @@
-{"expected":{"kind":"pipeline","requiredBundles":["stock.quote"]},"id":"stock-quote","notes":"instantの単独利用。Web検索ではなく株価専用の入口を選べるかを見る","providedMaterials":[],"request":"トヨタ自動車の今の株価を教えてください","usesFixtureContracts":false}
+{"expected":{"kind":"pipeline","requiredBundles":["stock.quote"]},"id":"stock-quote","notes":"instantの単独利用。Web検索ではなく株価専用の入口を選べるかを見る","providedMaterials":[],"request":"トヨタ自動車の今の株価を教えてください","split":"dev","usesFixtureContracts":false}

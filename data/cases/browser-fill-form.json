@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.operate"]},"group":"pair-browser-do","id":"browser-fill-form","notes":"対のケース（pair-browser-do）。ページへの入力は操作の入口。撮影だけでは済まない","providedMaterials":[],"request":"開いている申込みフォームに、住所と電話番号を入力しておいてください","split":"dev","usesFixtureContracts":false}

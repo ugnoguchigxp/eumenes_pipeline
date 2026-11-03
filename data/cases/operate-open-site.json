@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.operate"]},"id":"operate-open-site","notes":"URLを開く操作は操作の入口。天気予報の即答入口とは別の依頼","providedMaterials":[],"request":"ブラウザで気象庁のサイトを開いてください","split":"dev","usesFixtureContracts":false}

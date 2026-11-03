@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.operate"]},"id":"operate-find-in-page","notes":"ページ内の探索は操作の入口。公開情報の検索ではない","providedMaterials":[],"request":"開いているマニュアルのページの中で、「保証」という言葉が出てくる場所を探してください","split":"holdout","usesFixtureContracts":false}

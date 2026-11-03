@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["stock.quote"]},"id":"stock-ticker-us","notes":"ティッカー指定のinstant単独利用。Web検索に流れないかを見る","providedMaterials":[],"request":"AAPLの現在の株価を教えてください","split":"holdout","usesFixtureContracts":false}

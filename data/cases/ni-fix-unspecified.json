@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-fix-unspecified","notes":"文脈なしでは対象が特定できない。履歴調査で済ませたり、勝手に修正したりしない","providedMaterials":[],"request":"さっきのやつ、やっぱり直しておいて","split":"dev","usesFixtureContracts":false}

@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"music","kind":"pipeline","requiredBundles":["music.create"]},"id":"music-vocal","notes":"ボーカル付きの生成も同じ入口。再生の入口と混同しない","providedMaterials":[],"request":"誕生日のお祝いに、歌詞付きの短い歌を作ってください","split":"holdout","usesFixtureContracts":true}

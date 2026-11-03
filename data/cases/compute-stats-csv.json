@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["compute.python"]},"id":"compute-stats-csv","notes":"利用者資料（CSV）を request 参照で計算の手順へ渡す","providedMaterials":[{"kind":"csv","name":"売上データ"}],"request":"添付した売上CSVから、月ごとの合計と平均を計算してください","split":"dev","usesFixtureContracts":false}

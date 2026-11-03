@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search"]},"id":"weather-weekly-web","notes":"weather.forecast は3日先までが対象で、1週間の傾向は対象外。専用入口で代替せずWeb検索が正解","providedMaterials":[],"request":"来週1週間の横浜の天気の傾向を調べてください","split":"dev","usesFixtureContracts":true}

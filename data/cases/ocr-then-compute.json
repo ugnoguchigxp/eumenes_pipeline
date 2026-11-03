@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage","compute.python"],"requiredMaterials":["ocr.manage"]},"id":"ocr-then-compute","notes":"読み取った数値が計算の手順へ渡る","providedMaterials":[{"kind":"image","name":"請求書の画像"}],"request":"添付した請求書の画像から明細の金額を読み取って、合計を計算してください","split":"dev","usesFixtureContracts":false}

@@ -24,6 +24,13 @@
  *   entry or an entry whose output contract is a bench fixture. Results on those cases are
  *   reported apart from catalog-only cases (plan §4); the loader test recomputes the flag from
  *   the catalog and fails on a mismatch.
+ * - `split` is required on every case (a file without it fails loudly; there is no default):
+ *   `"dev"` cases may be looked at while tuning formats, prompts and thresholds; `"holdout"`
+ *   cases are the protected evaluation set and are never used for tuning (plan §9). The seed
+ *   cases from P0c are all `"dev"` — the P0d measurements already decided on them.
+ * - `group` names a family of near-duplicate requests (same conversation, paraphrase, or a
+ *   pair whose materials/targets are easily swapped). A group never spans splits: similar
+ *   requests must not leak across the dev/holdout boundary (plan §9).
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -61,6 +68,13 @@ export const evalCase = z.strictObject({
 	}),
 	/** True when an acceptable solution depends on legacy entries or bench fixture contracts. */
 	usesFixtureContracts: z.boolean(),
+	/** Which side of the dev/holdout boundary this case sits on (plan §9). Always explicit. */
+	split: z.enum(["dev", "holdout"]),
+	/** Near-duplicate family this case belongs to, if any. A group never spans splits. */
+	group: z
+		.string()
+		.regex(/^[a-z][a-z0-9-]{0,59}$/)
+		.optional(),
 	notes: z.string().min(1).max(1000).optional(),
 });
 export type EvalCase = z.infer<typeof evalCase>;

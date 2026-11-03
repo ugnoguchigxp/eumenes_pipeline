@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["history.research","stock.quote"],"requiredMaterials":["history.research"]},"id":"history-then-stock","notes":"履歴から得た会社名が株価の型付き引数になる。順序を取り違えると成立しない","providedMaterials":[],"request":"前に買うか迷っていた会社の名前を履歴から探して、その会社の今の株価を教えてください","split":"holdout","usesFixtureContracts":true}

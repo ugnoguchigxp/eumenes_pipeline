@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["image.create"]},"id":"image-edit-screen","notes":"画面を開く実操作も image.create の対象。自然文の返答だけで済ませない","providedMaterials":[],"request":"画像の制作プロンプトを編集する画面を開いてください","split":"holdout","usesFixtureContracts":true}

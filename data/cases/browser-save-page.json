@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.capture"]},"group":"pair-browser-do","id":"browser-save-page","notes":"対のケース（pair-browser-do）。開いているページの保存は撮影の入口。操作の入口と取り違えないかを見る","providedMaterials":[],"request":"いま開いているチケット販売ページ、あとで見返せるようにページ全体を画像として残してください","split":"dev","usesFixtureContracts":false}

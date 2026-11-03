@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["dots.delegate"]},"id":"dots-outsource","notes":"外部のdotsへの委任。かんばん登録とは別の入口","providedMaterials":[],"request":"登録済みのdotsに、ランディングページの文案づくりを任せてください","split":"holdout","usesFixtureContracts":false}

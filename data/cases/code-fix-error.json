@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["claude-code.repair"]},"id":"code-fix-error","notes":"エラーが起きているので修正の入口。新規依頼の入口と取り違えないかを見る","providedMaterials":[],"request":"テストを実行したらエラーで落ちるようになりました。原因を調べて直してください","split":"dev","usesFixtureContracts":false}

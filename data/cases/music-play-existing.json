@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["music.library"]},"group":"pair-music-make-play","id":"music-play-existing","notes":"対のケース（pair-music-make-play）。既存の曲の再生だけなら music.create は使わない","providedMaterials":[],"request":"前に作ってもらった集中作業用のBGM、もう一度再生してくれる？","split":"dev","usesFixtureContracts":true}

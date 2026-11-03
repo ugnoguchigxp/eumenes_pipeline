@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["cli.run","claude-code.request"],"requiredMaterials":["cli.run"]},"id":"cli-check-then-code","notes":"確認（CLI）の結果が依頼（Claude Code）の材料になる連鎖","providedMaterials":[],"request":"まずコマンドでエラーログの末尾を確認して、その内容をもとにClaude Codeへ修正を依頼してください","split":"holdout","usesFixtureContracts":false}

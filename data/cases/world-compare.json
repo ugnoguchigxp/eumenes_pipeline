@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["world.query"]},"id":"world-compare","notes":"仮定の比較はWorld照会の対象。一般知識の質問ではない","providedMaterials":[],"request":"A案とB案では、どちらの影響範囲が小さいか、Worldの記録で比べてください","split":"holdout","usesFixtureContracts":true}

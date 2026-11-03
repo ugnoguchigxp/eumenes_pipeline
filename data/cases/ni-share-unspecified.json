@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-share-unspecified","notes":"どの資料を誰に共有するか決まらない。委任やボード登録で成功を装わない","providedMaterials":[],"request":"ミーティングの資料を関係者に共有しておいて","split":"dev","usesFixtureContracts":false}

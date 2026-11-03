@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["excalidraw.edit"]},"id":"diagram-flow","notes":"図の作成はExcalidrawの入口。画像生成と取り違えないかを見る","providedMaterials":[],"request":"注文から発送までの流れを、フローチャートとして図に描いてください","split":"dev","usesFixtureContracts":true}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-send-email","notes":"メール送信の入口はない。委任やボード登録で代替しない","providedMaterials":[],"request":"取引先の佐藤さんに、納品日の確認メールを送ってください","split":"holdout","usesFixtureContracts":false}

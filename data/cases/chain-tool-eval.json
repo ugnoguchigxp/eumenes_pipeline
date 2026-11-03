@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search","world.query","excalidraw.edit","kanban.manage"],"requiredMaterials":["web.search","world.query"]},"id":"chain-tool-eval","notes":"連携: 外部調査と内部照会の両結果が図と記録へ渡る","providedMaterials":[],"request":"新しい決済ツールの評判をWebで調べて、うちの構成への影響をWorldの記録で確認して、関係を図にまとめ、評価結果をかんばんに残してください","split":"holdout","usesFixtureContracts":true}

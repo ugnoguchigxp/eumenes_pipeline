@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-summarize-doc","notes":"docling.desk は画面を開く入口で内容の要約はしない。OCRは画像の文字読み取りで、PDFの要約ではない","providedMaterials":[{"kind":"pdf","name":"報告書"}],"request":"添付した報告書PDFの内容を、3行に要約してください","split":"holdout","usesFixtureContracts":false}

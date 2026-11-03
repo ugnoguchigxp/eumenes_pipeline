@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["kanban.manage"]},"id":"kanban-organize","notes":"ボードの整理は共通ボードの入口。Codex専用の入口ではない","providedMaterials":[],"request":"かんばんボードの「対応中」のカードを、期限の近い順に並べ替えてください","split":"dev","usesFixtureContracts":false}

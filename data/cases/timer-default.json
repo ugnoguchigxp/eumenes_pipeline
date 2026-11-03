@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["timers.manage"]},"id":"timer-default","notes":"時間の指定がなければ3分で開始するのが入口の仕様。確認を返さずタイマーが正解","providedMaterials":[],"request":"タイマーかけて","split":"dev","usesFixtureContracts":false}

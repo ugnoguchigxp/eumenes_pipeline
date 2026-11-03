@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"image","kind":"pipeline","requiredBundles":["weather.forecast","image.create"],"requiredMaterials":["weather.forecast"]},"id":"weather-then-image","notes":"天気の結果が画像生成の条件と材料になる","providedMaterials":[],"request":"明日の天気が晴れの予報なら、そのイメージでピクニックのイラストを作ってください","split":"dev","usesFixtureContracts":true}

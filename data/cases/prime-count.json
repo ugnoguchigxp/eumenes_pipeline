@@ -1,1 +1,1 @@
-{"expected":{"acceptableBundles":["cli.run"],"kind":"pipeline","requiredBundles":["compute.python"]},"id":"prime-count","notes":"command型のready部品だけで組める単一作業。シェルでの計算も許容解とする","providedMaterials":[],"request":"1から100までの素数の個数を計算して教えてください","usesFixtureContracts":false}
+{"expected":{"acceptableBundles":["cli.run"],"kind":"pipeline","requiredBundles":["compute.python"]},"id":"prime-count","notes":"command型のready部品だけで組める単一作業。シェルでの計算も許容解とする","providedMaterials":[],"request":"1から100までの素数の個数を計算して教えてください","split":"dev","usesFixtureContracts":false}

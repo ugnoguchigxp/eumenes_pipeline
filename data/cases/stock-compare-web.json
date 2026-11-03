@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search"]},"id":"stock-compare-web","notes":"stock.quote は一社の現在値専用で、複数社の比較は対象外。Web検索が正解","providedMaterials":[],"request":"トヨタと日産の今の株価を比べて、どっちが高いか教えてください","split":"holdout","usesFixtureContracts":true}

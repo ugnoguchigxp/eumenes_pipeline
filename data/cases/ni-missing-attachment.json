@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-missing-attachment","notes":"依頼が指す契約書が資料として渡されていない。missing-table と同型で、資料なしに内容を作らない","providedMaterials":[],"request":"添付した契約書の要点を、かんばんにカード化してください","split":"holdout","usesFixtureContracts":false}

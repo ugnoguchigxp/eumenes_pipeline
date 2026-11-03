@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["weather.forecast","timers.manage"],"requiredMaterials":["weather.forecast"]},"id":"weather-then-timer-early","notes":"instant（天気）とcommand（タイマー）の混成。天気の結果がタイマーの判断材料になる","providedMaterials":[],"request":"明後日の札幌の天気を見てください。雪の予報だったら、出発の30分前にタイマーをセットしてほしいです","split":"dev","usesFixtureContracts":false}

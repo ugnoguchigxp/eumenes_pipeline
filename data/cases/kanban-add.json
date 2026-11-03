@@ -1,1 +1,1 @@
-{"expected":{"kind":"pipeline","requiredBundles":["kanban.manage"]},"id":"kanban-add","notes":"command型ready部品の単一作業（書き込みを伴う）","providedMaterials":[],"request":"かんばんボードに「請求書の確認」というカードを追加してください","usesFixtureContracts":false}
+{"expected":{"kind":"pipeline","requiredBundles":["kanban.manage"]},"id":"kanban-add","notes":"command型ready部品の単一作業（書き込みを伴う）","providedMaterials":[],"request":"かんばんボードに「請求書の確認」というカードを追加してください","split":"dev","usesFixtureContracts":false}

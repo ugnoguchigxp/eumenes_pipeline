@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage"]},"id":"ocr-receipt","notes":"利用者資料（写真）の文字読み取り。物体認識に振らない","providedMaterials":[{"kind":"image","name":"レシートの写真"}],"request":"添付したレシートの写真から、金額と日付を読み取ってください","split":"dev","usesFixtureContracts":false}

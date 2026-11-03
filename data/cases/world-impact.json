@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["world.query"]},"id":"world-impact","notes":"影響範囲の質問はWorld照会。事実の申告ではないので照会として扱う","providedMaterials":[],"request":"この認証方式を変えると、記録上はどこに影響が出そうですか","split":"dev","usesFixtureContracts":true}

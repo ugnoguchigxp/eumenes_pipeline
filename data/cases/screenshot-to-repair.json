@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage","claude-code.repair"],"requiredMaterials":["ocr.manage"]},"id":"screenshot-to-repair","notes":"読み取ったエラーメッセージが修正依頼の材料になる","providedMaterials":[{"kind":"image","name":"エラー画面の画像"}],"request":"添付したエラー画面の画像からメッセージを読み取って、その内容で修正をClaudeへ依頼してください","split":"holdout","usesFixtureContracts":false}

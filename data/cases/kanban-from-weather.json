@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["weather.forecast","kanban.manage"],"requiredMaterials":["weather.forecast"]},"id":"kanban-from-weather","notes":"天気の結果がボード操作の条件になる。天気は型付き引数のinstant","providedMaterials":[],"request":"明日の天気が雨の予報なら、屋外作業のカードに延期のメモを付けてください","split":"dev","usesFixtureContracts":false}

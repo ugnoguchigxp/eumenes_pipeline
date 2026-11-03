@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"image","kind":"pipeline","requiredBundles":["image.create","model3d.studio"],"requiredMaterials":["image.create"]},"id":"image-then-3d","notes":"作った画像が立体化の手順へ渡る。平面で終わらせない","providedMaterials":[],"request":"ドラゴンの画像を作ってください。その画像をもとに、3Dモデルにもしてほしいです","split":"holdout","usesFixtureContracts":true}

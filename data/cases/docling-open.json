@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["docling.desk"]},"id":"docling-open","notes":"管理画面を開く依頼。文書の中身の説明ではない","providedMaterials":[],"request":"Docling Deskを開いて、取り込み済みの文書の一覧を見せてください","split":"holdout","usesFixtureContracts":false}

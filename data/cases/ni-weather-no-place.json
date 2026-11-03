@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-weather-no-place","notes":"場所が無く、weather.forecast の必須引数（場所・都道府県）が決まらない。推測で手順を作らず確認が正解","providedMaterials":[],"request":"明日の天気を教えてください","split":"dev","usesFixtureContracts":false}

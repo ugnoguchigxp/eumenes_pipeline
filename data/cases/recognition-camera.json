@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["object-recognition.manage"]},"id":"recognition-camera","notes":"カメラで物を調べるのは物体認識。文字読み取り（OCR）とは別","providedMaterials":[],"request":"カメラを起動して、机の上に何が置いてあるか調べさせてください","split":"dev","usesFixtureContracts":true}

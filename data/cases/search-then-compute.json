@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search","compute.python"],"requiredMaterials":["web.search"]},"id":"search-then-compute","notes":"為替は株価入口の対象外。調べたレートが計算へ渡る","providedMaterials":[],"request":"円とドルの今の為替レートを調べて、350ドルが日本円でいくらになるか計算してください","split":"holdout","usesFixtureContracts":true}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.capture","kanban.manage"],"requiredMaterials":["browser.capture"]},"id":"capture-then-kanban","notes":"撮影した証跡がカード作成の材料になる","providedMaterials":[],"request":"開いている障害報告のページを撮影して、対応カードをかんばんに作ってください","split":"dev","usesFixtureContracts":false}

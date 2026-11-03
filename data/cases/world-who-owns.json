@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["world.query"]},"id":"world-who-owns","notes":"担当者の質問はWorld照会の対象。Web検索に流れないかを見る","providedMaterials":[],"request":"この請求フローの担当は誰か、Worldの記録から教えてください","split":"holdout","usesFixtureContracts":true}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search","weather.forecast"]},"id":"search-then-weather","notes":"公開情報の調査と天気の即答は別の入口。両方が要る","providedMaterials":[],"request":"富士登山のベストシーズンを調べて、明日の富士山麓の天気も教えてください","split":"dev","usesFixtureContracts":true}

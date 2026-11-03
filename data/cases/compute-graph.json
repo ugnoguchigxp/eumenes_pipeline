@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["compute.python"]},"id":"compute-graph","notes":"計算と作図が1つの入口で完結するケース。図の描画をExcalidrawに振らない","providedMaterials":[],"request":"サイコロを2つ振ったときの合計の確率分布を計算して、棒グラフにしてください","split":"holdout","usesFixtureContracts":false}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["weather.forecast"]},"id":"weather-two-cities","notes":"同じinstant入口を2手順使うケース。地名と都道府県の型付き引数がそれぞれ必要","providedMaterials":[],"request":"明日の東京と大阪の天気を、両方教えてください。傘が要るかどうかも知りたいです","split":"dev","usesFixtureContracts":false}

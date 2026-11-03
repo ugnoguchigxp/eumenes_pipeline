@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["stock.quote","compute.python"],"requiredMaterials":["stock.quote"]},"id":"stock-then-compute","notes":"instantの即答（株価）を計算の手順へ渡す。株価は専用入口、評価額は計算の入口","providedMaterials":[],"request":"ソニーの今の株価を調べてください。150株持っている場合の評価額も計算してほしいです","split":"dev","usesFixtureContracts":false}

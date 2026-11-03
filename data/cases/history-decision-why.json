@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["history.research"]},"id":"history-decision-why","notes":"会話の記録全体から経緯を掘る依頼は履歴調査。最近の発言確認とは違う","providedMaterials":[],"request":"半年前に、なぜこの構成を選んだのか。過去の会話の経緯を洗い出してください","split":"dev","usesFixtureContracts":true}

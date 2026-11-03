@@ -1,0 +1,1 @@
+{"expected":{"acceptableBundles":["claude-code.request"],"kind":"pipeline","requiredBundles":["cli.run"]},"id":"cli-git-status","notes":"確認だけならCLI。Claude Codeに作業として渡す解も許容する","providedMaterials":[],"request":"いまのプロジェクトのgitの状態と、直近のコミット3件を確認してください","split":"holdout","usesFixtureContracts":false}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["timers.manage"]},"id":"timer-cooking","notes":"相対時間の通知はタイマー。時刻指定のアラームとは違う","providedMaterials":[],"request":"パスタを茹でるので、8分後に知らせてください","split":"dev","usesFixtureContracts":false}

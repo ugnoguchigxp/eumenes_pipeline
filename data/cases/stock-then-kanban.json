@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["stock.quote","kanban.manage"],"requiredMaterials":["stock.quote"]},"id":"stock-then-kanban","notes":"instantの即答結果が記録の手順へ渡る","providedMaterials":[],"request":"任天堂の株価を調べて、結果をかんばんの監視カードに記録してください","split":"holdout","usesFixtureContracts":false}

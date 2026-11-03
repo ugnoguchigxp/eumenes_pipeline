@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["model3d.studio"]},"id":"model3d-show-existing","notes":"保存済みモデルの検索と表示も同じ入口。新規生成は不要","providedMaterials":[],"request":"前に作った恐竜の3Dモデルを探して、表示してください","split":"holdout","usesFixtureContracts":false}

@@ -1,1 +1,1 @@
-{"expected":{"kind":"needs_input"},"id":"missing-table","notes":"依頼が指す表が資料として渡されていない。資料なしに数値を作らず、不足を返すのが正解","providedMaterials":[],"request":"この表をグラフにしてください","usesFixtureContracts":false}
+{"expected":{"kind":"needs_input"},"id":"missing-table","notes":"依頼が指す表が資料として渡されていない。資料なしに数値を作らず、不足を返すのが正解","providedMaterials":[],"request":"この表をグラフにしてください","split":"dev","usesFixtureContracts":false}

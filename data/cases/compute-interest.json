@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["compute.python"]},"id":"compute-interest","notes":"単独の数値計算。検索やタイマーなど無関係な入口を足さない","providedMaterials":[],"request":"年利2.5%で80万円を5年運用したらいくらになるか、複利で計算してください","split":"holdout","usesFixtureContracts":false}

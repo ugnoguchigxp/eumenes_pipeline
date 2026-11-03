@@ -20,10 +20,57 @@ const fixtureDependent = (entry: string): boolean => {
 	);
 };
 
-describe("seed cases in data/cases/", () => {
-	test("loads the seed set with unique ids", () => {
-		expect(cases).toHaveLength(12);
+describe("cases in data/cases/", () => {
+	test("loads the full set with unique ids", () => {
+		expect(cases).toHaveLength(112);
 		expect(new Set(cases.map((c) => c.id)).size).toBe(cases.length);
+	});
+
+	test("split is explicit on every case; seeds are all dev, holdout is protected", () => {
+		const seedIds = [
+			"bank-transfer",
+			"browser-shot",
+			"compute-to-kanban",
+			"edo-research-image-music",
+			"history-lookup",
+			"kanban-add",
+			"missing-table",
+			"prime-count",
+			"screenshot-ocr",
+			"stock-quote",
+			"vague-request",
+			"weather-timer",
+		];
+		for (const id of seedIds) expect(byId.get(id)?.split, id).toBe("dev");
+		expect(cases.filter((c) => c.split === "dev")).toHaveLength(72);
+		expect(cases.filter((c) => c.split === "holdout")).toHaveLength(40);
+	});
+
+	test("a group never spans the dev/holdout boundary (plan §9)", () => {
+		const groupSplit = new Map<string, string>();
+		for (const c of cases) {
+			if (!c.group) continue;
+			const seen = groupSplit.get(c.group);
+			if (seen !== undefined)
+				expect(seen, `group ${c.group} spans splits`).toBe(c.split);
+			groupSplit.set(c.group, c.split);
+		}
+		expect(groupSplit.size).toBeGreaterThanOrEqual(5);
+	});
+
+	test("every offered entry is gold in at least two cases", () => {
+		const counts = new Map<string, number>();
+		for (const c of cases)
+			for (const entry of [
+				...(c.expected.requiredBundles ?? []),
+				...(c.expected.acceptableBundles ?? []),
+			])
+				counts.set(entry, (counts.get(entry) ?? 0) + 1);
+		for (const record of catalog.view.offered)
+			expect(
+				counts.get(record.card.entry) ?? 0,
+				`${record.card.entry} is covered fewer than twice`,
+			).toBeGreaterThanOrEqual(2);
 	});
 
 	test("covers the P0c categories", () => {
@@ -82,6 +129,7 @@ describe("loadCases failure modes", () => {
 		providedMaterials: [],
 		expected: { kind: "unsupported" },
 		usesFixtureContracts: false,
+		split: "dev",
 	});
 
 	test("rejects a file that is not JSON", () => {
@@ -99,6 +147,16 @@ describe("loadCases failure modes", () => {
 				expected: { kind: "pipeline", requiredBundles: ["No Such"] },
 			}),
 		});
+		expect(() => loadCases(dir)).toThrow(/invalid case/);
+		rmSync(dir, { recursive: true, force: true });
+	});
+
+	test("rejects a case without an explicit split (no silent default)", () => {
+		const { split: _dropped, ...noSplit } = JSON.parse(good) as Record<
+			string,
+			unknown
+		>;
+		const dir = withDir({ "a.json": JSON.stringify(noSplit) });
 		expect(() => loadCases(dir)).toThrow(/invalid case/);
 		rmSync(dir, { recursive: true, force: true });
 	});

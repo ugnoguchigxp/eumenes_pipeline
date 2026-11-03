@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-image-no-subject","notes":"何の画像か対象が決まらない。勝手に題材を決めて生成したことにしない","providedMaterials":[],"request":"何かいい感じの画像を作っておいて","split":"holdout","usesFixtureContracts":false}

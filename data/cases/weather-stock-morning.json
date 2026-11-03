@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["weather.forecast","stock.quote"]},"id":"weather-stock-morning","notes":"instant同士の組み合わせ。どちらも型付き引数が要る","providedMaterials":[],"request":"明日の名古屋の天気と、トヨタの今の株価を両方教えてください","split":"dev","usesFixtureContracts":false}

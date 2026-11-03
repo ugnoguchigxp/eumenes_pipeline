@@ -1,1 +1,1 @@
-{"expected":{"kind":"pipeline","requiredBundles":["history.research"]},"id":"history-lookup","notes":"旧形式（unbound）の履歴調査だけを使うケース。Web検索と混同しないこと","providedMaterials":[],"request":"過去の会話の中から、先月話した引っ越しの条件を調べてください","usesFixtureContracts":true}
+{"expected":{"kind":"pipeline","requiredBundles":["history.research"]},"id":"history-lookup","notes":"旧形式（unbound）の履歴調査だけを使うケース。Web検索と混同しないこと","providedMaterials":[],"request":"過去の会話の中から、先月話した引っ越しの条件を調べてください","split":"dev","usesFixtureContracts":true}

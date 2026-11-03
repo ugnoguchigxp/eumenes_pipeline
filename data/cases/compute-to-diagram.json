@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["compute.python","excalidraw.edit"],"requiredMaterials":["compute.python"]},"id":"compute-to-diagram","notes":"計算結果を図の手順へ渡す。数値の計算と図の作成は別の入口","providedMaterials":[],"request":"二つの料金プランの損益分岐点を計算して、結果が分かるように図にまとめてください","split":"dev","usesFixtureContracts":true}

@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-transcribe-audio","notes":"音声の文字起こしを行う入口は提示24件にない。OCRは画像・動画の文字読み取りで音声は対象外","providedMaterials":[{"kind":"audio","name":"会議の音声"}],"request":"添付した会議の音声を、文字に起こしてください","split":"dev","usesFixtureContracts":false}

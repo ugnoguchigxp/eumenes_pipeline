@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"image","kind":"pipeline","requiredBundles":["image.create"]},"id":"image-poster","notes":"画像生成の単独利用。成果物は fixture の image","providedMaterials":[],"request":"文化祭のポスター用に、本を読む猫のイラストを作ってください","split":"dev","usesFixtureContracts":true}

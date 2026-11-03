@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-alarm-clocktime","notes":"時刻指定のアラームは timers.manage の対象外（相対時間のみ）。タイマーで代替したことにしない","providedMaterials":[],"request":"明日の朝7時に起こしてください","split":"dev","usesFixtureContracts":false}

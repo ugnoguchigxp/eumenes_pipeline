@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["codex-tasks.manage"]},"id":"codex-status","notes":"既存タスクの状況確認もCodex専用の入口。共通ボードと取り違えないかを見る","providedMaterials":[],"request":"Codexに任せているタスクの進み具合を確認してください","split":"holdout","usesFixtureContracts":false}

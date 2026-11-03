@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["cli.run"]},"id":"cli-list-files","notes":"シェルコマンドの実行だけのケース。Claude Codeへの依頼にしない","providedMaterials":[],"request":"ダウンロードフォルダにあるファイルの一覧を、更新日時の新しい順に出してください","split":"dev","usesFixtureContracts":false}

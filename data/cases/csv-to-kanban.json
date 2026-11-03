@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["compute.python","kanban.manage"],"requiredMaterials":["compute.python"]},"id":"csv-to-kanban","notes":"利用者資料の集計結果が記録へ渡る","providedMaterials":[{"kind":"csv","name":"タスク一覧"}],"request":"添付したCSVのタスク一覧を集計して、件数をかんばんに記録してください","split":"dev","usesFixtureContracts":false}

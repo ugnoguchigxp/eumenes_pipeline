@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["world.query","dots.delegate"],"requiredMaterials":["world.query"]},"id":"world-then-dots","notes":"照会の結果が委任の手順へ渡る","providedMaterials":[],"request":"決済まわりの依存関係をWorldで調べて、影響のある担当のdotsに対応を任せてください","split":"dev","usesFixtureContracts":true}

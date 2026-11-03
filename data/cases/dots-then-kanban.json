@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["dots.delegate","kanban.manage"],"requiredMaterials":["dots.delegate"]},"id":"dots-then-kanban","notes":"委任先への確認結果が記録へ渡る","providedMaterials":[],"request":"dotsに任せた作業の状況を聞いて、結果をかんばんに記録してください","split":"dev","usesFixtureContracts":false}

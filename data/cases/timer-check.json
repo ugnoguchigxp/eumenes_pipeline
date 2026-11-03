@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["timers.manage"]},"id":"timer-check","notes":"タイマーの状況確認も同じ入口","providedMaterials":[],"request":"いま動いているタイマーの残り時間を教えてください","split":"holdout","usesFixtureContracts":false}

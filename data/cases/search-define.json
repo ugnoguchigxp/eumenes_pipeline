@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search"]},"id":"search-define","notes":"言葉の定義の調査はWeb検索。専用入口のない事柄の受け皿","providedMaterials":[],"request":"「忖度」という言葉の意味と由来を調べてください","split":"dev","usesFixtureContracts":true}

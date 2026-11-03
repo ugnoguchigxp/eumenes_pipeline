@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage","docling.desk"],"requiredMaterials":["ocr.manage"]},"id":"ocr-then-docling","notes":"読み取りと取り込みは別の入口。写真の文字はOCR、保管はdocling","providedMaterials":[{"kind":"image","name":"書類の写真"}],"request":"添付した書類の写真から文字を読み取ってください。その書類は文書ライブラリにも取り込んでおいてください","split":"dev","usesFixtureContracts":false}

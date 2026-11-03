@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["history.research"]},"group":"pair-past-vs-web","id":"past-trip-decision","notes":"対のケース（pair-past-vs-web）。過去の決定は会話履歴の調査。Web検索と取り違えないかを見る","providedMaterials":[],"request":"前に話し合って決めた箱根旅行の日程、いつだったか過去の会話から探してもらえますか","split":"holdout","usesFixtureContracts":true}

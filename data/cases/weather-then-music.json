@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"music","kind":"pipeline","requiredBundles":["weather.forecast","music.create"],"requiredMaterials":["weather.forecast"]},"id":"weather-then-music","notes":"天気の結果が音楽生成の材料になる","providedMaterials":[],"request":"今日の天気の雰囲気に合う、朝のBGMを作ってください","split":"holdout","usesFixtureContracts":true}

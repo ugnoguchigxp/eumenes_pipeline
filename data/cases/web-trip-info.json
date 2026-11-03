@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.search"]},"group":"pair-past-vs-web","id":"web-trip-info","notes":"対のケース（pair-past-vs-web）。公開情報の調査はWeb検索。履歴調査と取り違えないかを見る","providedMaterials":[],"request":"箱根の今週末のイベント情報を、Webで調べてください","split":"holdout","usesFixtureContracts":true}

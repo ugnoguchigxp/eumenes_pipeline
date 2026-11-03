@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-stock-no-company","notes":"会社が特定できず、stock.quote の必須引数 query が決まらない","providedMaterials":[],"request":"例の会社の株価、今いくら？","split":"dev","usesFixtureContracts":false}

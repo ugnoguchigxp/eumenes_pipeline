@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["history.research","kanban.manage"],"requiredMaterials":["history.research"]},"id":"history-then-kanban","notes":"履歴調査の結果が記録の手順へ渡る","providedMaterials":[],"request":"先月決めた引っ越しの条件を履歴から探して、かんばんボードにカードとして残してください","split":"holdout","usesFixtureContracts":true}

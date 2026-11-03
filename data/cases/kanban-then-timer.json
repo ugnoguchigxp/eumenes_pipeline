@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["kanban.manage","timers.manage"]},"id":"kanban-then-timer","notes":"独立した2作業の組み合わせ。受け渡しはないが両方の入口が要る","providedMaterials":[],"request":"今日のタスクをボードに3件追加して、作業開始の合図に25分のタイマーもかけてください","split":"holdout","usesFixtureContracts":false}

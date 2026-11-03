@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["browser.capture","ocr.manage"],"requiredMaterials":["browser.capture"]},"id":"capture-then-ocr","notes":"撮影した画像が読み取りの手順へ渡る。撮影と読み取りは別の入口","providedMaterials":[],"request":"開いているページを撮影して、その画像に写っている文字を読み取ってください","split":"dev","usesFixtureContracts":false}

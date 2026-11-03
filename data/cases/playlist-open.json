@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["music.library"]},"id":"playlist-open","notes":"ライブラリを開く依頼は再生側の入口。新しい曲は作らない","providedMaterials":[],"request":"お気に入りのプレイリストを開いてください","split":"dev","usesFixtureContracts":true}

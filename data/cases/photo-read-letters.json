@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["ocr.manage"]},"group":"pair-photo-read","id":"photo-read-letters","notes":"対のケース（pair-photo-read）。同じ写真でも、文字の読み取りはOCRの入口","providedMaterials":[{"kind":"image","name":"商店街の写真"}],"request":"添付した商店街の写真の看板に、文字で何と書いてあるか読み取ってください","split":"holdout","usesFixtureContracts":false}

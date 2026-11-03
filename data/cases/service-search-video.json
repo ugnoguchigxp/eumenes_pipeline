@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["web.service-search"]},"id":"service-search-video","notes":"サービス内検索。汎用のWeb検索と取り違えないかを見る","providedMaterials":[],"request":"YouTubeの中で、そば打ちの初心者向け動画を探してください","split":"dev","usesFixtureContracts":true}

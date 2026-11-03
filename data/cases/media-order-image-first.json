@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"music","kind":"pipeline","requiredBundles":["image.create","music.create"],"requiredMaterials":["image.create"]},"group":"pair-media-order","id":"media-order-image-first","notes":"対のケース（pair-media-order）。先に画像を作り、その結果が音楽の手順へ渡る","providedMaterials":[],"request":"夕日の海辺のイラストを描いてください。その絵の雰囲気に合う短いBGMも作ってほしいです","split":"dev","usesFixtureContracts":true}

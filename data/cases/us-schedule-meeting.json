@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-schedule-meeting","notes":"予定の登録を行う入口はない。タイマーやボードで代替しない","providedMaterials":[],"request":"明日の15時に、Aさんとの会議をカレンダーに入れてください","split":"dev","usesFixtureContracts":false}

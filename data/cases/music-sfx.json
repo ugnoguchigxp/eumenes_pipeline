@@ -1,0 +1,1 @@
+{"expected":{"finalArtifact":"music","kind":"pipeline","requiredBundles":["music.create"]},"id":"music-sfx","notes":"効果音も音楽生成の入口。成果物は fixture の music","providedMaterials":[],"request":"アプリの通知音に使える、短い効果音を作ってください","split":"dev","usesFixtureContracts":true}

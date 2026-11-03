@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["claude-code.request"]},"id":"code-new-feature","notes":"新規の実装依頼は request の入口。エラー修正の入口ではない","providedMaterials":[],"request":"このアプリに、検索履歴を保存する機能を実装してください","split":"dev","usesFixtureContracts":false}

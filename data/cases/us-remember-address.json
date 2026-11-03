@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-remember-address","notes":"記憶の登録を行う入口はない。world.query は照会専用で、登録は対象外（カードの避ける場面）","providedMaterials":[],"request":"私の新しい住所を覚えておいてください","split":"holdout","usesFixtureContracts":false}

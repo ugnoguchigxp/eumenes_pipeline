@@ -1,0 +1,1 @@
+{"expected":{"kind":"unsupported"},"id":"us-edit-video","notes":"動画の編集を行う入口はない。物体認識は読み取りのみで編集はしない","providedMaterials":[{"kind":"video","name":"旅行の動画"}],"request":"添付した動画を30秒に短く編集してください","split":"dev","usesFixtureContracts":false}

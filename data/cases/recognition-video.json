@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["object-recognition.manage"]},"id":"recognition-video","notes":"動画の中の物の位置は物体認識の対象。動画の編集ではない","providedMaterials":[{"kind":"video","name":"荷物検査の短い動画"}],"request":"添付した短い動画に映っている物の名前と位置を教えてください","split":"holdout","usesFixtureContracts":true}

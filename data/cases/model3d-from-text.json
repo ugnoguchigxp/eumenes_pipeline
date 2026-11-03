@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["model3d.studio"]},"id":"model3d-from-text","notes":"文章からの立体生成。画像生成の入口で代替しない","providedMaterials":[],"request":"テキストの説明から、木製の小さな椅子の3Dモデルを作ってください","split":"dev","usesFixtureContracts":false}

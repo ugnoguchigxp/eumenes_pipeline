@@ -1,0 +1,1 @@
+{"expected":{"kind":"needs_input"},"id":"ni-which-page","notes":"文脈なしでは対象ページが特定できない。撮影と操作のどちらかも決まらない","providedMaterials":[],"request":"そのページ、保存しておいて","split":"holdout","usesFixtureContracts":false}

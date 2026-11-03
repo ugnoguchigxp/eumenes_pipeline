@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["claude-code.repair","kanban.manage"],"requiredMaterials":["claude-code.repair"]},"id":"code-fix-then-kanban","notes":"修正の結果が記録の手順へ渡る。修正と記録は別の入口","providedMaterials":[],"request":"ログイン画面のエラーを調べて直してください。対応の内容はかんばんボードに記録しておいてください","split":"dev","usesFixtureContracts":false}

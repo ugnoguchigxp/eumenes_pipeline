@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["docling.desk"]},"id":"docling-import","notes":"文書の取り込みと閲覧準備は docling.desk。内容の要約ではない","providedMaterials":[{"kind":"pdf","name":"仕様書"}],"request":"添付した仕様書PDFを文書ライブラリに取り込んで、開けるようにしてください","split":"dev","usesFixtureContracts":false}

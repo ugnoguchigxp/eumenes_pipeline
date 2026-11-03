@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["excalidraw.edit"]},"id":"diagram-edit","notes":"保存済みの図の再表示と編集も同じ入口","providedMaterials":[],"request":"保存してある組織図を開いて、編集できるようにしてください","split":"holdout","usesFixtureContracts":true}

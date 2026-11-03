@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["history.research","excalidraw.edit"],"requiredMaterials":["history.research"]},"id":"history-to-diagram","notes":"調査の結果が図の手順へ渡る","providedMaterials":[],"request":"これまでの会話から決まった役割分担を洗い出して、関係が分かる図に描いてください","split":"dev","usesFixtureContracts":true}

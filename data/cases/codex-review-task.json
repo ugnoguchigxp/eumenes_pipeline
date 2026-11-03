@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["codex-tasks.manage"]},"id":"codex-review-task","notes":"担当（Codex）が明示されているので専用の入口。Claude Codeや共通ボードに振らない","providedMaterials":[],"request":"Codexに、このプルリクエストのレビューを新しいタスクとして依頼してください","split":"dev","usesFixtureContracts":false}

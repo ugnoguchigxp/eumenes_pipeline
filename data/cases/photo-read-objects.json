@@ -1,0 +1,1 @@
+{"expected":{"kind":"pipeline","requiredBundles":["object-recognition.manage"]},"group":"pair-photo-read","id":"photo-read-objects","notes":"対のケース（pair-photo-read）。同じ写真でも、物の把握は物体認識の入口。文字読み取りと取り違えないかを見る","providedMaterials":[{"kind":"image","name":"商店街の写真"}],"request":"添付した商店街の写真に、どんな看板や物が写っているか教えてください","split":"holdout","usesFixtureContracts":true}
