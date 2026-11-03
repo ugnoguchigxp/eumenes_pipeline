@@ -285,7 +285,7 @@ describe("createCatalogView", () => {
 		).toThrow("duplicate entry");
 	});
 
-	test("a name that is both an entry and a multi-entry bundle is ambiguous", () => {
+	test("an exact entry name wins over a bundle of the same name", () => {
 		const view = createCatalogView(
 			[
 				record("kit", { bundle: "kit" }),
@@ -293,11 +293,41 @@ describe("createCatalogView", () => {
 			],
 			{ version: "v", offer: () => true },
 		);
-		expect(view.resolve("kit")).toEqual({
+		const resolved = view.resolve("kit");
+		expect(resolved.ok && resolved.record.card.entry).toBe("kit");
+		expect(view.resolve("kit", "kit")).toMatchObject({ ok: true });
+		expect(view.resolve("kit", "kit.extra")).toMatchObject({ ok: true });
+		const result = checkDefinition(
+			definition([step("a", "kit", ["request"])], ["a"]),
+			view,
+		);
+		expect(result.ok && result.plan.steps[0]?.entry).toBe("kit");
+	});
+
+	test("a multi-entry bundle named without `entry` is ambiguous", () => {
+		const view = createCatalogView(
+			[
+				record("pack.a", { bundle: "pack" }),
+				record("pack.b", { bundle: "pack" }),
+			],
+			{ version: "v", offer: () => true },
+		);
+		expect(view.resolve("pack")).toEqual({
 			ok: false,
 			code: "ambiguous_entry",
-			candidates: ["kit", "kit.extra"],
+			candidates: ["pack.a", "pack.b"],
 		});
-		expect(view.resolve("kit", "kit")).toMatchObject({ ok: true });
+	});
+
+	test("an unknown name does not resolve", () => {
+		const view = createCatalogView([record("kit", { bundle: "kit" })], {
+			version: "v",
+			offer: () => true,
+		});
+		expect(view.resolve("nope")).toEqual({
+			ok: false,
+			code: "unknown_component",
+			candidates: [],
+		});
 	});
 });

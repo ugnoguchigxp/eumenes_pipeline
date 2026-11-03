@@ -30,8 +30,9 @@ export type CatalogView = {
 /**
  * Resolution is by contract only (no name similarity, no implicit default entry):
  * - with `entry`: that entry, which must belong to `bundle` (or `bundle` names the entry itself);
- * - without: `bundle` names an entry, or a bundle with exactly one offered entry. A name that is
- *   both an entry and a bundle with several offered entries is ambiguous.
+ * - without: an exact entry name wins, even over a bundle of the same name; otherwise `bundle`
+ *   must name a bundle with exactly one offered entry. A bundle name with several offered
+ *   entries and no `entry` is ambiguous.
  */
 export function createCatalogView(
 	records: readonly ComponentRecord[],
@@ -69,16 +70,9 @@ export function createCatalogView(
 					return fail("entry_not_in_bundle");
 				return take(record);
 			}
-			const inBundle = offered.filter((r) => r.card.bundle === bundle);
 			const named = all.get(bundle);
-			if (named) {
-				if (inBundle.length > 1)
-					return fail(
-						"ambiguous_entry",
-						inBundle.map((r) => r.card.entry),
-					);
-				return take(named);
-			}
+			if (named) return take(named);
+			const inBundle = offered.filter((r) => r.card.bundle === bundle);
 			if (inBundle.length === 1 && inBundle[0]) return take(inBundle[0]);
 			if (inBundle.length > 1)
 				return fail(

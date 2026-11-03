@@ -9,7 +9,7 @@
 import { z } from "zod";
 
 /** Version of the comparison contracts fixed in P0b; bump it when the contract changes. */
-export const CONTRACT_VERSION = "p0-1";
+export const CONTRACT_VERSION = "p0-2";
 
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
 const positiveInt = z.number().int().positive();
