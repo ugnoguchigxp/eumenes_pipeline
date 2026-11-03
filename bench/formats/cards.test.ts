@@ -4,6 +4,7 @@ import { loadBenchCatalog } from "../catalog/load.ts";
 import {
 	renderCardsJson,
 	renderCardsText,
+	renderCardsTextCompact,
 	summarizeArguments,
 } from "./cards.ts";
 
@@ -77,6 +78,52 @@ describe("renderCardsText", () => {
 			"excluded",
 		])
 			expect(text).not.toContain(leaked);
+	});
+});
+
+describe("renderCardsTextCompact", () => {
+	test("pins the compact form: entry, title, one-line purpose, arguments, output", () => {
+		expect(renderCardsTextCompact(CARDS)).toBe(
+			[
+				"- `compute.python` 計算",
+				"  目的: Pythonで計算する",
+				"  引数: なし",
+				"  出力: domain:compute.receipt@1",
+				"",
+				"- `weather.forecast` 天気予報",
+				"  目的: 天気を即答する",
+				"  引数: place: string（必須）、day: enum(today|tomorrow)（必須）",
+				"  出力: 要約と参照のみ",
+			].join("\n"),
+		);
+	});
+
+	test("drops the full rendering's lists and facts, and leaks nothing else", () => {
+		const text = renderCardsTextCompact(CARDS);
+		for (const dropped of [
+			"使う場面",
+			"使わない場面",
+			"副作用",
+			"利用者への確認",
+			"bundle:",
+			"eumenes-code",
+			"origin",
+			"ready",
+			"partial",
+		])
+			expect(text).not.toContain(dropped);
+		// Argument descriptions are part of the full rendering's summary, not the compact one.
+		expect(text).not.toContain("場所");
+	});
+
+	test("is deterministic on the real catalog and keeps catalog order", () => {
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const text = renderCardsTextCompact(catalog.cards);
+		expect(renderCardsTextCompact(catalog.cards)).toBe(text);
+		const positions = catalog.cards.map((c) => text.indexOf(`\`${c.entry}\``));
+		expect(positions.every((p) => p >= 0)).toBe(true);
+		expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+		catalog.close();
 	});
 });
 

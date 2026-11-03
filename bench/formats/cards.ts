@@ -79,6 +79,38 @@ function effectsText(effects: ComponentCard["effects"]): string {
 	return "読み取りのみ";
 }
 
+/**
+ * Compact text rendering (the `compact` prompt condition): entry id, title, a one-line
+ * purpose, the arguments summary inline and the declared output — nothing else. The
+ * use/avoid lists, effects and may-ask-user facts of the full rendering are dropped, so a
+ * run under this condition measures how much of the card the composer actually needs.
+ */
+export function renderCardsTextCompact(
+	cards: readonly ComponentCard[],
+): string {
+	return cards
+		.map((card) => {
+			const purpose = (card.summary.split("\n")[0] ?? "").trim();
+			let args = "なし";
+			if (card.arguments) {
+				const summarized = summarizeArguments(card.arguments)
+					.map(
+						(arg) =>
+							`${arg.name}: ${arg.type}（${arg.required ? "必須" : "任意"}）`,
+					)
+					.join("、");
+				if (summarized) args = summarized;
+			}
+			return [
+				`- \`${card.entry}\` ${card.title}`,
+				`  目的: ${purpose}`,
+				`  引数: ${args}`,
+				`  出力: ${card.output.schemaRef ?? "要約と参照のみ"}`,
+			].join("\n");
+		})
+		.join("\n\n");
+}
+
 /** Concise text rendering: one block per card, blocks separated by a blank line. */
 export function renderCardsText(cards: readonly ComponentCard[]): string {
 	return cards

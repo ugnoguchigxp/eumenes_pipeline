@@ -25,8 +25,15 @@ import tls from "node:tls";
 
 export type ReachAttempt = { kind: string; target: string };
 
-/** Files allowed to mention `Bun.spawn` (still subject to the runtime guard's `allowProcess`). */
-export const PROCESS_ALLOWED_FILES = ["bench/infer/muse-exec.ts"];
+/**
+ * Files allowed to mention `Bun.spawn` (still subject to the runtime guard's `allowProcess`):
+ * the Muse inference adapter, and the tokenizer counter, whose only process is the local
+ * Python helper reading a local tokenizer file (bench/tokens.ts).
+ */
+export const PROCESS_ALLOWED_FILES = [
+	"bench/infer/muse-exec.ts",
+	"bench/tokens.ts",
+];
 /** The only file allowed to import the banned modules: this guard, to patch them. */
 export const GUARD_FILE = "bench/mock/guard.ts";
 /** Node builtins that reach the network, processes or other threads; banned by the static check. */

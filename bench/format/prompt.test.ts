@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases } from "../cases/cases.ts";
+import { renderCardsTextCompact } from "../formats/cards.ts";
 import { FORMAT_IDS } from "../formats/index.ts";
+import { WORKED_EXAMPLES } from "./conditions.ts";
 import { buildFormatPrompt } from "./prompt.ts";
 
 const catalog = loadBenchCatalog({ policy: "ready+partial" });
@@ -57,6 +59,66 @@ describe("buildFormatPrompt", () => {
 				if (evalCase.notes) expect(text).not.toContain(evalCase.notes);
 			}
 		}
+	});
+
+	test("compact style renders the compact cards and drops the full lists", () => {
+		const baseline = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		const compact = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+			cardStyle: "compact",
+		});
+		expect(compact.prompt).toContain(renderCardsTextCompact(catalog.cards));
+		expect(compact.prompt).not.toContain("使う場面");
+		expect(compact.prompt).not.toBe(baseline.prompt);
+		// The condition changes the prompt only: system and request stay put.
+		expect(compact.system).toBe(baseline.system);
+		expect(compact.prompt).toContain(prime.request);
+		// Explicit full style is the baseline, byte for byte.
+		expect(
+			buildFormatPrompt({
+				evalCase: prime,
+				format: "json",
+				cards: catalog.cards,
+				cardStyle: "full",
+			}),
+		).toEqual(baseline);
+	});
+
+	test("oneshot appends the format's worked example to the prompt, not the system", () => {
+		for (const format of FORMAT_IDS) {
+			const baseline = buildFormatPrompt({
+				evalCase: prime,
+				format,
+				cards: catalog.cards,
+			});
+			const oneshot = buildFormatPrompt({
+				evalCase: prime,
+				format,
+				cards: catalog.cards,
+				workedExample: WORKED_EXAMPLES[format],
+			});
+			expect(oneshot.system).toBe(baseline.system);
+			expect(oneshot.prompt.startsWith(baseline.prompt)).toBe(true);
+			expect(oneshot.prompt).toContain("## 作業例");
+			expect(oneshot.prompt).toContain(WORKED_EXAMPLES[format]);
+		}
+		// The examples differ per format, so under oneshot the prompts differ too.
+		const prompts = FORMAT_IDS.map(
+			(format) =>
+				buildFormatPrompt({
+					evalCase: prime,
+					format,
+					cards: catalog.cards,
+					workedExample: WORKED_EXAMPLES[format],
+				}).prompt,
+		);
+		expect(new Set(prompts).size).toBe(3);
 	});
 
 	test("provided materials are listed by name and kind", () => {

@@ -9,14 +9,17 @@
  * from the component cards alone. `expected`, acceptable answers, case notes and the fixture
  * flag never reach this module — it does not even take them as input.
  *
- * Fixed condition for P0c (recorded in the run config): cards are rendered with
- * `renderCardsText`, the same rendering for all three formats, so the comparison measures the
- * definition format, not the card rendering.
+ * The P0c condition (now the registry's `baseline`, see `conditions.ts`): cards are rendered
+ * with `renderCardsText`, the same rendering for all three formats, so the comparison
+ * measures the definition format, not the card rendering. Other conditions vary only what
+ * `conditions.ts` defines — which cards are offered, the rendering (`cardStyle`), and an
+ * optional worked example appended to the prompt — never the shared instructions.
  */
 import type { ComponentCard } from "../../src/contracts/component.ts";
 import type { EvalCase } from "../cases/cases.ts";
-import { renderCardsText } from "../formats/cards.ts";
+import { renderCardsText, renderCardsTextCompact } from "../formats/cards.ts";
 import type { FormatId } from "../formats/index.ts";
+import type { CardStyle } from "./conditions.ts";
 
 export const PROMPT_TEMPLATE_VERSION = "format-prompt-v1";
 export const CARDS_RENDERING = "text";
@@ -56,11 +59,19 @@ const FORMAT_INSTRUCTIONS: Record<FormatId, string> = {
   - 確認が必要な場合は \`## 確認\` の下に質問を1行ずつ書き、対応できない場合は \`## 対応不可\` の下に理由を1行ずつ書きます（このとき \`## 手順\` は書きません）。`,
 };
 
-/** Build the one composing prompt of a (case, format) cell. Deterministic in its inputs. */
+/**
+ * Build the one composing prompt of a (case, format) cell under a prompt condition.
+ * Deterministic in its inputs. With no condition options this is the `baseline` condition
+ * and the output is byte-identical to the pre-condition bench.
+ */
 export function buildFormatPrompt(input: {
 	evalCase: EvalCase;
 	format: FormatId;
 	cards: readonly ComponentCard[];
+	/** Card rendering of the condition (default: the full rendering). */
+	cardStyle?: CardStyle;
+	/** The condition's worked example for this format, appended after the cards. */
+	workedExample?: string;
 }): FormatPrompt {
 	const { evalCase, format, cards } = input;
 	const materials =
@@ -69,7 +80,7 @@ export function buildFormatPrompt(input: {
 			: evalCase.providedMaterials
 					.map((m) => `- ${m.name}（${m.kind}）`)
 					.join("\n");
-	const prompt = [
+	const sections = [
 		"## 依頼",
 		evalCase.request,
 		"",
@@ -77,10 +88,20 @@ export function buildFormatPrompt(input: {
 		materials,
 		"",
 		"## 部品カード",
-		renderCardsText(cards),
-	].join("\n");
+		input.cardStyle === "compact"
+			? renderCardsTextCompact(cards)
+			: renderCardsText(cards),
+	];
+	if (input.workedExample !== undefined)
+		sections.push(
+			"",
+			"## 作業例",
+			"次は、別の依頼に対する完成形の例です。この例の依頼には答えず、形だけを参考にしてください。",
+			"",
+			input.workedExample,
+		);
 	return {
 		system: `${SHARED_INSTRUCTIONS}\n\n${FORMAT_INSTRUCTIONS[format]}`,
-		prompt,
+		prompt: sections.join("\n"),
 	};
 }
