@@ -33,6 +33,7 @@
 		"bench:format": "bun bench/cli/format.ts",
 		"bench:selection": "bun bench/cli/selection.ts",
 		"bench:selection-exp": "bun bench/cli/selection-experiment.ts",
+		"bench:selection-tuning": "bun bench/cli/selection-tuning.ts",
 		"bench:export": "bun bench/cli/export.ts"
 	},
 	"dependencies": {
