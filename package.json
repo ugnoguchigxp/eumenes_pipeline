@@ -32,7 +32,8 @@
 		"bench:verify": "bun bench/cli/verify.ts",
 		"bench:format": "bun bench/cli/format.ts",
 		"bench:selection": "bun bench/cli/selection.ts",
-		"bench:selection-exp": "bun bench/cli/selection-experiment.ts"
+		"bench:selection-exp": "bun bench/cli/selection-experiment.ts",
+		"bench:export": "bun bench/cli/export.ts"
 	},
 	"dependencies": {
 		"zod": "4.4.3"

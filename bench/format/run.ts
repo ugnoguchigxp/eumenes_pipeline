@@ -47,6 +47,7 @@ import {
 	type AuthoringOutcome,
 } from "../../src/contracts/authoring.ts";
 import type { ComponentCard } from "../../src/contracts/component.ts";
+import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import { FORMAT_PARSERS, FORMAT_IDS, type FormatId } from "../formats/index.ts";
@@ -485,6 +486,7 @@ export async function runFormat(
 		kind: "format",
 		config: {
 			evidence: "agent-model",
+			contractVersion: CONTRACT_VERSION,
 			formats,
 			promptTemplate: PROMPT_TEMPLATE_VERSION,
 			cardsRendering: CARDS_RENDERING,
