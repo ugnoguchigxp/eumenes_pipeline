@@ -27,12 +27,15 @@ export type ReachAttempt = { kind: string; target: string };
 
 /**
  * Files allowed to mention `Bun.spawn` (still subject to the runtime guard's `allowProcess`):
- * the Muse inference adapter, and the tokenizer counter, whose only process is the local
- * Python helper reading a local tokenizer file (bench/tokens.ts).
+ * the Muse inference adapter, the tokenizer counter, whose only process is the local
+ * Python helper reading a local tokenizer file (bench/tokens.ts), and the Wave B reranker
+ * port, whose only process is the local Python helper scoring pairs with the public
+ * reranker snapshot (bench/selection/rerank.ts).
  */
 export const PROCESS_ALLOWED_FILES = [
 	"bench/infer/muse-exec.ts",
 	"bench/tokens.ts",
+	"bench/selection/rerank.ts",
 ];
 /** The only file allowed to import the banned modules: this guard, to patch them. */
 export const GUARD_FILE = "bench/mock/guard.ts";
