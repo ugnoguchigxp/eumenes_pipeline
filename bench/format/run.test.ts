@@ -265,6 +265,214 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		expect(request.prompt).toContain("`weather.forecast`");
 	});
 
+	test("repair: a mechanically failed cell gets one repair round, scored apart", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-repair-"));
+		const session = "repair-wiring";
+		const dir = join(runsRoot, session);
+		const recordingsDir = join(dir, "recordings");
+		mkdirSync(recordingsDir, { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const cases = loadCases();
+		const prime = cases.find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		// A composing output whose step id uses an underscore: the entry choice is
+		// right, the definition fails the authoring schema — a mechanical failure.
+		const brokenOutput = JSON.stringify({
+			request: "1から100までの素数の個数を計算して教えてください",
+			steps: [
+				{
+					id: "prime_count",
+					bundle: "compute.python",
+					task: "1から100までの素数の個数を計算する",
+					from: ["request"],
+					result: "素数の個数",
+				},
+			],
+			output: { from: ["prime_count"], deliver: "計算した素数の個数を伝える" },
+		});
+		writeFileSync(
+			join(recordingsDir, "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({ purpose: "compose", system, prompt }),
+				output: brokenOutput,
+			}),
+		);
+		const run = (repair: boolean) =>
+			runFormat({
+				session,
+				runsRoot,
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json"],
+				...(repair ? { repair: true } : {}),
+			});
+
+		// Without the flag there is no repair at all (pre-repair bench behaviour).
+		const plain = await run(false);
+		expect(plain.cells[0]?.passed).toBe(false);
+		expect(plain.cells[0]?.repair).toBeUndefined();
+		expect(plain.repair).toBeUndefined();
+		expect(existsSync(join(dir, "repair-requests"))).toBe(false);
+
+		// With the flag, the failed cell leaves a repair request and counts as missing.
+		const first = await run(true);
+		const cell = first.cells[0];
+		expect(cell?.status).toBe("scored");
+		expect(cell?.authoringOk).toBe(false);
+		expect(cell?.repair?.status).toBe("missing");
+		expect(cell?.repair?.before).toMatchObject({
+			authoringOk: false,
+			passed: false,
+			bundles: true,
+		});
+		expect(first.repair).toMatchObject({
+			attempted: 1,
+			scored: 0,
+			missing: 1,
+			passedBefore: 0,
+			passedAfter: 0,
+		});
+		const requestPath = join(dir, "repair-requests", "prime-count--json.json");
+		const requestFile = JSON.parse(readFileSync(requestPath, "utf8")) as {
+			purpose: string;
+			system: string;
+			prompt: string;
+			promptDigest: string;
+		};
+		expect(requestFile.purpose).toBe("repair");
+		expect(requestFile.promptDigest).toBe(
+			inferenceDigest({
+				purpose: "repair",
+				system: requestFile.system,
+				prompt: requestFile.prompt,
+			}),
+		);
+		// The repair prompt carries the original output and the machine error only.
+		expect(requestFile.prompt).toContain("prime_count");
+		expect(requestFile.prompt).toContain("[schema]");
+		expect(requestFile.prompt).toContain("steps.0.id");
+
+		// A repair recording that fixes only the id turns the verdict around; the
+		// composing verdict itself stays failed (append-only honesty).
+		const fixedOutput = primeOutput;
+		mkdirSync(join(dir, "repair-recordings"), { recursive: true });
+		writeFileSync(
+			join(dir, "repair-recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: requestFile.promptDigest,
+				output: fixedOutput,
+			}),
+		);
+		const second = await run(true);
+		expect(second.cells[0]?.passed).toBe(false);
+		expect(second.cells[0]?.repair?.status).toBe("scored");
+		expect(second.cells[0]?.repair?.after).toMatchObject({
+			authoringOk: true,
+			passed: true,
+			state: true,
+			bundles: true,
+			materials: true,
+		});
+		expect(second.repair).toMatchObject({
+			attempted: 1,
+			scored: 1,
+			passedBefore: 0,
+			passedAfter: 1,
+		});
+		const summary = JSON.parse(
+			readFileSync(join(dir, "summary.json"), "utf8"),
+		) as {
+			repair?: { attempted: number };
+			cells: { repair?: { status: string } }[];
+		};
+		expect(summary.repair?.attempted).toBe(1);
+		expect(summary.cells[0]?.repair?.status).toBe("scored");
+	});
+
+	test("repair: a digest-mismatched repair recording is refused, not used", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-repair-"));
+		const session = "repair-mismatch";
+		const dir = join(runsRoot, session);
+		mkdirSync(join(dir, "recordings"), { recursive: true });
+		mkdirSync(join(dir, "repair-recordings"), { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const cases = loadCases();
+		const prime = cases.find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({ purpose: "compose", system, prompt }),
+				output: "{not json",
+			}),
+		);
+		writeFileSync(
+			join(dir, "repair-recordings", "prime-count--json.json"),
+			JSON.stringify({ promptDigest: "0".repeat(64), output: primeOutput }),
+		);
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			repair: true,
+		});
+		expect(report.cells[0]?.repair?.status).toBe("digest-mismatch");
+		expect(report.repair).toMatchObject({ attempted: 1, digestMismatch: 1 });
+	});
+
+	test("repair: a semantic failure (wrong bundle) is never repair material", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-repair-"));
+		const session = "repair-semantic";
+		const recordingsDir = join(runsRoot, session, "recordings");
+		mkdirSync(recordingsDir, { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const cases = loadCases();
+		const prime = cases.find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase: prime,
+			format: "md-yaml",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		const wrongBundle = SYNTHETIC_OUTPUTS.find(
+			(s) => s.caseId === "prime-count" && s.format === "md-yaml",
+		)?.output;
+		if (!wrongBundle) throw new Error("synthetic md-yaml output missing");
+		writeFileSync(
+			join(recordingsDir, "prime-count--md-yaml.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({ purpose: "compose", system, prompt }),
+				output: wrongBundle,
+			}),
+		);
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["md-yaml"],
+			repair: true,
+		});
+		expect(report.cells[0]?.passed).toBe(false);
+		expect(report.cells[0]?.repair).toBeUndefined();
+		expect(report.repair?.attempted).toBe(0);
+	});
+
 	test("candidates naming an unoffered entry fail before the run starts", async () => {
 		await expect(
 			runFormat({

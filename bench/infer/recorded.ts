@@ -32,6 +32,13 @@ export const AGENT_MODEL = "agent-model";
 /** Purpose of the composing calls the format/selection benches record. */
 export const COMPOSE_PURPOSE = "compose";
 
+/**
+ * Purpose of the repair calls (`bench/format/run.ts`): one follow-up call that receives a
+ * failed composing output plus the machine errors it produced and returns a corrected
+ * output. Repair recordings live in their own directory, never mixed with compose ones.
+ */
+export const REPAIR_PURPOSE = "repair";
+
 export const recordingFile = z.strictObject({
 	promptDigest: z.string().regex(/^[a-f0-9]{64}$/),
 	output: z.string(),

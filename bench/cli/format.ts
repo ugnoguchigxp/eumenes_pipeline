@@ -3,11 +3,14 @@
  * under one prompt condition, split by format and fixture dependence.
  *
  *   bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml]
- *     [--condition baseline|compact|oneshot] [--candidates <file.json>] [--db <path>]
+ *     [--condition baseline|compact|oneshot] [--candidates <file.json>] [--repair] [--db <path>]
  *
  * The session names `data/runs/format/<name>/`: request files for cells without recordings
  * are written there, recordings are read from there. Exits 1 while any cell is missing,
  * digest-mismatched or in inference error, so a half-prepared session cannot look complete.
+ * `--repair` adds one repair round for mechanically failed cells (parse / authoring /
+ * check errors): repair requests land in `<session>/repair-requests/`, repair recordings
+ * are read from `<session>/repair-recordings/`, and the exit code also covers them.
  * `--candidates` takes a JSON file `{ [caseId]: entryId[] }` of per-case offered subsets;
  * the run then records its condition as `subset:<digest of the file, first 8 hex>`.
  * No model is called and nothing is reached: the guard's only allowance is the local
@@ -36,6 +39,7 @@ const { values } = parseArgs({
 		format: { type: "string" },
 		condition: { type: "string" },
 		candidates: { type: "string" },
+		repair: { type: "boolean" },
 		db: { type: "string" },
 	},
 });
@@ -87,6 +91,7 @@ if (formats && formats.some((f) => !FORMAT_IDS.includes(f))) {
 const report = await runFormat({
 	session: values.session,
 	condition,
+	...(values.repair ? { repair: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
@@ -108,6 +113,19 @@ console.log(line("ALL", report.totals));
 for (const cell of report.cells)
 	if (cell.status !== "scored")
 		console.log(`  ${cell.status}: ${cell.caseId} / ${cell.format}`);
+if (report.repair) {
+	const r = report.repair;
+	console.log(
+		`repair: attempted ${r.attempted} (scored ${r.scored}, missing ${r.missing}, digest-mismatch ${r.digestMismatch}, inference-error ${r.inferenceErrors})` +
+			` | passed ${r.passedBefore} -> ${r.passedAfter} over attempted cells` +
+			` | repair prompt tokens ${r.promptTokens ?? "n/a"}, output tokens ${r.outputTokens ?? "n/a"}`,
+	);
+	for (const cell of report.cells)
+		if (cell.repair && cell.repair.status !== "scored")
+			console.log(
+				`  repair ${cell.repair.status}: ${cell.caseId} / ${cell.format}`,
+			);
+}
 const sumTokens = (values: (number | null)[]) => {
 	if (!report.tokenizer.available) return "n/a (tokenizer unavailable)";
 	const counted = values.filter((v) => v !== null);
@@ -124,5 +142,10 @@ console.log(
 const incomplete =
 	report.totals.missing +
 	report.totals.digestMismatch +
-	report.totals.inferenceErrors;
+	report.totals.inferenceErrors +
+	(report.repair
+		? report.repair.missing +
+			report.repair.digestMismatch +
+			report.repair.inferenceErrors
+		: 0);
 process.exit(incomplete > 0 ? 1 : 0);
