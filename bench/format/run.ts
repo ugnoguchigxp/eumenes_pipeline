@@ -38,6 +38,18 @@
  * `repair`. A repaired output runs the same parse → authoring → check → mock → score
  * path; the summary records before/after verdicts and the repair calls' token cost.
  * A cell that stays failed after repair stays failed.
+ *
+ * Syntax restore (opt-in, `restoreSyntax: true`): a `json` output the strict parser
+ * rejects gets one deterministic restore (`bench/formats/restore.ts`, engine recorded
+ * in the run config), and the restored text must pass the same strict parser —
+ * duplicates and every other strictness rule still apply. This is a different failure
+ * class from repair: restore undoes surface syntax damage (trailing commas, fences,
+ * truncation) with no model call, while repair returns semantic machine errors
+ * (schema / check) to the model. Recordings are never rewritten; restore happens in
+ * memory at evaluation time. Each attempt records whether restore was offered and
+ * whether it recovered the parse (cell flag + run totals + a `syntax_restored` score
+ * criterion), so the raw parse rate stays separable. Off by default: a run without
+ * it is byte-for-byte the pre-restore bench.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -52,6 +64,7 @@ import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import { FORMAT_PARSERS, FORMAT_IDS, type FormatId } from "../formats/index.ts";
 import type { ParseResult } from "../formats/outcome.ts";
+import { parseJsonWithRestore, RESTORE_ENGINE } from "../formats/restore.ts";
 import {
 	COMPOSE_PURPOSE,
 	inferenceDigest,
@@ -104,8 +117,21 @@ export type FormatCellReport = {
 	promptTokens: number | null;
 	/** Tokens of the recorded output; null when there is no output or no tokenizer. */
 	outputTokens: number | null;
+	/**
+	 * The composing attempt's parse was recovered by the syntax-restore stage.
+	 * Present only in restore runs (for scored cells); the raw output is unchanged.
+	 */
+	syntaxRestored?: boolean;
 	/** The one repair round of a mechanically failed cell; present only in repair runs. */
 	repair?: FormatCellRepair;
+};
+
+/** Run totals of the syntax-restore stage; present only in restore runs. */
+export type FormatRestoreSummary = {
+	/** Composing cells whose raw output failed the strict parser and were offered restore. */
+	attempted: number;
+	/** Of those, cells whose parse the restored text recovered. */
+	recovered: number;
 };
 
 /** The score aspects a repair round is compared on, before and after. */
@@ -127,6 +153,8 @@ export type FormatCellRepair = {
 	promptTokens: number | null;
 	/** Tokens of the recorded repair output; null when there is none or no tokenizer. */
 	outputTokens: number | null;
+	/** The repair attempt's parse was recovered by syntax restore; present only in restore runs. */
+	syntaxRestored?: boolean;
 };
 
 export type FormatRepairSummary = {
@@ -183,6 +211,8 @@ export type FormatRunReport = {
 	totals: FormatGroupSummary;
 	/** Repair totals over the attempted cells; present only in repair runs. */
 	repair?: FormatRepairSummary;
+	/** Syntax-restore totals over the composing cells; present only in restore runs. */
+	restore?: FormatRestoreSummary;
 };
 
 const emptyGroup = (): FormatGroupSummary => ({
@@ -266,6 +296,10 @@ type EvaluatedAttempt = {
 	score: CaseScore;
 	/** The attempt verdict: the scorer's `passed` gated by the authoring contract. */
 	passed: boolean;
+	/** The strict parser failed on the raw text and syntax restore was offered (restore runs only). */
+	restoreAttempted: boolean;
+	/** The restored text recovered the parse; `parse` is the restored parse. */
+	syntaxRestored: boolean;
 };
 
 /**
@@ -365,6 +399,13 @@ export type FormatRunOptions = {
 	 * same digests, same summary shape.
 	 */
 	repair?: boolean;
+	/**
+	 * One deterministic syntax-restore stage in front of the strict parser, `json`
+	 * format only (see the module header). Off by default: a run without it is
+	 * byte-for-byte the pre-restore bench — same prompts, same digests, same summary
+	 * shape, same recorded criteria.
+	 */
+	restoreSyntax?: boolean;
 };
 
 /** The cards one cell offers, in catalog order, under the condition and any candidates. */
@@ -500,6 +541,9 @@ export async function runFormat(
 			...(options.repair
 				? { repair: true, repairTemplate: REPAIR_TEMPLATE_VERSION }
 				: {}),
+			...(options.restoreSyntax
+				? { restoreSyntax: true, restoreEngine: RESTORE_ENGINE }
+				: {}),
 		},
 		inputs: {
 			snapshotSha256: catalog.snapshot.sha256,
@@ -533,6 +577,7 @@ export async function runFormat(
 					seed,
 					outputs,
 					evaluations,
+					restoreSyntax: options.restoreSyntax === true,
 				}),
 			);
 		}
@@ -554,6 +599,7 @@ export async function runFormat(
 					evaluations,
 					repairPromptTexts,
 					repairOutputTexts,
+					restoreSyntax: options.restoreSyntax === true,
 					cellKey: cellKey({ caseId: cell.evalCase.id, format: cell.format }),
 				});
 			}
@@ -637,6 +683,16 @@ export async function runFormat(
 	}
 	const totals = emptyGroup();
 	for (const cell of cells) addCell(totals, cell);
+	// Restore totals over the composing attempts (the evaluations map holds those
+	// only; repair attempts carry their own per-cell flag instead).
+	let restoreSummary: FormatRestoreSummary | undefined;
+	if (options.restoreSyntax) {
+		const attempts = [...evaluations.values()];
+		restoreSummary = {
+			attempted: attempts.filter((a) => a.restoreAttempted).length,
+			recovered: attempts.filter((a) => a.syntaxRestored).length,
+		};
+	}
 	const report: FormatRunReport = {
 		runId,
 		sessionDir,
@@ -646,6 +702,7 @@ export async function runFormat(
 		byFormat,
 		totals,
 		...(repairSummary ? { repair: repairSummary } : {}),
+		...(restoreSummary ? { restore: restoreSummary } : {}),
 	};
 	writeFileSync(
 		join(sessionDir, "summary.json"),
@@ -657,6 +714,7 @@ export async function runFormat(
 				byFormat,
 				totals,
 				...(repairSummary ? { repair: repairSummary } : {}),
+				...(restoreSummary ? { restore: restoreSummary } : {}),
 				cells: cells.map((cell) => ({
 					caseId: cell.caseId,
 					format: cell.format,
@@ -668,6 +726,9 @@ export async function runFormat(
 					...(cell.passed !== undefined ? { passed: cell.passed } : {}),
 					promptTokens: cell.promptTokens,
 					outputTokens: cell.outputTokens,
+					...(cell.syntaxRestored !== undefined
+						? { syntaxRestored: cell.syntaxRestored }
+						: {}),
 					...(cell.repair ? { repair: cell.repair } : {}),
 				})),
 			},
@@ -696,6 +757,8 @@ type CellContext = {
 	outputs: Map<string, string>;
 	/** Evaluated composing attempts by the same key, kept for the repair phase. */
 	evaluations: Map<string, EvaluatedAttempt>;
+	/** Offer the syntax-restore stage to failed strict parses (restore runs only). */
+	restoreSyntax: boolean;
 };
 
 /**
@@ -714,9 +777,21 @@ async function evaluateAttempt(ctx: {
 	/** Mock run namespace: the composing attempt's, with `:repair` appended for repairs. */
 	mockRunId: string;
 	text: string;
+	/** Offer the deterministic syntax-restore stage to a failed strict parse (`json` only). */
+	restoreSyntax: boolean;
 }): Promise<EvaluatedAttempt> {
 	const { evalCase, format } = ctx;
-	const parse = FORMAT_PARSERS[format](ctx.text);
+	let parse: ParseResult;
+	let restoreAttempted = false;
+	let syntaxRestored = false;
+	if (ctx.restoreSyntax && format === "json") {
+		const composed = parseJsonWithRestore(ctx.text);
+		parse = composed.result;
+		restoreAttempted = composed.attempted;
+		syntaxRestored = composed.restored;
+	} else {
+		parse = FORMAT_PARSERS[format](ctx.text);
+	}
 	const { outcome: authored, issues: authoringIssues } = parseAuthoring(parse);
 	const attempt: AttemptResults = { parse };
 	let check: CheckResult | undefined;
@@ -756,6 +831,15 @@ async function evaluateAttempt(ctx: {
 			value: value ? 1 : 0,
 			...(criterion === "passed" ? { rationale: canonicalJson(score) } : {}),
 		});
+	// Restore runs record the restore fact as its own criterion, apart from the
+	// verdict criteria, so a reader can separate the raw parse rate from the
+	// restored one. Non-restore runs record nothing extra (pre-restore shape).
+	if (ctx.restoreSyntax)
+		ctx.work.recordScore(ctx.trialId, {
+			scorer: FORMAT_SCORER,
+			criterion: "syntax_restored",
+			value: syntaxRestored ? 1 : 0,
+		});
 	return {
 		parse,
 		authored,
@@ -763,6 +847,8 @@ async function evaluateAttempt(ctx: {
 		...(check ? { check } : {}),
 		score,
 		passed,
+		restoreAttempted,
+		syntaxRestored,
 	};
 }
 
@@ -837,6 +923,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		trialId,
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}`,
 		text: result.text,
+		restoreSyntax: ctx.restoreSyntax,
 	});
 	ctx.evaluations.set(`${evalCase.id}\0${format}`, evaluated);
 	ctx.work.finishTrial(trialId, {
@@ -849,6 +936,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		authoringOk: evaluated.authored !== null,
 		passed: evaluated.passed,
 		score: evaluated.score,
+		...(ctx.restoreSyntax ? { syntaxRestored: evaluated.syntaxRestored } : {}),
 	};
 }
 
@@ -875,6 +963,8 @@ type RepairContext = {
 	/** Repair prompt texts by cell key, for the run's token counting. */
 	repairPromptTexts: Map<string, string>;
 	repairOutputTexts: Map<string, string>;
+	/** Offer the syntax-restore stage to the repair attempt's parse as well. */
+	restoreSyntax: boolean;
 	cellKey: string;
 };
 
@@ -971,7 +1061,9 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		trialId,
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}:repair`,
 		text: result.text,
+		restoreSyntax: ctx.restoreSyntax,
 	});
+	if (ctx.restoreSyntax) repair.syntaxRestored = after.syntaxRestored;
 	ctx.work.finishTrial(trialId, {
 		status: "completed",
 		outputText: result.text,

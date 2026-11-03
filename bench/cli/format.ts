@@ -3,7 +3,8 @@
  * under one prompt condition, split by format and fixture dependence.
  *
  *   bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml]
- *     [--condition baseline|compact|oneshot|minjson] [--candidates <file.json>] [--repair] [--db <path>]
+ *     [--condition baseline|compact|oneshot|minjson] [--candidates <file.json>] [--repair]
+ *     [--restore-syntax] [--db <path>]
  *
  * The session names `data/runs/format/<name>/`: request files for cells without recordings
  * are written there, recordings are read from there. Exits 1 while any cell is missing,
@@ -11,6 +12,10 @@
  * `--repair` adds one repair round for mechanically failed cells (parse / authoring /
  * check errors): repair requests land in `<session>/repair-requests/`, repair recordings
  * are read from `<session>/repair-recordings/`, and the exit code also covers them.
+ * `--restore-syntax` adds one deterministic syntax-restore stage in front of the strict
+ * parser (`json` format only): an output the strict parser rejects is restored once and
+ * re-parsed strictly; recordings are never rewritten, and the summary records per cell
+ * whether restore recovered the parse.
  * `--candidates` takes a JSON file `{ [caseId]: entryId[] }` of per-case offered subsets;
  * the run then records its condition as `subset:<digest of the file, first 8 hex>`.
  * No model is called and nothing is reached: the guard's only allowance is the local
@@ -40,6 +45,7 @@ const { values } = parseArgs({
 		condition: { type: "string" },
 		candidates: { type: "string" },
 		repair: { type: "boolean" },
+		"restore-syntax": { type: "boolean" },
 		db: { type: "string" },
 	},
 });
@@ -92,6 +98,7 @@ const report = await runFormat({
 	session: values.session,
 	condition,
 	...(values.repair ? { repair: true } : {}),
+	...(values["restore-syntax"] ? { restoreSyntax: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
@@ -125,6 +132,14 @@ if (report.repair) {
 			console.log(
 				`  repair ${cell.repair.status}: ${cell.caseId} / ${cell.format}`,
 			);
+}
+if (report.restore) {
+	console.log(
+		`syntax restore: attempted ${report.restore.attempted}, recovered ${report.restore.recovered} (composing cells; raw recordings unchanged)`,
+	);
+	for (const cell of report.cells)
+		if (cell.syntaxRestored)
+			console.log(`  restored: ${cell.caseId} / ${cell.format}`);
 }
 const sumTokens = (values: (number | null)[]) => {
 	if (!report.tokenizer.available) return "n/a (tokenizer unavailable)";

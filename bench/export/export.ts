@@ -32,6 +32,14 @@
  * wire format it used). The raw outputs themselves stay untouched in the work db and
  * the session recordings: they are evidence, not the saved form. The same rule binds
  * the host at integration time (the persisted `DocumentRecord` is pretty JSON).
+ *
+ * Syntax restore (opt-in runner stage): a restore run records a `syntax_restored`
+ * criterion per trial and `restoreSyntax` / `restoreEngine` in its config. The export
+ * surfaces both as per-cell flags (null for runs that recorded no criterion) and as
+ * recomputed run totals, cross-checked against the summary's `restore` block when it
+ * belongs to the run. A restored cell's saved definition is re-derived through the
+ * same restore the runner applied, so the export shows the definition the runner
+ * actually scored — the raw output in the db stays untouched either way.
  */
 import { Database } from "bun:sqlite";
 import { existsSync, readFileSync } from "node:fs";
@@ -43,10 +51,12 @@ import { canonicalJson, sha256 } from "../catalog/load.ts";
 import { DEFAULT_CASES_DIR, loadCases } from "../cases/cases.ts";
 import type { ConditionSummary } from "../format/conditions.ts";
 import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
+import { parseJsonWithRestore } from "../formats/restore.ts";
 import {
 	DEFAULT_RUNS_ROOT,
 	type FormatGroupSummary,
 	type FormatRepairSummary,
+	type FormatRestoreSummary,
 	type RepairVerdict,
 } from "../format/run.ts";
 import type { CaseScore } from "../scoring/score.ts";
@@ -92,6 +102,11 @@ export type ExportCell = {
 	 * even when the model wrote minified output (see the module header).
 	 */
 	definition: PipelineDefinition | null;
+	/**
+	 * The composing attempt's parse was recovered by the syntax-restore stage;
+	 * null when the run recorded no `syntax_restored` criterion (non-restore runs).
+	 */
+	syntaxRestored: boolean | null;
 	outputDigest: string | null;
 	error: string | null;
 	/** Tokenizer counts from the session summary; null when no matching summary exists. */
@@ -107,6 +122,8 @@ export type ExportRepair = {
 	after: RepairVerdict | null;
 	/** The repaired definition in its saved form, under the same rule as cells. */
 	definition: PipelineDefinition | null;
+	/** The repair attempt's parse was recovered by syntax restore; null as on cells. */
+	syntaxRestored: boolean | null;
 	promptTokens: number | null;
 	outputTokens: number | null;
 };
@@ -121,6 +138,7 @@ export type SummaryCrossCheck = {
 	totalsEqual: boolean | null;
 	cellsEqual: boolean | null;
 	repairEqual: boolean | null;
+	restoreEqual: boolean | null;
 	differences: string[];
 };
 
@@ -164,6 +182,8 @@ export type RunExport = {
 	>;
 	totals: FormatGroupSummary;
 	repair?: FormatRepairSummary;
+	/** Syntax-restore totals recomputed from the trials' criteria; restore runs only. */
+	restore?: FormatRestoreSummary;
 	summaryCrossCheck: SummaryCrossCheck;
 };
 
@@ -184,13 +204,19 @@ type TrialRow = {
  * runner did (format parser → `AuthoringOutcome` contract) and keep it only when the
  * outcome is a valid `ready`. Anything else — unparseable, needs_input, unsupported,
  * contract violation — has no saved definition (null), however suggestive the raw text.
+ * When the trial's parse was recovered by syntax restore (`restored`), the derivation
+ * goes through the same restore, mirroring the runner; the raw text is never altered.
  */
 function savedDefinition(
 	format: string,
 	outputText: string | null,
+	restored = false,
 ): PipelineDefinition | null {
 	if (!outputText || !(format in FORMAT_PARSERS)) return null;
-	const parse = FORMAT_PARSERS[format as FormatId](outputText);
+	const parse =
+		restored && format === "json"
+			? parseJsonWithRestore(outputText).result
+			: FORMAT_PARSERS[format as FormatId](outputText);
 	if (!parse.ok || parse.outcome.kind !== "ready") return null;
 	const authored = authoringOutcome.safeParse({
 		status: "ready",
@@ -274,12 +300,14 @@ type SummaryCell = {
 	status: string;
 	authoringOk?: boolean;
 	passed?: boolean;
+	syntaxRestored?: boolean;
 	promptTokens: number | null;
 	outputTokens: number | null;
 	repair?: {
 		status: string;
 		before: RepairVerdict;
 		after?: RepairVerdict;
+		syntaxRestored?: boolean;
 		promptTokens: number | null;
 		outputTokens: number | null;
 	};
@@ -291,6 +319,7 @@ type SessionSummary = {
 	byFormat: RunExport["byFormat"];
 	totals: FormatGroupSummary;
 	repair?: FormatRepairSummary;
+	restore?: FormatRestoreSummary;
 	cells: SummaryCell[];
 };
 
@@ -399,10 +428,20 @@ export function buildRunExport(options: {
 			if (t.phase === "repair")
 				repairTrials.set(`${t.case_id}\0${t.condition}`, t);
 
+		// Syntax restore: the run's config says whether the stage was on; each trial's
+		// `syntax_restored` criterion says whether it recovered that trial's parse
+		// (absent criterion → null: the run recorded nothing about restore).
+		const restoreRun = config.restoreSyntax === true;
+		const restoredOf = (
+			criteria: Record<string, number | null>,
+		): boolean | null =>
+			"syntax_restored" in criteria ? criteria.syntax_restored === 1 : null;
+
 		const cells: ExportCell[] = composeTrials.map((trial) => {
 			const { criteria, score, checks, model } = detailOf(trial);
 			const status = cellStatus(trial);
 			const scored = status === "scored";
+			const syntaxRestored = scored ? restoredOf(criteria) : null;
 			return {
 				caseId: trial.case_id,
 				format: trial.condition,
@@ -415,8 +454,13 @@ export function buildRunExport(options: {
 				checks,
 				model,
 				definition: scored
-					? savedDefinition(trial.condition, trial.output_text)
+					? savedDefinition(
+							trial.condition,
+							trial.output_text,
+							syntaxRestored === true,
+						)
 					: null,
+				syntaxRestored,
 				outputDigest: trial.output_digest,
 				error: trial.error,
 				promptTokens: null,
@@ -432,6 +476,7 @@ export function buildRunExport(options: {
 			if (!trial) continue;
 			const { criteria, score } = detailOf(trial);
 			const status = cellStatus(trial);
+			const syntaxRestored = status === "scored" ? restoredOf(criteria) : null;
 			repairByCell.set(key, {
 				status,
 				trialId: trial.trial_id,
@@ -442,8 +487,13 @@ export function buildRunExport(options: {
 						: null,
 				definition:
 					status === "scored"
-						? savedDefinition(trial.condition, trial.output_text)
+						? savedDefinition(
+								trial.condition,
+								trial.output_text,
+								syntaxRestored === true,
+							)
 						: null,
+				syntaxRestored,
 				promptTokens: null,
 				outputTokens: null,
 			});
@@ -472,6 +522,23 @@ export function buildRunExport(options: {
 		const totals = emptyGroup();
 		for (const cell of cells) addCell(totals, cell);
 
+		// Restore totals recomputed from the criteria: a composing cell was offered
+		// restore exactly when its recorded parse (post-restore) failed or its parse
+		// was recovered by restore — the raw parse rate stays separable either way.
+		let restoreSummary: FormatRestoreSummary | undefined;
+		if (restoreRun) {
+			const offered = cells.filter(
+				(cell) =>
+					cell.format === "json" &&
+					cell.syntaxRestored !== null &&
+					(cell.syntaxRestored || cell.score?.parseOk === false),
+			);
+			restoreSummary = {
+				attempted: offered.length,
+				recovered: offered.filter((cell) => cell.syntaxRestored).length,
+			};
+		}
+
 		// The session summary: token source and cross-check target, when it is this run's.
 		const session = typeof config.session === "string" ? config.session : null;
 		const cross: SummaryCrossCheck = {
@@ -482,6 +549,7 @@ export function buildRunExport(options: {
 			totalsEqual: null,
 			cellsEqual: null,
 			repairEqual: null,
+			restoreEqual: null,
 			differences: [],
 		};
 		let repairSummary: FormatRepairSummary | undefined;
@@ -530,6 +598,12 @@ export function buildRunExport(options: {
 							`cell ${cell.caseId}/${cell.format}: passed summary=${s.passed ?? null} db=${cell.passed}`,
 						);
 					}
+					if ((s.syntaxRestored ?? null) !== cell.syntaxRestored) {
+						cellDiffs += 1;
+						cross.differences.push(
+							`cell ${cell.caseId}/${cell.format}: syntaxRestored summary=${s.syntaxRestored ?? null} db=${cell.syntaxRestored}`,
+						);
+					}
 					if (s.repair || cell.repair) {
 						if (!s.repair || !cell.repair) {
 							repairDiffs += 1;
@@ -561,6 +635,14 @@ export function buildRunExport(options: {
 								repairDiffs += 1;
 								cross.differences.push(
 									`cell ${cell.caseId}/${cell.format}: repair after-verdict differs`,
+								);
+							}
+							if (
+								(s.repair.syntaxRestored ?? null) !== cell.repair.syntaxRestored
+							) {
+								repairDiffs += 1;
+								cross.differences.push(
+									`cell ${cell.caseId}/${cell.format}: repair syntaxRestored summary=${s.repair.syntaxRestored ?? null} db=${cell.repair.syntaxRestored}`,
 								);
 							}
 						}
@@ -607,6 +689,13 @@ export function buildRunExport(options: {
 					}
 					repairSummary = recomputed;
 				}
+				if (summary.restore) {
+					cross.restoreEqual =
+						restoreSummary !== undefined &&
+						canonicalJson(restoreSummary) === canonicalJson(summary.restore);
+					if (!cross.restoreEqual)
+						cross.differences.push("restore totals differ from the summary");
+				}
 			}
 		}
 
@@ -643,6 +732,7 @@ export function buildRunExport(options: {
 			byFormat,
 			totals,
 			...(repairSummary ? { repair: repairSummary } : {}),
+			...(restoreSummary ? { restore: restoreSummary } : {}),
 			summaryCrossCheck: cross,
 		};
 	} finally {
@@ -707,6 +797,14 @@ export function renderExportMarkdown(exp: RunExport): string {
 			`attempted ${r.attempted} (scored ${r.scored}, missing ${r.missing}, digest-mismatch ${r.digestMismatch}, inference-error ${r.inferenceErrors}); passed ${r.passedBefore} -> ${r.passedAfter}; repair tokens prompt ${r.promptTokens ?? "n/a"}, output ${r.outputTokens ?? "n/a"}.`,
 		);
 	}
+	if (exp.restore) {
+		lines.push("");
+		lines.push("## Syntax restore");
+		lines.push("");
+		lines.push(
+			`attempted ${exp.restore.attempted} composing cells, recovered ${exp.restore.recovered}; per-cell flags are in the JSON export (raw outputs unchanged in the work db).`,
+		);
+	}
 	lines.push("");
 	lines.push("## Cases (gold provenance)");
 	lines.push("");
@@ -740,7 +838,7 @@ export function renderExportMarkdown(exp: RunExport): string {
 		`- summary found: ${cross.summaryFound ? "yes" : "no"} / belongs to this run: ${cross.runMatches ? "yes" : `no (summary run: ${cross.summaryRunId ?? "n/a"})`}`,
 	);
 	lines.push(
-		`- totals equal: ${yn(cross.totalsEqual)} / cells equal: ${yn(cross.cellsEqual)} / repair equal: ${yn(cross.repairEqual)}`,
+		`- totals equal: ${yn(cross.totalsEqual)} / cells equal: ${yn(cross.cellsEqual)} / repair equal: ${yn(cross.repairEqual)} / restore equal: ${yn(cross.restoreEqual)}`,
 	);
 	for (const d of cross.differences) lines.push(`- difference: ${d}`);
 	lines.push("");

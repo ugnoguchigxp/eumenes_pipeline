@@ -9,7 +9,7 @@ import { buildFormatPrompt } from "../format/prompt.ts";
 import { runFormat } from "../format/run.ts";
 import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
 import { inferenceDigest } from "../infer/recorded.ts";
-import { buildRunExport } from "./export.ts";
+import { buildRunExport, renderExportMarkdown } from "./export.ts";
 
 /**
  * The export is a reader's view of the work db: totals recomputed from score rows must
@@ -204,6 +204,59 @@ describe("bench:export (synthetic recordings)", () => {
 		});
 		expect(exp.summaryCrossCheck.repairEqual).toBe(true);
 		expect(exp.summaryCrossCheck.totalsEqual).toBe(true);
+	});
+
+	test("a restored cell exports its flag, its definition and the restore totals", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "export-restored-"));
+		const dbPath = join(runsRoot, "work.sqlite3");
+		const session = "synthetic-export-restore";
+		const dir = join(runsRoot, session);
+		mkdirSync(join(dir, "recordings"), { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const evalCase = loadCases().find((c) => c.id === "prime-count");
+		if (!evalCase) throw new Error("case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		// Trailing comma: syntax damage only; without restore this output cannot parse.
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({
+					purpose: "compose",
+					system,
+					prompt,
+				}),
+				output: primeOutput.replace(/\}$/, ",}"),
+			}),
+		);
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath,
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			restoreSyntax: true,
+		});
+		expect(report.restore).toEqual({ attempted: 1, recovered: 1 });
+
+		const exp = buildRunExport({ runId: report.runId, dbPath, runsRoot });
+		const cell = exp.cells[0];
+		expect(cell?.syntaxRestored).toBe(true);
+		expect(cell?.passed).toBe(true);
+		// The saved definition is re-derived through the same restore the runner used.
+		expect(cell?.definition).not.toBeNull();
+		expect(cell?.definition?.steps[0]?.bundle).toBe("compute.python");
+		expect(exp.restore).toEqual({ attempted: 1, recovered: 1 });
+		expect(exp.config.restoreSyntax).toBe(true);
+		expect(exp.config.restoreEngine).toBe("jsonrepair@3.15.0");
+		expect(exp.summaryCrossCheck.totalsEqual).toBe(true);
+		expect(exp.summaryCrossCheck.restoreEqual).toBe(true);
+		expect(exp.summaryCrossCheck.differences).toEqual([]);
+		expect(renderExportMarkdown(exp)).toContain("## Syntax restore");
 	});
 
 	test("an unknown run id fails loudly", () => {

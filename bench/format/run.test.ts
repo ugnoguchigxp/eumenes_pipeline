@@ -510,6 +510,85 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		expect(report.repair?.attempted).toBe(0);
 	});
 
+	test("restore-syntax: a syntactically broken output is recovered only with the flag", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-restore-"));
+		const session = "restore-wiring";
+		const dir = join(runsRoot, session);
+		const recordingsDir = join(dir, "recordings");
+		mkdirSync(recordingsDir, { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const cases = loadCases();
+		const prime = cases.find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const { system, prompt } = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+		});
+		catalog.close();
+		const digest = inferenceDigest({ purpose: "compose", system, prompt });
+		const writeOutput = (name: string, output: string) =>
+			writeFileSync(
+				join(recordingsDir, name),
+				JSON.stringify({ promptDigest: digest, output }),
+			);
+		// The valid definition with a trailing comma: syntax damage only.
+		writeOutput("prime-count--json.json", primeOutput.replace(/\}$/, ",}"));
+		const run = (restoreSyntax: boolean) =>
+			runFormat({
+				session,
+				runsRoot,
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json"],
+				...(restoreSyntax ? { restoreSyntax: true } : {}),
+			});
+
+		// Without the flag: the strict parser's failure stands (pre-restore bench),
+		// and neither the report nor the summary mentions restore at all.
+		const plain = await run(false);
+		expect(plain.cells[0]?.status).toBe("scored");
+		expect(plain.cells[0]?.score?.parseOk).toBe(false);
+		expect(plain.cells[0]?.passed).toBe(false);
+		expect(plain.cells[0]?.syntaxRestored).toBeUndefined();
+		expect(plain.restore).toBeUndefined();
+		const plainSummary = JSON.parse(
+			readFileSync(join(dir, "summary.json"), "utf8"),
+		) as { restore?: unknown; cells: Record<string, unknown>[] };
+		expect(plainSummary.restore).toBeUndefined();
+		expect(plainSummary.cells[0]).not.toHaveProperty("syntaxRestored");
+
+		// With the flag: the same recording parses through the restored text and the
+		// cell is flagged; the recording file itself is byte-identical afterwards.
+		const recordingPath = join(recordingsDir, "prime-count--json.json");
+		const recordingBefore = readFileSync(recordingPath, "utf8");
+		const restored = await run(true);
+		expect(restored.cells[0]?.score?.parseOk).toBe(true);
+		expect(restored.cells[0]?.passed).toBe(true);
+		expect(restored.cells[0]?.syntaxRestored).toBe(true);
+		expect(restored.restore).toEqual({ attempted: 1, recovered: 1 });
+		expect(readFileSync(recordingPath, "utf8")).toBe(recordingBefore);
+		const summary = JSON.parse(
+			readFileSync(join(dir, "summary.json"), "utf8"),
+		) as {
+			restore?: { attempted: number; recovered: number };
+			cells: { syntaxRestored?: boolean }[];
+		};
+		expect(summary.restore).toEqual({ attempted: 1, recovered: 1 });
+		expect(summary.cells[0]?.syntaxRestored).toBe(true);
+
+		// Duplicate keys are ambiguity, not syntax: restore must not rescue them.
+		writeOutput(
+			"prime-count--json.json",
+			primeOutput.replace('"request":', '"request": "重複", "request":'),
+		);
+		const dup = await run(true);
+		expect(dup.cells[0]?.score?.parseOk).toBe(false);
+		expect(dup.cells[0]?.score?.parseErrors).toContain("duplicate_key");
+		expect(dup.cells[0]?.syntaxRestored).toBe(false);
+		expect(dup.restore).toEqual({ attempted: 1, recovered: 0 });
+	});
+
 	test("candidates naming an unoffered entry fail before the run starts", async () => {
 		await expect(
 			runFormat({
