@@ -47,6 +47,15 @@ export const REPAIR_PURPOSE = "repair";
  */
 export const TRIAGE_PURPOSE = "triage";
 
+/**
+ * Purpose of the enumeration calls (`bench/format/enumerate.ts`): stage A of the
+ * staged-generation condition — one pre-pass call per case that lists only the
+ * work items the request asks for, whose ids the composing prompt then carries.
+ * Enumeration recordings live in their own directory, never mixed with compose
+ * or triage ones.
+ */
+export const ENUM_PURPOSE = "enumerate";
+
 export const recordingFile = z.strictObject({
 	promptDigest: z.string().regex(/^[a-f0-9]{64}$/),
 	output: z.string(),

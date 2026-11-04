@@ -75,6 +75,26 @@
  * missing / digest-mismatch / inference-error, exactly like a missing composing
  * recording) rather than composing without the pre-pass the condition promises.
  * Off by default: a run without it is byte-for-byte the pre-triage bench.
+ *
+ * Staged generation (opt-in, `staged: true`): long workflows are generated in
+ * stages, never one-shot (the user's direction, 2026-11-04). Stage A enumerates
+ * the request's work items (`bench/format/enumerate.ts`) in its own recorded
+ * call per case — traffic under `<session>/enum-requests/` and
+ * `<session>/enum-recordings/`, trials as phase `enum`, blocking semantics
+ * exactly like triage — and the composing prompt carries the item list plus the
+ * marker convention (each step's `task` head cites the item ids it covers).
+ * The evaluator computes the deterministic coverage (enumerated ids minus cited
+ * ids) from the raw parse and strips the markers before authoring, checking and
+ * scoring: the markers are a bench-side auxiliary channel, never part of the
+ * definition contract. The cell report and summary carry the coverage counts.
+ * Coverage repair (opt-in, `coverageRepair: true`, requires `staged`): a
+ * mechanically sound staged cell whose steps leave enumerated items uncovered
+ * gets the one repair round with the uncovered items as machine errors
+ * (`[coverage] w5: <item text>`), and the repair may INSERT steps to cover them.
+ * It shares the repair traffic and machinery; a mechanically failed cell is
+ * never coverage-repaired (the mechanical class keeps its own round, when
+ * enabled). Off by default: a run without them is byte-for-byte the pre-staged
+ * bench.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -94,6 +114,7 @@ import type { ParseResult } from "../formats/outcome.ts";
 import { parseJsonWithRestore, RESTORE_ENGINE } from "../formats/restore.ts";
 import {
 	COMPOSE_PURPOSE,
+	ENUM_PURPOSE,
 	inferenceDigest,
 	RecordedInference,
 	REPAIR_PURPOSE,
@@ -123,6 +144,18 @@ import {
 	GUIDANCE_TEXTS,
 	PROMPT_TEMPLATE_VERSION,
 } from "./prompt.ts";
+import {
+	buildEnumPrompt,
+	computeCoverage,
+	coverageErrorLine,
+	enumNoteText,
+	ENUM_TEMPLATE_VERSION,
+	parseEnumOutput,
+	stripItemMarkers,
+	type CoverageResult,
+	type EnumConclusion,
+	type WorkItem,
+} from "./enumerate.ts";
 import {
 	buildTriagePrompt,
 	parseTriageOutput,
@@ -166,6 +199,12 @@ export type FormatCellReport = {
 	idsNormalized?: boolean;
 	/** The triage pre-pass conclusion this cell's prompt carried; present only in triage runs. */
 	triage?: { verdict: TriageVerdict; questions: string[] };
+	/**
+	 * Stage-A item coverage of the composing attempt (staged runs, ready
+	 * definitions only): how many enumerated items the steps cite, and which
+	 * item ids no step cites.
+	 */
+	coverage?: { total: number; covered: number; uncovered: string[] };
 	/** The one repair round of a mechanically failed cell; present only in repair runs. */
 	repair?: FormatCellRepair;
 };
@@ -186,6 +225,25 @@ export type FormatTriageSummary = {
 	/** Total triage prompt tokens over concluded/missing-counted calls; null when any could not be counted. */
 	promptTokens: number | null;
 	/** Total triage output tokens over the calls that produced an output; null likewise. */
+	outputTokens: number | null;
+};
+
+/** Run totals of the stage-A enumeration; present only in staged runs. Counts are per case. */
+export type FormatEnumSummary = {
+	/** Cases the run covers (one enumeration call each). */
+	cases: number;
+	/** Cases whose enumeration produced a usable item list. */
+	concluded: number;
+	/** Cases with no enumeration recording (their composing cells are blocked as missing). */
+	missing: number;
+	digestMismatch: number;
+	/** Cases whose enumeration output was served but is not a valid item list. */
+	invalid: number;
+	/** Enumerated items over the concluded cases. */
+	items: number;
+	/** Total enumeration prompt tokens; null when any could not be counted. */
+	promptTokens: number | null;
+	/** Total enumeration output tokens over the calls that produced an output; null likewise. */
 	outputTokens: number | null;
 };
 
@@ -228,6 +286,8 @@ export type FormatCellRepair = {
 	syntaxRestored?: boolean;
 	/** The repair attempt's authoring gate was recovered by step-id normalization; present only in normalization runs. */
 	idsNormalized?: boolean;
+	/** Item coverage of the repaired attempt (staged runs); present when it was computed. */
+	coverageAfter?: { total: number; covered: number };
 };
 
 export type FormatRepairSummary = {
@@ -290,6 +350,8 @@ export type FormatRunReport = {
 	normalize?: FormatNormalizeSummary;
 	/** Triage pre-pass totals; present only in triage runs. */
 	triage?: FormatTriageSummary;
+	/** Stage-A enumeration totals; present only in staged runs. */
+	staged?: FormatEnumSummary;
 };
 
 const emptyGroup = (): FormatGroupSummary => ({
@@ -359,6 +421,11 @@ type EvaluatedAttempt = {
 	normalizeAttempted: boolean;
 	/** The rewritten definition recovered the authoring gate; `authored` is the normalized outcome. */
 	idsNormalized: boolean;
+	/**
+	 * Stage-A item coverage of this attempt (staged runs, ready outcomes only),
+	 * computed from the raw parse BEFORE the markers were stripped for scoring.
+	 */
+	coverage?: CoverageResult;
 };
 
 /**
@@ -425,6 +492,49 @@ export function buildRepairPrompt(input: {
 	};
 }
 
+export const COVERAGE_REPAIR_TEMPLATE_VERSION = "coverage-repair-v1";
+
+const COVERAGE_REPAIR_SYSTEM = `あなたは、手順定義の出力をカバレッジ検査にかけて返ってきた不足を直す修復担当です。
+
+進め方:
+- 前回の出力と、担当する手順が無い作業項目の一覧が渡されます。
+- 直すのは、その不足が解消するために必要な箇所だけです。既にある手順の内容・部品の選択・配線は変えず、不足している項目を担当する手順を追加してください。追加する手順の task の冒頭にも、担当する項目の印を [w1] の形で置いてください。
+- 既にある手順がその項目の作業を実は担っているのに印が付いていない場合は、その手順の task の冒頭に印を付け足すだけでも構いません。
+- 出力は、元の出力と同じ形式の規則で、修正後の出力の全文だけにしてください。説明や前置きは付けないでください。`;
+
+/**
+ * The one coverage-repair prompt of a staged cell (stage C). Its whole content
+ * is the original composing request (system + prompt — which carries the item
+ * list and the marker convention), the model's original output, and the
+ * uncovered items as machine errors. Built without the case's expected values,
+ * which this module's caller never passes in.
+ */
+export function buildCoverageRepairPrompt(input: {
+	system: string;
+	prompt: string;
+	output: string;
+	errors: readonly string[];
+}): { system: string; prompt: string } {
+	return {
+		system: COVERAGE_REPAIR_SYSTEM,
+		prompt: [
+			"## 元の指示（system）",
+			input.system,
+			"",
+			"## 元の依頼プロンプト",
+			input.prompt,
+			"",
+			"## 前回の出力",
+			input.output,
+			"",
+			"## カバレッジ検査のエラー（担当する手順が無い作業項目）",
+			...input.errors.map((line) => `- ${line}`),
+			"",
+			"上の項目を担当する手順が揃うように直した、前回の出力の全文を返してください。",
+		].join("\n"),
+	};
+}
+
 const verdictOf = (
 	attempt: EvaluatedAttempt,
 	authoringOk: boolean,
@@ -478,6 +588,20 @@ export type FormatRunOptions = {
 	 * the pre-triage bench.
 	 */
 	triage?: boolean;
+	/**
+	 * Staged generation (see the module header): one enumeration pre-pass per
+	 * case, the item list and marker convention in the composing prompt, and
+	 * deterministic item coverage on every ready attempt. Off by default: a run
+	 * without it is byte-for-byte the pre-staged bench.
+	 */
+	staged?: boolean;
+	/**
+	 * The coverage review (stage C): one repair round for mechanically sound
+	 * staged cells that leave enumerated items uncovered, fed the uncovered
+	 * items as machine errors, with step insertion allowed (see the module
+	 * header). Requires `staged`. Off by default.
+	 */
+	coverageRepair?: boolean;
 };
 
 /** The cards one cell offers, in catalog order, under the condition and any candidates. */
@@ -505,6 +629,10 @@ export async function runFormat(
 		throw new Error(
 			`invalid session name "${options.session}" (letters, digits, . _ -, up to 64 chars)`,
 		);
+	if (options.coverageRepair && !options.staged)
+		throw new Error(
+			"coverageRepair requires staged (stage C reviews stage A's items)",
+		);
 	const sessionDir = join(
 		options.runsRoot ?? DEFAULT_RUNS_ROOT,
 		options.session,
@@ -515,7 +643,7 @@ export async function runFormat(
 	mkdirSync(recordingsDir, { recursive: true });
 	const repairRequestsDir = join(sessionDir, "repair-requests");
 	const repairRecordingsDir = join(sessionDir, "repair-recordings");
-	if (options.repair) {
+	if (options.repair || options.coverageRepair) {
 		mkdirSync(repairRequestsDir, { recursive: true });
 		mkdirSync(repairRecordingsDir, { recursive: true });
 	}
@@ -524,6 +652,12 @@ export async function runFormat(
 	if (options.triage) {
 		mkdirSync(triageRequestsDir, { recursive: true });
 		mkdirSync(triageRecordingsDir, { recursive: true });
+	}
+	const enumRequestsDir = join(sessionDir, "enum-requests");
+	const enumRecordingsDir = join(sessionDir, "enum-recordings");
+	if (options.staged) {
+		mkdirSync(enumRequestsDir, { recursive: true });
+		mkdirSync(enumRecordingsDir, { recursive: true });
 	}
 
 	const catalog = loadBenchCatalog({ policy: "ready+partial" });
@@ -658,6 +792,98 @@ export async function runFormat(
 		}
 	}
 
+	// Enumeration resolution (staged runs only): one recorded call per case,
+	// resolved BEFORE the composing prompts are built, because a concluded
+	// case's prompt carries the item list. Same shape as the triage resolution;
+	// the calls are recorded as work-db trials once the run exists (below).
+	type EnumResolution = {
+		evalCase: EvalCase;
+		system: string;
+		prompt: string;
+		state:
+			| "concluded"
+			| "missing"
+			| "digest-mismatch"
+			| "invalid"
+			| "inference-error";
+		conclusion?: EnumConclusion;
+		/** The served inference result, when a recording answered the call. */
+		result?: InferenceResult;
+		error?: string;
+	};
+	const enumResolutions = new Map<string, EnumResolution>();
+	if (options.staged) {
+		const enumRecordings = RecordedInference.fromDirectory(enumRecordingsDir);
+		for (const evalCase of cases) {
+			const built = buildEnumPrompt(evalCase);
+			const request = {
+				purpose: ENUM_PURPOSE,
+				system: built.system,
+				prompt: built.prompt,
+			};
+			const digest = inferenceDigest(request);
+			const fileName = `${evalCase.id}.json`;
+			const base = { evalCase, system: built.system, prompt: built.prompt };
+			const recording = enumRecordings.files.get(fileName);
+			if (!recording) {
+				writeFileSync(
+					join(enumRequestsDir, fileName),
+					`${JSON.stringify(
+						{
+							caseId: evalCase.id,
+							purpose: ENUM_PURPOSE,
+							system: built.system,
+							prompt: built.prompt,
+							promptDigest: digest,
+						},
+						null,
+						"\t",
+					)}\n`,
+				);
+				enumResolutions.set(evalCase.id, {
+					...base,
+					state: "missing",
+					error: `missing enumeration recording; request written to enum-requests/${fileName}`,
+				});
+				continue;
+			}
+			if (recording.promptDigest !== digest) {
+				enumResolutions.set(evalCase.id, {
+					...base,
+					state: "digest-mismatch",
+					error: `enumeration recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
+				});
+				continue;
+			}
+			const result = await enumRecordings.inference.complete(request);
+			if (!result.ok) {
+				enumResolutions.set(evalCase.id, {
+					...base,
+					state: "inference-error",
+					result,
+					error: result.error,
+				});
+				continue;
+			}
+			const conclusion = parseEnumOutput(result.text);
+			if (conclusion)
+				enumResolutions.set(evalCase.id, {
+					...base,
+					state: "concluded",
+					conclusion,
+					result,
+				});
+			else
+				enumResolutions.set(evalCase.id, {
+					...base,
+					state: "invalid",
+					result,
+					error:
+						'enumeration output is not an item list (expected {"items": ["...", ...]})',
+				});
+		}
+	}
+
 	// Build every prompt up front and count them in one batch: the prompt of a cell does
 	// not depend on its recording, and one helper call keeps the counting cheap.
 	type PreparedCell = {
@@ -670,11 +896,16 @@ export async function runFormat(
 		triageConclusion?: TriageConclusion;
 		/** Why this cell cannot compose (triage runs, unconcluded cases). */
 		triageBlocked?: { status: FormatCellStatus; error: string };
+		/** The stage-A conclusion the prompt carries (staged runs, concluded cases). */
+		enumConclusion?: EnumConclusion;
+		/** Why this cell cannot compose (staged runs, unconcluded cases). */
+		enumBlocked?: { status: FormatCellStatus; error: string };
 	};
 	const prepared: PreparedCell[] = [];
 	for (const evalCase of cases)
 		for (const format of formats) {
 			const triage = triageResolutions.get(evalCase.id);
+			const enumeration = enumResolutions.get(evalCase.id);
 			const built = buildFormatPrompt({
 				evalCase,
 				format,
@@ -695,26 +926,39 @@ export async function runFormat(
 				...(triage?.conclusion
 					? { triageNote: triageNoteText(triage.conclusion) }
 					: {}),
+				...(enumeration?.conclusion
+					? { enumNote: enumNoteText(enumeration.conclusion) }
+					: {}),
 			});
+			const blockedOf = (
+				resolution:
+					{ state: string; error?: string; conclusion?: unknown } | undefined,
+				label: string,
+			) =>
+				resolution && !resolution.conclusion
+					? {
+							status:
+								resolution.state === "missing"
+									? ("missing" as const)
+									: resolution.state === "digest-mismatch"
+										? ("digest-mismatch" as const)
+										: ("inference-error" as const),
+							error: `${label} pre-pass unavailable: ${resolution.error ?? resolution.state}`,
+						}
+					: undefined;
+			const triageBlocked = blockedOf(triage, "triage");
+			const enumBlocked = blockedOf(enumeration, "enumeration");
 			prepared.push({
 				evalCase,
 				format,
 				...built,
 				promptTokens: null,
 				...(triage?.conclusion ? { triageConclusion: triage.conclusion } : {}),
-				...(triage && !triage.conclusion
-					? {
-							triageBlocked: {
-								status:
-									triage.state === "missing"
-										? ("missing" as const)
-										: triage.state === "digest-mismatch"
-											? ("digest-mismatch" as const)
-											: ("inference-error" as const),
-								error: `triage pre-pass unavailable: ${triage.error ?? triage.state}`,
-							},
-						}
+				...(triageBlocked ? { triageBlocked } : {}),
+				...(enumeration?.conclusion
+					? { enumConclusion: enumeration.conclusion }
 					: {}),
+				...(enumBlocked ? { enumBlocked } : {}),
 			});
 		}
 	const promptCounts = countTokens(
@@ -750,6 +994,15 @@ export async function runFormat(
 				: {}),
 			...(options.triage
 				? { triage: true, triageTemplate: TRIAGE_TEMPLATE_VERSION }
+				: {}),
+			...(options.staged
+				? { staged: true, enumTemplate: ENUM_TEMPLATE_VERSION }
+				: {}),
+			...(options.coverageRepair
+				? {
+						coverageRepair: true,
+						coverageRepairTemplate: COVERAGE_REPAIR_TEMPLATE_VERSION,
+					}
 				: {}),
 		},
 		inputs: {
@@ -801,10 +1054,42 @@ export async function runFormat(
 					});
 			}
 		}
+		// Record the enumeration calls as this run's trials (phase `enum`, one per case).
+		if (options.staged) {
+			for (const resolution of enumResolutions.values()) {
+				const trialId = work.startTrial({
+					runId,
+					caseId: resolution.evalCase.id,
+					condition: "enum",
+					attempt: 1,
+					phase: "enum",
+				});
+				if (resolution.result)
+					work.recordModelCall(trialId, ENUM_PURPOSE, resolution.result);
+				if (resolution.state === "concluded")
+					work.finishTrial(trialId, {
+						status: "completed",
+						outputText: resolution.result?.ok
+							? resolution.result.text
+							: undefined,
+					});
+				else if (resolution.state === "missing")
+					work.finishTrial(trialId, {
+						status: "interrupted",
+						error: resolution.error,
+					});
+				else
+					work.finishTrial(trialId, {
+						status: "failed",
+						error: resolution.error,
+					});
+			}
+		}
 		const { inference, files } = RecordedInference.fromDirectory(recordingsDir);
 		for (const cell of prepared) {
-			if (cell.triageBlocked) {
-				// No usable triage conclusion: the composing cell is blocked, recorded
+			const blocked = cell.triageBlocked ?? cell.enumBlocked;
+			if (blocked) {
+				// No usable pre-pass conclusion: the composing cell is blocked, recorded
 				// as its own interrupted/failed trial, never silently composed.
 				const trialId = work.startTrial({
 					runId,
@@ -814,15 +1099,14 @@ export async function runFormat(
 					phase: "compose",
 				});
 				work.finishTrial(trialId, {
-					status:
-						cell.triageBlocked.status === "missing" ? "interrupted" : "failed",
-					error: cell.triageBlocked.error,
+					status: blocked.status === "missing" ? "interrupted" : "failed",
+					error: blocked.error,
 				});
 				cells.push({
 					caseId: cell.evalCase.id,
 					format: cell.format,
 					fixtureDependent: cell.evalCase.usesFixtureContracts,
-					status: cell.triageBlocked.status,
+					status: blocked.status,
 					promptTokens: cell.promptTokens,
 					outputTokens: null,
 				});
@@ -841,6 +1125,9 @@ export async function runFormat(
 				evaluations,
 				restoreSyntax: options.restoreSyntax === true,
 				normalizeIds: options.normalizeIds === true,
+				...(cell.enumConclusion
+					? { enumItems: cell.enumConclusion.items }
+					: {}),
 			});
 			if (cell.triageConclusion)
 				report.triage = {
@@ -849,7 +1136,7 @@ export async function runFormat(
 				};
 			cells.push(report);
 		}
-		if (options.repair) {
+		if (options.repair || options.coverageRepair) {
 			const repairRecordings =
 				RecordedInference.fromDirectory(repairRecordingsDir);
 			for (const [index, cell] of prepared.entries()) {
@@ -869,6 +1156,8 @@ export async function runFormat(
 					repairOutputTexts,
 					restoreSyntax: options.restoreSyntax === true,
 					normalizeIds: options.normalizeIds === true,
+					mechanicalRepair: options.repair === true,
+					coverageRepair: options.coverageRepair === true,
 					cellKey: cellKey({ caseId: cell.evalCase.id, format: cell.format }),
 				});
 			}
@@ -907,7 +1196,7 @@ export async function runFormat(
 		if (cell.repair) cell.repair.outputTokens = repairOutputCounts[i] ?? null;
 	});
 	let repairSummary: FormatRepairSummary | undefined;
-	if (options.repair) {
+	if (options.repair || options.coverageRepair) {
 		const sumOrNull = (values: (number | null)[]) =>
 			values.some((v) => v === null)
 				? null
@@ -1003,6 +1292,36 @@ export async function runFormat(
 			outputTokens: withOutput.length === 0 ? 0 : sumOrNull(triageOutputCounts),
 		};
 	}
+	// Enumeration totals over the per-case resolutions, counted like triage's.
+	let enumSummary: FormatEnumSummary | undefined;
+	if (options.staged) {
+		const resolutions = [...enumResolutions.values()];
+		const sumOrNull = (values: (number | null)[]) =>
+			values.some((v) => v === null)
+				? null
+				: values.reduce<number>((a, v) => a + (v ?? 0), 0);
+		const enumPromptCounts = countTokens(
+			resolutions.map((r) => `${r.system}\n${r.prompt}`),
+		);
+		const withOutput = resolutions.filter((r) => r.result?.ok);
+		const enumOutputCounts = countTokens(
+			withOutput.map((r) => (r.result?.ok ? r.result.text : "")),
+		);
+		enumSummary = {
+			cases: resolutions.length,
+			concluded: resolutions.filter((r) => r.state === "concluded").length,
+			missing: resolutions.filter((r) => r.state === "missing").length,
+			digestMismatch: resolutions.filter((r) => r.state === "digest-mismatch")
+				.length,
+			invalid: resolutions.filter((r) => r.state === "invalid").length,
+			items: resolutions.reduce(
+				(a, r) => a + (r.conclusion?.items.length ?? 0),
+				0,
+			),
+			promptTokens: sumOrNull(enumPromptCounts),
+			outputTokens: withOutput.length === 0 ? 0 : sumOrNull(enumOutputCounts),
+		};
+	}
 	const report: FormatRunReport = {
 		runId,
 		sessionDir,
@@ -1015,6 +1334,7 @@ export async function runFormat(
 		...(restoreSummary ? { restore: restoreSummary } : {}),
 		...(normalizeSummary ? { normalize: normalizeSummary } : {}),
 		...(triageSummary ? { triage: triageSummary } : {}),
+		...(enumSummary ? { staged: enumSummary } : {}),
 	};
 	writeFileSync(
 		join(sessionDir, "summary.json"),
@@ -1029,6 +1349,7 @@ export async function runFormat(
 				...(restoreSummary ? { restore: restoreSummary } : {}),
 				...(normalizeSummary ? { normalize: normalizeSummary } : {}),
 				...(triageSummary ? { triage: triageSummary } : {}),
+				...(enumSummary ? { staged: enumSummary } : {}),
 				cells: cells.map((cell) => ({
 					caseId: cell.caseId,
 					format: cell.format,
@@ -1047,6 +1368,7 @@ export async function runFormat(
 						? { idsNormalized: cell.idsNormalized }
 						: {}),
 					...(cell.triage ? { triage: cell.triage } : {}),
+					...(cell.coverage ? { coverage: cell.coverage } : {}),
 					...(cell.repair ? { repair: cell.repair } : {}),
 				})),
 			},
@@ -1079,6 +1401,8 @@ type CellContext = {
 	restoreSyntax: boolean;
 	/** Offer the step-id normalization stage to id-only authoring failures (normalization runs only). */
 	normalizeIds: boolean;
+	/** The case's stage-A items (staged runs, concluded cases). */
+	enumItems?: readonly WorkItem[];
 };
 
 /**
@@ -1101,6 +1425,12 @@ async function evaluateAttempt(ctx: {
 	restoreSyntax: boolean;
 	/** Offer the deterministic step-id normalization stage to an id-only authoring failure. */
 	normalizeIds: boolean;
+	/**
+	 * The case's stage-A items (staged runs). When present and the parse is a
+	 * ready outcome, coverage is computed from the raw parse and the markers are
+	 * stripped from the definition every later stage sees.
+	 */
+	enumItems?: readonly WorkItem[];
 }): Promise<EvaluatedAttempt> {
 	const { evalCase, format } = ctx;
 	let parse: ParseResult;
@@ -1113,6 +1443,20 @@ async function evaluateAttempt(ctx: {
 		syntaxRestored = composed.restored;
 	} else {
 		parse = FORMAT_PARSERS[format](ctx.text);
+	}
+	// Stage C's deterministic half: coverage is read off the RAW parse (markers
+	// intact), then the markers are stripped — authoring, checking, mock and
+	// scoring all see the plain definition, exactly as in a non-staged run.
+	let coverage: CoverageResult | undefined;
+	if (ctx.enumItems && parse.ok && parse.outcome.kind === "ready") {
+		coverage = computeCoverage(ctx.enumItems, parse.outcome.definition);
+		parse = {
+			ok: true,
+			outcome: {
+				kind: "ready",
+				definition: stripItemMarkers(parse.outcome.definition),
+			},
+		};
 	}
 	const {
 		outcome: authored,
@@ -1186,6 +1530,7 @@ async function evaluateAttempt(ctx: {
 		syntaxRestored,
 		normalizeAttempted,
 		idsNormalized,
+		...(coverage ? { coverage } : {}),
 	};
 }
 
@@ -1262,6 +1607,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		text: result.text,
 		restoreSyntax: ctx.restoreSyntax,
 		normalizeIds: ctx.normalizeIds,
+		...(ctx.enumItems ? { enumItems: ctx.enumItems } : {}),
 	});
 	ctx.evaluations.set(`${evalCase.id}\0${format}`, evaluated);
 	ctx.work.finishTrial(trialId, {
@@ -1276,6 +1622,15 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		score: evaluated.score,
 		...(ctx.restoreSyntax ? { syntaxRestored: evaluated.syntaxRestored } : {}),
 		...(ctx.normalizeIds ? { idsNormalized: evaluated.idsNormalized } : {}),
+		...(evaluated.coverage
+			? {
+					coverage: {
+						total: evaluated.coverage.total,
+						covered: evaluated.coverage.coveredIds.length,
+						uncovered: evaluated.coverage.uncovered.map((i) => i.id),
+					},
+				}
+			: {}),
 	};
 }
 
@@ -1286,6 +1641,8 @@ type RepairContext = {
 		format: FormatId;
 		system: string;
 		prompt: string;
+		/** The case's stage-A conclusion (staged runs), for coverage evaluation. */
+		enumConclusion?: EnumConclusion;
 	};
 	/** The cell's report, mutated in place when the cell is repair-eligible. */
 	report: FormatCellReport;
@@ -1306,29 +1663,51 @@ type RepairContext = {
 	restoreSyntax: boolean;
 	/** Offer the step-id normalization stage to the repair attempt's authoring gate as well. */
 	normalizeIds: boolean;
+	/** The mechanical repair round is enabled (parse / authoring / check failures). */
+	mechanicalRepair: boolean;
+	/** The coverage review round is enabled (stage C; mechanically sound staged cells only). */
+	coverageRepair: boolean;
 	cellKey: string;
 };
 
 /**
- * The one repair round of one cell. A cell is eligible only when its composing attempt
- * was scored AND failed mechanically; anything else returns without touching the report.
- * The repair is recorded as its own trial (attempt 2, phase `repair`) and its output
- * runs the same evaluator path as a composing output.
+ * The one repair round of one cell. A cell is eligible only when its composing
+ * attempt was scored AND either failed mechanically (the mechanical round) or —
+ * in staged runs with the coverage review on — is mechanically sound but leaves
+ * enumerated items uncovered (the coverage round); anything else returns
+ * without touching the report. The two classes never share a cell's one round:
+ * mechanical failure takes the round when its class is enabled, and a
+ * mechanically failed cell is never coverage-repaired. The repair is recorded
+ * as its own trial (attempt 2, phase `repair`) and its output runs the same
+ * evaluator path as a composing output.
  */
 async function runRepair(ctx: RepairContext): Promise<void> {
 	const { evalCase, format } = ctx.cell;
 	const evaluated = ctx.evaluations.get(ctx.cellKey);
 	const original = ctx.outputs.get(ctx.cellKey);
 	if (!evaluated || original === undefined) return;
-	const errors = machineErrorLines(evaluated);
-	if (!errors) return;
-
-	const built = buildRepairPrompt({
-		system: ctx.cell.system,
-		prompt: ctx.cell.prompt,
-		output: original,
-		errors,
-	});
+	const mechanical = machineErrorLines(evaluated);
+	let built: { system: string; prompt: string };
+	if (mechanical && ctx.mechanicalRepair) {
+		built = buildRepairPrompt({
+			system: ctx.cell.system,
+			prompt: ctx.cell.prompt,
+			output: original,
+			errors: mechanical,
+		});
+	} else if (
+		!mechanical &&
+		ctx.coverageRepair &&
+		evaluated.coverage &&
+		evaluated.coverage.uncovered.length > 0
+	) {
+		built = buildCoverageRepairPrompt({
+			system: ctx.cell.system,
+			prompt: ctx.cell.prompt,
+			output: original,
+			errors: evaluated.coverage.uncovered.map(coverageErrorLine),
+		});
+	} else return;
 	const request = {
 		purpose: REPAIR_PURPOSE,
 		system: built.system,
@@ -1404,9 +1783,17 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		text: result.text,
 		restoreSyntax: ctx.restoreSyntax,
 		normalizeIds: ctx.normalizeIds,
+		...(ctx.cell.enumConclusion
+			? { enumItems: ctx.cell.enumConclusion.items }
+			: {}),
 	});
 	if (ctx.restoreSyntax) repair.syntaxRestored = after.syntaxRestored;
 	if (ctx.normalizeIds) repair.idsNormalized = after.idsNormalized;
+	if (after.coverage)
+		repair.coverageAfter = {
+			total: after.coverage.total,
+			covered: after.coverage.coveredIds.length,
+		};
 	ctx.work.finishTrial(trialId, {
 		status: "completed",
 		outputText: result.text,

@@ -11,8 +11,13 @@ import { join } from "node:path";
 import { loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import type { FormatId } from "../formats/index.ts";
-import { inferenceDigest, TRIAGE_PURPOSE } from "../infer/recorded.ts";
+import {
+	ENUM_PURPOSE,
+	inferenceDigest,
+	TRIAGE_PURPOSE,
+} from "../infer/recorded.ts";
 import { CONDITIONS } from "./conditions.ts";
+import { buildEnumPrompt, enumNoteText, parseEnumOutput } from "./enumerate.ts";
 import { buildFormatPrompt } from "./prompt.ts";
 import { runFormat } from "./run.ts";
 import { SYNTHETIC_OUTPUTS } from "./synthetic.ts";
@@ -761,6 +766,139 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		const invalid = await run();
 		expect(invalid.cells[0]?.status).toBe("inference-error");
 		expect(invalid.triage).toMatchObject({ concluded: 0, invalid: 1 });
+	});
+
+	test("staged: enumeration gates composing, coverage is reported, and the coverage round repairs gaps", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "format-staged-"));
+		const session = "staged-wiring";
+		const dir = join(runsRoot, session);
+		mkdirSync(join(dir, "recordings"), { recursive: true });
+		mkdirSync(join(dir, "enum-recordings"), { recursive: true });
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const prime = loadCases().find((c) => c.id === "prime-count");
+		if (!prime) throw new Error("seed case prime-count missing");
+		const enumOutput =
+			'{"items": ["1から100までの素数の個数を計算する", "計算した個数を伝える"]}';
+		const enumBuilt = buildEnumPrompt(prime);
+		const enumDigest = inferenceDigest({
+			purpose: ENUM_PURPOSE,
+			system: enumBuilt.system,
+			prompt: enumBuilt.prompt,
+		});
+		const conclusion = parseEnumOutput(enumOutput);
+		if (!conclusion) throw new Error("enum conclusion failed to parse");
+		const noted = buildFormatPrompt({
+			evalCase: prime,
+			format: "json",
+			cards: catalog.cards,
+			enumNote: enumNoteText(conclusion),
+		});
+		const composeDigest = inferenceDigest({
+			purpose: "compose",
+			system: noted.system,
+			prompt: noted.prompt,
+		});
+		catalog.close();
+		const marked = ((): string => {
+			const def = JSON.parse(primeOutput) as {
+				steps: { task: string }[];
+			};
+			const first = def.steps[0];
+			if (!first) throw new Error("synthetic output has no steps");
+			first.task = `[w1][w2] ${first.task}`;
+			return JSON.stringify(def);
+		})();
+		const run = (extra: { coverageRepair?: boolean } = {}) =>
+			runFormat({
+				session,
+				runsRoot,
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json"],
+				staged: true,
+				...extra,
+			});
+
+		// No enumeration recording: the composing cell is blocked as missing and
+		// the enumeration request is written.
+		const blocked = await run();
+		expect(blocked.cells[0]?.status).toBe("missing");
+		expect(blocked.staged).toMatchObject({
+			cases: 1,
+			concluded: 0,
+			missing: 1,
+		});
+		expect(existsSync(join(dir, "enum-requests", "prime-count.json"))).toBe(
+			true,
+		);
+
+		// Enumeration + a marked composing output: scored with full coverage,
+		// and the markers do not leak into the scored definition (it passes).
+		writeFileSync(
+			join(dir, "enum-recordings", "prime-count.json"),
+			JSON.stringify({ promptDigest: enumDigest, output: enumOutput }),
+		);
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({ promptDigest: composeDigest, output: marked }),
+		);
+		const scored = await run();
+		expect(scored.cells[0]?.passed).toBe(true);
+		expect(scored.cells[0]?.coverage).toEqual({
+			total: 2,
+			covered: 2,
+			uncovered: [],
+		});
+		expect(scored.staged).toMatchObject({ concluded: 1, items: 2 });
+
+		// The same definition without markers: coverage reports the gap while
+		// the verdict itself is untouched (coverage never gates the score).
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({ promptDigest: composeDigest, output: primeOutput }),
+		);
+		const gapped = await run();
+		expect(gapped.cells[0]?.passed).toBe(true);
+		expect(gapped.cells[0]?.coverage).toEqual({
+			total: 2,
+			covered: 0,
+			uncovered: ["w1", "w2"],
+		});
+
+		// With the coverage review on, the gap becomes a repair round whose
+		// prompt names the uncovered items as machine errors.
+		const review = await run({ coverageRepair: true });
+		expect(review.cells[0]?.repair?.status).toBe("missing");
+		const repairRequest = JSON.parse(
+			readFileSync(
+				join(dir, "repair-requests", "prime-count--json.json"),
+				"utf8",
+			),
+		) as { prompt: string; promptDigest: string };
+		expect(repairRequest.prompt).toContain(
+			"[coverage] w1: 1から100までの素数の個数を計算する",
+		);
+		expect(repairRequest.prompt).toContain(
+			"[coverage] w2: 計算した個数を伝える",
+		);
+
+		// A repair recording that adds the markers closes the gap.
+		mkdirSync(join(dir, "repair-recordings"), { recursive: true });
+		writeFileSync(
+			join(dir, "repair-recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: repairRequest.promptDigest,
+				output: marked,
+			}),
+		);
+		const repaired = await run({ coverageRepair: true });
+		expect(repaired.cells[0]?.repair?.status).toBe("scored");
+		expect(repaired.cells[0]?.repair?.after?.passed).toBe(true);
+		expect(repaired.cells[0]?.repair?.coverageAfter).toEqual({
+			total: 2,
+			covered: 2,
+		});
+		expect(repaired.repair).toMatchObject({ attempted: 1, scored: 1 });
 	});
 
 	test("candidates naming an unoffered entry fail before the run starts", async () => {

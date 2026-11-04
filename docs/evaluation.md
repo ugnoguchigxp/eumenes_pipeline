@@ -44,12 +44,18 @@ bun run bench:verify --db :memory:
 
 ```
 bun run bench:format -- --session <name> [--case id,id] [--format json,md-yaml,free-md] \
-  [--condition baseline|compact|oneshot] [--candidates <file.json>] [--repair]
+  [--condition baseline|compact|oneshot] [--candidates <file.json>] [--repair] \
+  [--staged] [--coverage-repair]
 ```
 
 recording が無いセルは `requests/<case>--<format>.json`（system・prompt・promptDigest）
 が書かれ、missing として数えられて終了コード 1 になる。半端なセッションが完全に見える
 ことはない。
+
+`--staged` は段階生成（段階A: 作業項目の列挙を `enum-requests/`・`enum-recordings/` で
+記録再生し、項目リストと印の規約を制作プロンプトへ渡す。段階Cの `--coverage-repair` は、
+機械的に健全で項目の未カバーが残るセルに、未カバー項目を機械エラーとして修復を1回渡す）。
+列挙が使えないケースの制作セルは、triage と同じく blocked として数えられる。
 
 ### 3. 生成（盲検）
 

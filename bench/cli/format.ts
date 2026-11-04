@@ -27,6 +27,14 @@
  * are read from `<session>/triage-recordings/`, and a case without a usable
  * conclusion blocks its composing cells (reported missing, like a missing
  * composing recording).
+ * `--staged` adds the staged generation: one recorded enumeration pre-pass per
+ * case (stage A) whose item list and marker convention the composing prompt
+ * carries, with deterministic item coverage computed per cell. Enumeration
+ * requests land in `<session>/enum-requests/`, recordings in
+ * `<session>/enum-recordings/`, and a case without a usable item list blocks
+ * its composing cells the same way. `--coverage-repair` (requires `--staged`)
+ * adds stage C: one repair round for mechanically sound cells that leave
+ * enumerated items uncovered, fed the uncovered items as machine errors.
  * `--candidates` takes a JSON file `{ [caseId]: entryId[] }` of per-case offered subsets;
  * the run then records its condition as `subset:<digest of the file, first 8 hex>`.
  * No model is called and nothing is reached: the guard's only allowance is the local
@@ -59,6 +67,8 @@ const { values } = parseArgs({
 		"restore-syntax": { type: "boolean" },
 		"normalize-ids": { type: "boolean" },
 		triage: { type: "boolean" },
+		staged: { type: "boolean" },
+		"coverage-repair": { type: "boolean" },
 		db: { type: "string" },
 	},
 });
@@ -114,6 +124,8 @@ const report = await runFormat({
 	...(values["restore-syntax"] ? { restoreSyntax: true } : {}),
 	...(values["normalize-ids"] ? { normalizeIds: true } : {}),
 	...(values.triage ? { triage: true } : {}),
+	...(values.staged ? { staged: true } : {}),
+	...(values["coverage-repair"] ? { coverageRepair: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
@@ -170,6 +182,18 @@ if (report.triage) {
 		`triage: cases ${t.cases} (concluded ${t.concluded}: proceed ${t.proceed}, needs_input ${t.needsInput}; missing ${t.missing}, digest-mismatch ${t.digestMismatch}, invalid ${t.invalid})` +
 			` | triage prompt tokens ${t.promptTokens ?? "n/a"}, output tokens ${t.outputTokens ?? "n/a"}`,
 	);
+}
+if (report.staged) {
+	const s = report.staged;
+	console.log(
+		`staged enumeration: cases ${s.cases} (concluded ${s.concluded}; missing ${s.missing}, digest-mismatch ${s.digestMismatch}, invalid ${s.invalid}); items ${s.items}` +
+			` | enum prompt tokens ${s.promptTokens ?? "n/a"}, output tokens ${s.outputTokens ?? "n/a"}`,
+	);
+	for (const cell of report.cells)
+		if (cell.coverage && cell.coverage.uncovered.length > 0)
+			console.log(
+				`  coverage ${cell.caseId} / ${cell.format}: ${cell.coverage.covered}/${cell.coverage.total} (uncovered: ${cell.coverage.uncovered.join(", ")})`,
+			);
 }
 const sumTokens = (values: (number | null)[]) => {
 	if (!report.tokenizer.available) return "n/a (tokenizer unavailable)";

@@ -120,6 +120,13 @@ export function buildFormatPrompt(input: {
 	 * recording of the same case; absent outside triage runs.
 	 */
 	triageNote?: string;
+	/**
+	 * The stage-A enumeration section of the staged-generation condition (the
+	 * work-item list and the marker convention), appended as the prompt's final
+	 * section. Built by the runner from the enumeration recording of the same
+	 * case; absent outside staged runs.
+	 */
+	enumNote?: string;
 }): FormatPrompt {
 	const { evalCase, format, cards } = input;
 	const materials =
@@ -149,6 +156,7 @@ export function buildFormatPrompt(input: {
 			input.workedExample,
 		);
 	if (input.triageNote !== undefined) sections.push("", input.triageNote);
+	if (input.enumNote !== undefined) sections.push("", input.enumNote);
 	const formatInstructions =
 		format === "json" && input.outputStyle === "minified"
 			? `${FORMAT_INSTRUCTIONS.json}\n${MINIFIED_JSON_INSTRUCTION}`
