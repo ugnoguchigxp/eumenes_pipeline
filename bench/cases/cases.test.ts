@@ -22,7 +22,7 @@ const fixtureDependent = (entry: string): boolean => {
 
 describe("cases in data/cases/", () => {
 	test("loads the full set with unique ids", () => {
-		expect(cases).toHaveLength(113);
+		expect(cases).toHaveLength(116);
 		expect(new Set(cases.map((c) => c.id)).size).toBe(cases.length);
 	});
 
@@ -42,7 +42,7 @@ describe("cases in data/cases/", () => {
 			"weather-timer",
 		];
 		for (const id of seedIds) expect(byId.get(id)?.split, id).toBe("dev");
-		expect(cases.filter((c) => c.split === "dev")).toHaveLength(73);
+		expect(cases.filter((c) => c.split === "dev")).toHaveLength(76);
 		expect(cases.filter((c) => c.split === "holdout")).toHaveLength(40);
 	});
 

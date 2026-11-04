@@ -8,7 +8,7 @@ plan §9・§10 の評価を、まっさらな状態から第三者が再実行�
 
 | 要素 | 場所 | 役割 |
 | --- | --- | --- |
-| 評価ケース | `data/cases/<id>.json`（113件） | 依頼・渡された資料・正解（`expected`）・`split`（dev/holdout）・`group`。正解は評価器だけが読む |
+| 評価ケース | `data/cases/<id>.json`（116件） | 依頼・渡された資料・正解（`expected`）・`split`（dev/holdout）・`group`。正解は評価器だけが読む |
 | カタログ snapshot | `data/source/`（読み取り専用）+ `data/contracts/` | 部品カードの出所。digest 照合つき。再生成は `bun run bench:catalog` |
 | 作業DB | `data/work/bench.sqlite3` | run / trial / model call / check / mock call / score の追記専用記録。削除・完了後の書換えはトリガーで拒否される |
 | セッション | `data/runs/format/<session>/` | `requests/`（生成役への入力）・`recordings/`（生成役の出力）・`summary.json`（最新の run の集計） |
