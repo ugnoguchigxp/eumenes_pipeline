@@ -112,14 +112,14 @@ describe("runSelectionExperiment (test transport, synthetic)", () => {
 			rerankScorer: async (pairs) => pairs.map((_, i) => pairs.length - i),
 		});
 		expect(report.split).toBe("dev");
-		expect(report.cases.dev).toBe(72);
-		expect(report.cases.evaluated).toBe(60);
+		expect(report.cases.dev).toBe(73);
+		expect(report.cases.evaluated).toBe(61);
 		const excluded = Object.fromEntries(
 			report.cases.excluded.map((e) => [e.kind, e.count]),
 		);
 		expect(excluded).toEqual({ needs_input: 7, unsupported: 5 });
 		expect(report.cards).toBe(24);
-		expect(report.perCase).toHaveLength(60);
+		expect(report.perCase).toHaveLength(61);
 		expect(Object.keys(report.methods).sort()).toEqual([
 			"bm25",
 			"emb",
