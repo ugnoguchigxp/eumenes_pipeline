@@ -64,6 +64,23 @@ class FakeHost implements PipelineHost {
 const alwaysValid = () => ({ ok: true as const, value: null });
 
 describe("runPlan", () => {
+	test("does not dispatch even the first step after an already expired deadline", async () => {
+		const host = new FakeHost(() => ({}));
+		const outcome = await runPlan(
+			plan([planned("a", ["request"])], ["a"]),
+			host,
+			{
+				runId: "expired",
+				validateOutput: alwaysValid,
+				now: () => 100,
+				deadlineMs: -1,
+			},
+		);
+		expect(host.seen).toHaveLength(0);
+		expect(outcome.status).toBe("stopped");
+		expect(outcome.stoppedAt?.code).toBe("deadline_before_dispatch");
+		expect(outcome.delivered).toBeNull();
+	});
 	test("hands each step only the request and the earlier results it names", async () => {
 		const host = new FakeHost(() => ({}));
 		const outcome = await runPlan(

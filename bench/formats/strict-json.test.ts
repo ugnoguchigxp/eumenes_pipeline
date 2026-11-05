@@ -1,7 +1,45 @@
 import { describe, expect, test } from "bun:test";
 import { parseJsonStrict } from "./strict-json.ts";
+import { outcomeFromValue } from "./outcome.ts";
 
 describe("parseJsonStrict", () => {
+	test.each([
+		'{"__proto__":{"status":"unsupported","reasons":["x"]}}',
+		'{"\\u005f_proto__":{"nested":true},"constructor":{"prototype":1}}',
+		'{"a":{"__proto__":null},"prototype":[1,true]}',
+	])("retains own JSON properties: %s", (text) => {
+		const result = parseJsonStrict(text);
+		expect(result.ok).toBe(true);
+		if (!result.ok) return;
+		expect(JSON.stringify(result.value)).toBe(JSON.stringify(JSON.parse(text)));
+		expect(Object.getPrototypeOf(result.value)).toBe(Object.prototype);
+	});
+
+	test("an inherited discriminator cannot change the authored outcome", () => {
+		const value = Object.create({ status: "unsupported", reasons: ["x"] });
+		const parsed = outcomeFromValue(value);
+		expect(parsed).toEqual({
+			ok: true,
+			outcome: { kind: "ready", definition: value },
+		});
+		expect(
+			outcomeFromValue(
+				Object.assign(Object.create({ definition: {} }), { status: "ready" }),
+			),
+		).toMatchObject({ ok: false });
+	});
+
+	test("generated JSON data agrees with the standard parser", () => {
+		for (let n = 0; n < 100; n++) {
+			const value = JSON.parse(
+				`{"__proto__":${n},"array":[null,true,"x\\n",${n}],"nested":{"constructor":"${n}"}}`,
+			);
+			const text = JSON.stringify(value);
+			const parsed = parseJsonStrict(text);
+			expect(parsed.ok).toBe(true);
+			if (parsed.ok) expect(JSON.stringify(parsed.value)).toBe(text);
+		}
+	});
 	test("reads the full JSON value grammar", () => {
 		const text =
 			'{"a":[1,-0.5e2,0,"x\\n\\u0041\\"","\\\\",true,false,null],"b":{"c":{}},"d":[]}';

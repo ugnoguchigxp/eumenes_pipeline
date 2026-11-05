@@ -54,6 +54,7 @@ try {
 			bm25Validation: report.bm25Validation,
 		},
 		inputs: {
+			caseSnapshot: report.caseSnapshot,
 			snapshotSha256: report.catalog.snapshotSha256,
 			catalogVersion: report.catalog.version,
 			caseIds: report.perCase.map((c) => c.caseId),

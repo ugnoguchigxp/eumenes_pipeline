@@ -1,5 +1,9 @@
 # Eumenes Pipeline 計画
 
+2026-11-05追記: 本リポジトリ内の改善と実API測定、再評価を完了。現在の契約はp0-3で、Zod修正版、公開型の分離、採点と証拠の固定、API予算と記録再生を実装した。実装順と受入条件は [品質改善実装計画](docs/plans/quality-improvement-2026-11-05.md)、検証結果と残作業は [実装記録](docs/handoff/2026-11-05-quality-improvement.md) を参照する。技術品質は同一基準で正式80.9点。根拠は [改善後の再評価](docs/reviews/2026-11-05-quality-reevaluation/report.md)。本体取込みとCIは今回の対象外。以下の2026-11-03時点の現在地は当時の記録として扱う。
+
+同日の追加指定: 検証にClaude APIとOpenAI APIの `gpt-6-luna` を使う計画を含める。認証は利用者の `.zprofile` にある `CLAUDE_API_KEY` と `OPEN_AI_API_KEY` を優先し、プロジェクトごとの `.env` を要求しない。詳細と従来のMuse限定規則の改訂箇所は品質改善計画Q14に記載する。
+
 作成日: 2026-11-03（日本時間）  
 状態: P0の足場まで構築済み（2026-11-03）。技術構成、暫定の定義schemaと検査、Eumenesから抽出した契約、モック、作業用SQLite、Museの推論口、オフライン検証、梱包は用意した（[引き継ぎ](docs/handoff/2026-11-03-skeleton.md)）。比較・実測・形式とRouterの決定、Eumenesへの組込みは未着手。
 

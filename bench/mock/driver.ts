@@ -100,6 +100,18 @@ export async function runPlan(
 
 	for (const step of plan.steps) {
 		if (options.signal?.aborted) return stop("cancelled", null);
+		if (now() > deadline)
+			return {
+				runId: options.runId,
+				status: "stopped",
+				steps,
+				stoppedAt: {
+					stepId: step.stepId,
+					state: "expired",
+					code: "deadline_before_dispatch",
+				},
+				delivered: null,
+			};
 		const result = await host.executeStep(
 			{
 				runId: options.runId,

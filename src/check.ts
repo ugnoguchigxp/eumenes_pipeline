@@ -14,6 +14,7 @@ import {
 
 export type IssueCode =
 	| "schema"
+	| "request_mismatch"
 	| "duplicate_id"
 	| "reserved_id"
 	| "unknown_reference"
@@ -79,6 +80,9 @@ export type CheckResult =
 type ArgumentsCheck =
 	{ kind: "ok" } | { kind: "invalid"; detail: string } | { kind: "unchecked" };
 
+/** Trusted host input. Supplying it also blocks arguments this checker cannot validate. */
+export type CheckContext = { sourceRequest: string };
+
 /**
  * Type-check stated arguments against the entry's declared JSON Schema, the same way the bench
  * validates contract values (`z.fromJSONSchema`). A schema whose constructs the converter does
@@ -108,6 +112,7 @@ function checkArguments(
 export function checkDefinition(
 	input: unknown,
 	catalog: CatalogView,
+	context?: CheckContext,
 ): CheckResult {
 	const parsed = pipelineDefinition.safeParse(input);
 	if (!parsed.success)
@@ -122,6 +127,13 @@ export function checkDefinition(
 		};
 	const definition = parsed.data;
 	const issues: Issue[] = [];
+	if (context && definition.request !== context.sourceRequest)
+		issues.push({
+			code: "request_mismatch",
+			path: "request",
+			message: "definition request differs from the host's original request",
+			severity: "error",
+		});
 	const error = (
 		code: IssueCode,
 		path: string,
@@ -202,7 +214,7 @@ export function checkDefinition(
 						code: "arguments_unchecked",
 						path: `steps.${index}.arguments`,
 						message: `the arguments schema of ${record.card.entry} uses constructs this checker cannot validate; the arguments were not type-checked`,
-						severity: "warning",
+						severity: context ? "error" : "warning",
 					});
 				else if (checked.kind === "invalid")
 					error(

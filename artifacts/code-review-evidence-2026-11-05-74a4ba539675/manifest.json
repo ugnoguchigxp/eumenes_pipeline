@@ -1,0 +1,9 @@
+{
+  "sourceSha256": "74a4ba53967566892d27aa7feab6d08cf20a4ac7ae9fb2a6ff61eda9f120bdb8",
+  "archiveSha256": "c992fc8f4366c97267d2c85bfcd20773bcf0565f6e74d98bde75dc7885b6666a",
+  "files": 2726,
+  "bytes": 5018056,
+  "httpReplayRequests": 0,
+  "tests": 388,
+  "offlineChecks": 87
+}

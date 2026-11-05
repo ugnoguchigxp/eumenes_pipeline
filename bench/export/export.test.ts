@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+	cpSync,
+	mkdirSync,
+	mkdtempSync,
+	readFileSync,
+	writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { sha256 } from "../catalog/load.ts";
@@ -21,6 +27,36 @@ describe("bench:export (synthetic recordings)", () => {
 		(s) => s.caseId === "prime-count" && s.format === "json",
 	)?.output;
 	if (!primeOutput) throw new Error("synthetic prime-count/json missing");
+	test("later gold changes cannot be attributed to the historical run", async () => {
+		const root = mkdtempSync(join(tmpdir(), "export-gold-drift-"));
+		const runsRoot = join(root, "runs");
+		const dbPath = join(root, "bench.sqlite3");
+		const recordingsDir = join(runsRoot, "gold-drift", "recordings");
+		mkdirSync(recordingsDir, { recursive: true });
+		writeRecording(recordingsDir, "prime-count", primeOutput);
+		const run = await runFormat({
+			session: "gold-drift",
+			runsRoot,
+			dbPath,
+			caseIds: ["prime-count"],
+			formats: ["json"],
+		});
+		const before = buildRunExport({ runId: run.runId, dbPath, runsRoot });
+		const casesDir = join(root, "changed-cases");
+		cpSync("data/cases", casesDir, { recursive: true });
+		const path = join(casesDir, "prime-count.json");
+		const changed = JSON.parse(readFileSync(path, "utf8"));
+		changed.expected.requiredBundles = ["web.search"];
+		writeFileSync(path, JSON.stringify(changed));
+		expect(() =>
+			buildRunExport({ runId: run.runId, dbPath, runsRoot, casesDir }),
+		).toThrow("case snapshot drift");
+		const after = buildRunExport({ runId: run.runId, dbPath, runsRoot });
+		expect(after.cases).toEqual(before.cases);
+		expect(after.provenance.casesPinned).toBe(true);
+		expect(after.inputs.source).toBeObject();
+		expect(after.totals).toEqual(before.totals);
+	});
 
 	function writeRecording(
 		recordingsDir: string,
@@ -69,8 +105,8 @@ describe("bench:export (synthetic recordings)", () => {
 		expect(exp.run.status).toBe("completed");
 		expect(exp.condition?.id).toBe("baseline");
 		expect(exp.provenance.catalogVersion).toBeString();
-		expect(exp.provenance.contractVersion).toBe("p0-2");
-		expect(exp.provenance.contractVersionAtExport).toBe("p0-2");
+		expect(exp.provenance.contractVersion).toBe("p0-3");
+		expect(exp.provenance.contractVersionAtExport).toBe("p0-3");
 
 		const prime = exp.cases.find((c) => c.id === "prime-count");
 		expect(prime?.split).toBe("dev");

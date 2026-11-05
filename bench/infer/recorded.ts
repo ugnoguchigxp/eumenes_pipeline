@@ -1,22 +1,20 @@
 /**
- * Agent-model inference (user's instruction, 2026-11-03): in P0d the composing/judging inference
- * is Muse itself, not a live model and not `muse exec`. Generation happens OUTSIDE this
- * code — an agent reads a request file and writes a recording — and this adapter only replays
- * recordings through the `InferencePort` shape, so a recorded run is reproducible byte for byte.
+ * Offline inference replay. Legacy agent-model files and API-derived files use the same
+ * InferencePort. API records require a matching provenance sidecar and output digest.
+ * Generation happens outside this adapter; replay never makes a model call.
  *
  * Rules:
- * - A recording is keyed by the digest of the exact inference request (purpose + system +
- *   prompt). A recording whose digest does not match the request is never used; a request with
+ * - A recording is keyed by the digest of the exact inference request. A recording whose
+ *   digest does not match the request is never used; a request with
  *   no recording is an explicit error, never a guessed answer.
- * - Usage is all null: the agent's token counts are not obtainable, and unobtainable values are
- *   never filled with 0 or an estimate (plan §10). `model` is the constant `agent-model`, so
- *   every stored model call carries its evidence kind; results from this port are agent-model
- *   evidence and are never reported as a real model's measurement or acceptance.
+ * - Legacy usage stays null and its model stays agent-model. Verified API files retain the
+ *   actual provider model/usage and generation duration in their sidecar. Complete() returns
+ *   durationMs=0 for replay; this is never substituted for actual API generation time.
  * - The adapter reads recording files only. It never reads cases or gold: a recording directory
  *   holds model outputs, keyed by prompt digest, nothing else.
  */
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { z } from "zod";
 import type {
 	InferencePort,
@@ -59,18 +57,53 @@ export const ENUM_PURPOSE = "enumerate";
 export const recordingFile = z.strictObject({
 	promptDigest: z.string().regex(/^[a-f0-9]{64}$/),
 	output: z.string(),
+	evidence: z.literal("api").optional(),
 });
 export type RecordingFile = z.infer<typeof recordingFile>;
 
+const usageSchema = z.strictObject({
+	inputTokens: z.number().int().nonnegative().nullable(),
+	cachedTokens: z.number().int().nonnegative().nullable(),
+	outputTokens: z.number().int().nonnegative().nullable(),
+	reasoningTokens: z.number().int().nonnegative().nullable(),
+	calls: z.number().int().nonnegative().nullable(),
+});
+export const apiRecordingSource = z.strictObject({
+	version: z.literal(1),
+	evidence: z.literal("api"),
+	runId: z.string(),
+	trialId: z.string(),
+	provider: z.enum(["anthropic", "openai"]),
+	model: z.string(),
+	usage: usageSchema,
+	durationMs: z.number().nonnegative(),
+	promptDigest: z.string().regex(/^[a-f0-9]{64}$/),
+	outputDigest: z.string().regex(/^[a-f0-9]{64}$/),
+	requestId: z.string().nullable(),
+	/** Undefined is legacy/unknown; null explicitly means no forced schema. */
+	outputSchemaDigest: z
+		.string()
+		.regex(/^[a-f0-9]{64}$/)
+		.nullable()
+		.optional(),
+});
+export type ApiRecordingSource = z.infer<typeof apiRecordingSource>;
+
 /** The digest a recording is keyed by: the whole model-visible request, nothing else. */
 export const inferenceDigest = (
-	request: Pick<InferenceRequest, "purpose" | "system" | "prompt">,
+	request: Pick<
+		InferenceRequest,
+		"purpose" | "system" | "prompt" | "outputSchema"
+	>,
 ): string =>
 	sha256(
 		canonicalJson({
 			purpose: request.purpose,
 			system: request.system ?? null,
 			prompt: request.prompt,
+			...(request.outputSchema !== undefined
+				? { outputSchema: request.outputSchema }
+				: {}),
 		}),
 	);
 
@@ -84,9 +117,16 @@ const noUsage = (): InferenceUsage => ({
 
 export class RecordedInference implements InferencePort {
 	readonly #byDigest = new Map<string, string>();
+	readonly #sources: ReadonlyMap<string, ApiRecordingSource>;
 
-	constructor(recordings: Iterable<RecordingFile>) {
+	constructor(
+		recordings: Iterable<RecordingFile>,
+		sources: ReadonlyMap<string, ApiRecordingSource> = new Map(),
+	) {
+		this.#sources = sources;
 		for (const recording of recordings) {
+			if (recording.evidence === "api" && !sources.has(recording.promptDigest))
+				throw new Error("API recording provenance missing");
 			if (this.#byDigest.has(recording.promptDigest))
 				throw new Error(
 					`duplicate recording for prompt digest ${recording.promptDigest}`,
@@ -103,8 +143,26 @@ export class RecordedInference implements InferencePort {
 	static fromDirectory(dir: string): {
 		inference: RecordedInference;
 		files: Map<string, RecordingFile>;
+		provenance: Map<string, ApiRecordingSource>;
 	} {
 		const files = new Map<string, RecordingFile>();
+		const provenance = new Map<string, ApiRecordingSource>();
+		const sources = new Map<string, ApiRecordingSource>();
+		const apiDigests = new Set<string>();
+		const evidenceDir = join(dirname(dir), "api-evidence");
+		if (existsSync(evidenceDir))
+			for (const run of readdirSync(evidenceDir, { withFileTypes: true })) {
+				if (!run.isDirectory()) continue;
+				for (const name of readdirSync(join(evidenceDir, run.name)).filter(
+					(name) => name.endsWith(".json") && name !== "report.json",
+				)) {
+					const evidence = JSON.parse(
+						readFileSync(join(evidenceDir, run.name, name), "utf8"),
+					) as { promptDigest?: unknown };
+					if (typeof evidence.promptDigest === "string")
+						apiDigests.add(evidence.promptDigest);
+				}
+			}
 		if (existsSync(dir)) {
 			for (const name of readdirSync(dir)
 				.filter((n) => n.endsWith(".json"))
@@ -122,9 +180,36 @@ export class RecordedInference implements InferencePort {
 						`${path}: invalid recording: ${parsed.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join("; ")}`,
 					);
 				files.set(name, parsed.data);
+				const sourcePath = join(
+					dirname(dir),
+					"api-provenance",
+					basename(dir),
+					name,
+				);
+				if (existsSync(sourcePath)) {
+					const source = apiRecordingSource.parse(
+						JSON.parse(readFileSync(sourcePath, "utf8")),
+					);
+					if (
+						source.promptDigest !== parsed.data.promptDigest ||
+						source.outputDigest !== sha256(parsed.data.output)
+					)
+						throw new Error(`API recording provenance mismatch: ${name}`);
+					sources.set(source.promptDigest, source);
+					provenance.set(name, source);
+				} else if (
+					parsed.data.evidence === "api" ||
+					apiDigests.has(parsed.data.promptDigest)
+				) {
+					throw new Error(`API recording provenance missing: ${name}`);
+				}
 			}
 		}
-		return { inference: new RecordedInference(files.values()), files };
+		return {
+			inference: new RecordedInference(files.values(), sources),
+			files,
+			provenance,
+		};
 	}
 
 	async complete(request: InferenceRequest): Promise<InferenceResult> {
@@ -138,11 +223,25 @@ export class RecordedInference implements InferencePort {
 				usage: noUsage(),
 				durationMs: 0,
 			};
+		const source = this.#sources.get(digest);
+		const schemaDigest =
+			request.outputSchema === undefined
+				? null
+				: sha256(canonicalJson(request.outputSchema));
+		if (source && source.outputSchemaDigest !== schemaDigest)
+			return {
+				ok: false,
+				error:
+					"API recording schema identity is missing or mismatched; use its source snapshot or a verified metadata migration",
+				model: source.model,
+				usage: noUsage(),
+				durationMs: 0,
+			};
 		return {
 			ok: true,
 			text: output,
-			model: AGENT_MODEL,
-			usage: noUsage(),
+			model: this.#sources.get(digest)?.model ?? AGENT_MODEL,
+			usage: this.#sources.get(digest)?.usage ?? noUsage(),
 			durationMs: 0,
 		};
 	}

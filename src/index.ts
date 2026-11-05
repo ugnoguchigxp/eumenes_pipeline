@@ -3,7 +3,7 @@
  * install the tarball and connect it through a thin adapter (plan §7).
  *
  * Status: P1 — the internal data contract (definition schema, check, catalog resolution,
- * execution plan) is fixed at contract version p0-2. The composing AI's primary description
+ * execution plan) is fixed at contract version p0-3. The composing AI's primary description
  * format (JSON) is a separate, still provisional choice: its final confirmation on the weak
  * target model is outstanding and does not change this package's data contract.
  */
@@ -51,6 +51,7 @@ export {
 } from "./catalog.ts";
 export {
 	checkDefinition,
+	type CheckContext,
 	type CheckResult,
 	type ExecutionPlan,
 	type Issue,
@@ -65,3 +66,10 @@ export type {
 	InferenceUsage,
 	PipelineHost,
 } from "./ports.ts";
+
+export type {
+	Schema,
+	ValidationIssue,
+	ValidationError,
+	ValidationResult,
+} from "./contracts/schema.ts";

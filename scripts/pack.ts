@@ -65,6 +65,9 @@ const sourceFiles = [
 	"bun.lock",
 	"tsconfig.json",
 	"tsconfig.build.json",
+	"README.md",
+	"LICENSE",
+	"scripts/pack.ts",
 ].sort();
 const sourceDigest = sha256(
 	sourceFiles
@@ -106,7 +109,7 @@ console.log(`pack contents ok (${packed.length} files): ${packed.join(", ")}`);
 if (dryRun) process.exit(0);
 
 const SMOKE = `declare const console: { log(message: string): void };
-import { checkDefinition, createCatalogView, isAdoptable, type ComponentRecord } from "${pkg.name}";
+import { checkDefinition, createCatalogView, isAdoptable, pipelineDefinition, type ComponentRecord, type Schema, type PipelineDefinition } from "${pkg.name}";
 const card = (entry: string): ComponentRecord => ({
 	card: { entry, bundle: entry, title: entry, summary: "", useWhen: [], avoidWhen: [], output: { schemaRef: null, origin: "missing" }, effects: [], mayAskUser: false },
 	execution: "command", enabled: true, support: "ready", reasons: [],
@@ -116,6 +119,9 @@ const view = createCatalogView([card("a")], { version: "v", offer: () => true })
 const result = checkDefinition({ request: "r", steps: [{ id: "s", bundle: "a", task: "t", from: ["request"], result: "x" }], output: { from: ["s"], deliver: "d" } }, view);
 if (!result.ok || result.plan.steps[0]?.entry !== "a") throw new Error("checkDefinition failed in the consumer");
 if (isAdoptable({ state: "failed", summary: "", references: [], modelCalls: 0 })) throw new Error("isAdoptable");
+const schema: Schema<PipelineDefinition> = pipelineDefinition;
+if (!schema.safeParse(result.definition).success) throw new Error("public validator");
+if (checkDefinition(result.definition, view, { sourceRequest: "changed" }).ok) throw new Error("source request boundary");
 console.log("consumer smoke ok");
 `;
 /** The consumer compiles like Eumenes (ES2022, Bundler) with no Bun/DOM types. */

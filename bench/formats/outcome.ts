@@ -49,11 +49,13 @@ const stringArray = (value: unknown): string[] | null =>
 export function outcomeFromValue(value: unknown): ParseResult {
 	if (!isRecord(value))
 		return fail("not_an_object", "the top-level value is not an object");
-	const status = value.status;
+	const own = (key: string): unknown =>
+		Object.hasOwn(value, key) ? value[key] : undefined;
+	const status = own("status");
 	if (status === undefined)
 		return { ok: true, outcome: { kind: "ready", definition: value } };
 	if (status === "ready") {
-		if (!("definition" in value))
+		if (!Object.hasOwn(value, "definition"))
 			return fail(
 				"missing_definition",
 				`status "ready" without a "definition" field`,
@@ -64,7 +66,7 @@ export function outcomeFromValue(value: unknown): ParseResult {
 		};
 	}
 	if (status === "needs_input") {
-		const questions = stringArray(value.questions);
+		const questions = stringArray(own("questions"));
 		if (!questions)
 			return fail(
 				"invalid_questions",
@@ -75,12 +77,14 @@ export function outcomeFromValue(value: unknown): ParseResult {
 			outcome: {
 				kind: "needs_input",
 				questions,
-				...(typeof value.note === "string" ? { note: value.note } : {}),
+				...(typeof own("note") === "string"
+					? { note: own("note") as string }
+					: {}),
 			},
 		};
 	}
 	if (status === "unsupported") {
-		const reasons = stringArray(value.reasons);
+		const reasons = stringArray(own("reasons"));
 		if (!reasons)
 			return fail("invalid_reasons", `"reasons" is not an array of strings`);
 		return { ok: true, outcome: { kind: "unsupported", reasons } };

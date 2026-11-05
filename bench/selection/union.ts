@@ -1,3 +1,4 @@
+import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
 /**
  * Accuracy item 3: union presentation — emb-prefix top-12 ∪ BM25 top-k.
  *
@@ -102,6 +103,7 @@ export type UnionDepthMetrics = {
 };
 
 export type UnionReport = {
+	caseSnapshot: CaseSnapshot;
 	runId: string;
 	startedAt: string;
 	split: "dev" | "holdout";
@@ -163,9 +165,9 @@ export function runUnionAnalysis(options: {
 		// The evaluated set is re-derived with the tuning protocol's filter and
 		// must match the recorded file exactly; anything else means the inputs
 		// drifted and the comparison would be meaningless.
-		const splitCases = loadCases(options.casesDir).filter(
-			(c) => c.split === recorded.split,
-		);
+		const allCases = loadCases(options.casesDir);
+		const caseSnapshot = captureCases(allCases, options.casesDir);
+		const splitCases = allCases.filter((c) => c.split === recorded.split);
 		const evaluated: EvalCase[] = splitCases.filter(
 			(c) =>
 				c.expected.kind === "pipeline" &&
@@ -272,6 +274,7 @@ export function runUnionAnalysis(options: {
 		});
 
 		return {
+			caseSnapshot,
 			runId,
 			startedAt,
 			split: recorded.split,

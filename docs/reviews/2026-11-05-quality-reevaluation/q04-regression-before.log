@@ -1,0 +1,33 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/scoring/score.test.ts:
+(pass) scoreCase: passing attempts > a correct ready-only pipeline passes every aspect [1.95ms]
+(pass) scoreCase: passing attempts > an acceptable entry may join, but never substitutes for a required one [0.39ms]
+(pass) scoreCase: passing attempts > the §3 example passes on fixture contracts, artifact included [0.48ms]
+(pass) scoreCase: passing attempts > an instant step with stated arguments passes and wires its material [2.98ms]
+(pass) scoreCase: passing attempts > a correct unsupported answer passes without any execution [0.04ms]
+161 | 				{ id: "research", bundle: "web.search", task: "町並みを調べる", from: ["request"], result: "調査結果" },
+162 | 			],
+163 | 			output: { from: ["research"], deliver: "調査だけを伝える" },
+164 | 		});
+165 | 		expect(score.finalArtifactMatch).toBe(true);
+166 | 		expect(score.score.passed).toBe(false);
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/scoring/score.test.ts:166:30)
+(fail) scoreCase: failing attempts are attributed to the right aspect > producing artifacts before research and omitting them from delivery fails [0.41ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > a wrong bundle is a bundle miss and an extra, though the mock completes [0.36ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > an unwired material fails only the materials aspect [0.18ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > state mismatches fail in both directions [0.09ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > a parse failure is recorded, never scored as a state [0.03ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > an unresolvable bundle fails the check and is reported unresolved [0.11ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > scoring is deterministic for the same attempt [0.10ms]
+
+ 11 pass
+ 1 fail
+ 40 expect() calls
+Ran 12 tests across 1 file. [66.00ms]

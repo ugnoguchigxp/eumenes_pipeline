@@ -1,0 +1,100 @@
+{
+  "id": "quality-final-2026-11-05-v1",
+  "caseCount": 24,
+  "repetitions": 1,
+  "apiSessions": {
+    "quality-final-luna": {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "compose",
+      "requestCount": 24
+    },
+    "quality-final-luna-judge-luna": {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "judge",
+      "requestCount": 24,
+      "source": "quality-final-luna",
+      "qualified": false
+    },
+    "quality-final-luna-judge-sonnet": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "judge",
+      "requestCount": 24,
+      "source": "quality-final-luna",
+      "qualified": true
+    },
+    "quality-final-sonnet": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "compose",
+      "requestCount": 24
+    },
+    "quality-final-sonnet-judge-luna": {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "judge",
+      "requestCount": 24,
+      "source": "quality-final-sonnet",
+      "qualified": false
+    },
+    "quality-final-sonnet-judge-sonnet": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "judge",
+      "requestCount": 24,
+      "source": "quality-final-sonnet",
+      "qualified": true
+    }
+  },
+  "formatMethod": {
+    "condition": {
+      "id": "baseline",
+      "cardSet": "all",
+      "cardStyle": "full",
+      "shots": 0,
+      "outputStyle": "default"
+    },
+    "formats": [
+      "json"
+    ],
+    "repair": false,
+    "restoreSyntax": false,
+    "normalizeIds": false,
+    "triage": false,
+    "staged": false,
+    "coverageRepair": false,
+    "candidates": null
+  },
+  "judge": {
+    "version": "semantic-judge-v2",
+    "nativeSchema": true,
+    "mode": "plan",
+    "primary": "claude-sonnet-5-5",
+    "diagnostic": "gpt-6-luna",
+    "reason": "Sonnet matched all four controls; Luna retained as a cross-provider diagnostic because calibration was not fully correct."
+  },
+  "budgets": {
+    "approvedUsd": 10,
+    "operationalUsd": 8.5,
+    "inferenceP95Ms": 90000,
+    "structureP95Ms": 5,
+    "httpRetries": 0,
+    "repairsPerCell": 0
+  },
+  "acceptance": {
+    "required": "all requests traceable to original frozen inputs; no secrets/gold in producer or judge prompts; missing/unknown/disagreement reported; spending within shared budget; technical score uses the unchanged full library rubric",
+    "mechanicalAndSemantic": "report each independently and their conjunction; mock success is not real execution",
+    "humanCalibration": "Three presented reference labels confirmed by the user, one additional author-AI positive control"
+  },
+  "sampleDecision": "24 new synthetic requests, 18 pipeline / 3 needs_input / 3 unsupported, all 24 offered entries represented in reference roles. One sample per provider after observed weak-judge failures; stronger Claude model selected before final execution. Reduced from the initial illustrative 40 x 3 proposal to retain room for stronger blinded judging inside USD10. No additional sampling after viewing results.",
+  "limitations": [
+    "No repeatability estimate with one sample",
+    "The author AI has seen these cases; producer APIs and judges receive no gold",
+    "Group labels do not prove statistical independence",
+    "No real-host or real-tool acceptance is claimed",
+    "No subset/Router path is used; no Ruri data-independence claim",
+    "Native-schema judgement is separate from unconstrained JSON composition; native composition acceptance remains unmeasured"
+  ]
+}

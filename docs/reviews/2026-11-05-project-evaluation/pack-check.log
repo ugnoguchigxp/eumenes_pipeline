@@ -1,0 +1,2 @@
+$ bun scripts/pack.ts --dry-run
+pack contents ok (21 files): package.json, LICENSE, README.md, dist/catalog.d.ts, dist/catalog.js, dist/check.d.ts, dist/check.js, dist/contracts/authoring.d.ts, dist/contracts/authoring.js, dist/contracts/component.d.ts, dist/contracts/component.js, dist/contracts/definition.d.ts, dist/contracts/definition.js, dist/contracts/execution.d.ts, dist/contracts/execution.js, dist/contracts/record.d.ts, dist/contracts/record.js, dist/index.d.ts, dist/index.js, dist/ports.d.ts, dist/ports.js

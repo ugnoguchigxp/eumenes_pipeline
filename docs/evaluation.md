@@ -1,8 +1,14 @@
 # 評価環境: 構成と再実行の手順
 
-plan §9・§10 の評価を、まっさらな状態から第三者が再実行するための手順。
-対象は bench（配布物には含めない）。サーバー・常駐プロセスは不要で、外部への到達もない
-（唯一の例外はローカルの tokenizer 計数サブプロセス）。
+plan §9・§10 の評価を再実行する手順。benchは配布物に含めない。通常の検査と記録再生にはサーバーもAPIキーも不要。
+
+2026-11-05の変更: 契約p0-3、採点器 `bench-format-v3`。新しいrunはコードのcontent identity、ケースの原文とdigestを実行時に固定する。exportはそのsnapshotを使い、現在のケースで過去の正解を置き換えない。旧runは記録されている範囲だけを表示する。
+
+`data/cases/` の旧holdout40件は、既に後続方式の検討に使われた診断集合である。新しい未見精度の根拠にしない。今回の新規24件は `data/evaluation/quality-2026-11-05/` で実呼出し前に固定した。事後のgold監査とjudge修正後は、同じ出力を既見devとして `data/evaluation/quality-finalized-2026-11-05/` に再集計し、未見評価とは呼ばない。作成担当AIには内容が見えているため、作成者に対する盲検とは呼ばない。制作APIには依頼・公開カード・提供資料だけを渡し、正解は渡さない。
+
+実APIは明示した `bench:infer` だけが選択providerの公式HTTPS endpointへ到達する。通常試験と `bench:verify` の通信0件は維持する。キーの継承と共通予算の使い方は [README](../README.md#apiでの検証) を参照。生成時間と再生時間、費用上限の計算値と実請求を区別する。
+
+証拠を独立に再生する場合、`bench:replay -- --run <id> --db <path> --bundle <新しい空でない保存先名>` で一式を保存する。保存先の親ディレクトリは事前に作る。bundle内で `bun install --frozen-lockfile --ignore-scripts`、`bun run bench:replay -- --replay` を実行すると、固定した元ケース・コード・出力から再計算し、元DBの判定と照合する。元の作業DBや可変summaryは不要。改変や欠損は拒否し、APIは再呼出ししない。bundleは試験の探索対象へ混ぜないよう、リポジトリの外へ置く。
 
 ## 構成要素
 
@@ -109,3 +115,35 @@ prompt 194,661 tokens・output 4,753 tokens、終了コード 0。
 - 取得できない値（トークン・費用）は null のまま報告し、0 や推定で埋めない。
 - 条件を変えたら新しい run。完了した試行を消したり、同じ試行番号でやり直したりしない。
 - 合成（synthetic）出力は配線確認専用で、測定として報告しない。
+
+## 2026-11-05の最終評価と独立再現
+
+技術品質は [再評価報告](reviews/2026-11-05-quality-reevaluation/report.md) の正式80.9点。モデルの成功率とは別の点数で、CIと本体接続は今回の対象外。APIの請求実額はnull、保守的費用上限は5.204023 USD。native schemaの意味judgeと、通常JSON生成の実測を区別する。
+
+再現一式は `artifacts/quality-evidence-2026-11-05-d8ac16d99861/standalone-evidence.tar.gz` と同じ場所のSHA-256/manifest。リポジトリ外の新しいディレクトリへ展開し、ハッシュを確認してから、依存を固定導入する。`bun run bench:replay -- --replay` は元の24セルをAPIなしで検算する。
+
+全48セルと意味判定の再集計は、同梱の `data/replay-source.sqlite3` を **別名の** `data/quality-replay.sqlite3` へコピーし、両sessionをそのDBへ記録する。元DBは変更しない。
+
+```sh
+bun run bench:format --session quality-finalized-luna --cases data/evaluation/quality-finalized-2026-11-05/cases --format json --freeze data/evaluation/quality-finalized-2026-11-05/freeze.json --db data/quality-replay.sqlite3
+bun run bench:format --session quality-finalized-sonnet --cases data/evaluation/quality-finalized-2026-11-05/cases --format json --freeze data/evaluation/quality-finalized-2026-11-05/freeze.json --db data/quality-replay.sqlite3
+bun run bench:quality-report --freeze data/evaluation/quality-finalized-2026-11-05/freeze.json --budget data/policies/api-validation-standard-2026-11-05.json --db data/quality-replay.sqlite3 --out data/independent-quality-result.json
+```
+
+同梱の最終resultと比較し、新規に発行する `reportRun` と `generations[].scoredRunId` だけを除外する。実施済みの比較は [照合記録](reviews/2026-11-05-quality-reevaluation/final-standalone-result.json) と実行ログに保存した。再現用ルートの生成JSONとソース検査の対象は異なるため、通常の全体検査は元ソースを別コピーして行う。元の正本の整形や、検査条件の弱体化で帳尻を合わせない。
+
+新しいAPI記録は `evidence: api` とschema digestの由来を要求する。旧記録でschemaが不明なら、そのまま現在の契約へ流用しない。旧ソースのarchiveで再生するか、保存済みの実requestを不変DBのhashと照合し、新規の派生記録に移行する。今回の移行では入力/出力を変えず146件を派生し、元ファイルを保持した。移行manifestも再現archiveに含む。
+
+## 追加コードレビュー後の手順
+
+[コードレビュー結果](reviews/2026-11-05-code-review/report.md) で要求と由来の照合を強化した。現在の再集計は `data/evaluation/quality-review-final-2026-11-05/`、再生sessionは `quality-review-final-luna` と `quality-review-final-sonnet`。以前のsnapshotとarchiveは当時のコードで再現する。
+
+freeze付きの新しい有料検証では、同じfreezeと作業DBで先に要求を準備する必要がある。formatの準備も `--freeze` を付け、judge準備には次を指定する。
+
+```sh
+bun run bench:judge:prepare --source SOURCE_SESSION --session JUDGE_SESSION --cases CASES_DIR --freeze FREEZE_FILE --db WORK_DB --native-schema
+```
+
+`--native-schema`の有無もfreezeと一致させる。`bench:infer`は送信直前に、件数だけでなく準備記録の各request digestを照合する。準備後の差し替えや、別条件・別DBの要求を同じ試行へ混ぜない。旧API sessionは記録を保持し、新しいsessionを使う。
+
+現在のquality reportは、不変DBの元API呼出し、元requestの原文hash、phase・ファイル名・usage・保存精度の時間まで照合する。候補に対するjudge入力も再構成する。同じtrialの重複計上は拒否する。元requestのあるsessionも保存し、独立bundleへ必要な原文を含める。

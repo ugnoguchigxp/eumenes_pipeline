@@ -1,0 +1,227 @@
+{
+  "version": 2,
+  "type": "post-hoc evaluator correction, not a new unseen generation sample",
+  "originalFreeze": "445544683dc316b86caf42d6da7e8dad0e66b64c4c2e37c867feebf61f522e42",
+  "goldOnlyAuditRun": "48a20aee-0974-40df-a842-973af70f1530",
+  "producerOutputsProvidedToAuditor": false,
+  "all24ReviewedByAuthorAI": true,
+  "nineBoundaryCasesReviewedByAPI": true,
+  "cases": [
+    {
+      "id": "archive-navigation",
+      "originalSha256": "821c6221894492fc6f7383aa0d7dd07ead0bea574990fbc772df0be8ab64967a",
+      "currentSha256": "12980d59496692e67f6c712dcda7ec1f5af5d7d29dc9d8fe0f859bf2b640d474",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "ask-audio-identity",
+      "originalSha256": "e275dbd7838943a79473b87dc2a99789506c23997810b2c19db5202260fe19f5",
+      "currentSha256": "afd7d7622c649c51e86c048feaa61db7f61a61c35f79620462b75ee4ac78cc70",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "ask-card-target",
+      "originalSha256": "1a5d2e5778ff624ec7bba585799c9bcaaa36748c3b4caf5604559ca59982d2b5",
+      "currentSha256": "655ad5de50e5392e12b083cb5327c41203a45d13f4e0c4f3587b91221b8bdf71",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "ask-comparison-targets",
+      "originalSha256": "dbf19ddf1865f7d8225a9c2eaa6ca6bf7337c0fdc7e2f550a2ab31e62c2668b8",
+      "currentSha256": "2b1373df633ab740cf002d6023bde8bdae04729cbb37e8d8ab3257377a3139c4",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "circuit-diagram-record",
+      "originalSha256": "fe401d3339d0d70315766fab532720a9896cd727b1d68b932f43d5be551c055a",
+      "currentSha256": "9aa45663c7ab1da285d69c607ead36ba147ca7179e14c2e91ccd8eb8bec85061",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "code-and-command",
+      "originalSha256": "a2233b86c6848b1cc66a74abccf4ea01a015cfe7e15e0845146db24c1a3471fe",
+      "currentSha256": "5f4d1104dee7d09ceadac684c3da5fbb0272389a2c197f7bcd3a4a3a3feca696",
+      "reason": "Only the explicitly requested final results are mandatory; intermediate receipts remain optional.",
+      "uncertainty": null,
+      "referenceChanged": true,
+      "metadataChanged": true
+    },
+    {
+      "id": "dedicated-ticket-purchase",
+      "originalSha256": "80c67142e795f28259ac002481f4ad49f373e7e7cb468ae2a57f2ca8e39b5bba",
+      "currentSha256": "e0d77bb0b5c9e3a592dcf60e45d4d2dfa7529e69da8d5b335e5323ea4b317e54",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "delegated-reading",
+      "originalSha256": "d6bf48cd02e0c38b04e003a630c27b6e072ac3c7621afbd7140f1a5f9654fd3b",
+      "currentSha256": "e7e39efe7b54725a5fbc416cb20eb851f5eb7efdec7c4f92a91c35d70524f39e",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "eight-part-showcase",
+      "originalSha256": "6837caebc8135702e3e32140f2dc3ca473040a1d3d09e8a39164089e4ecc78ad",
+      "currentSha256": "e7779399b72521f234b97c45df7f0aa8e7f5df89f9e0837ba80defcab8c77af9",
+      "reason": "Original reference retained.",
+      "uncertainty": "Ambiguous target facility and whether final material references may be supplied through the board; no unilateral relaxation.",
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "form-draft-evidence",
+      "originalSha256": "849f010e8c678fba3d67ff3159af790527898212f7c0836080717d5df01e23e9",
+      "currentSha256": "65b6ef3bf01d0ecc33b1255b9ade2ff0b99f0f0415dd559cc5aec652e6df3f74",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "inventory-action",
+      "originalSha256": "3cb7f2d828e6fbe11f229401126b632c5d491e25a3ebce188bd7ad9cdffae13b",
+      "currentSha256": "0e81e2e6382dc50b10456f91381edce96225bcac5cf5dca0be0220d12b939a42",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "label-world-check",
+      "originalSha256": "72601d5b6ad4ce2400e15a3b936c2d5765bce01926171485a0b07cc993f21d5f",
+      "currentSha256": "7e534f8333996334e599d24615ea77852b8b5dedec8e449da0c3b3a7680e19e5",
+      "reason": "Only the explicitly requested final results are mandatory; intermediate receipts remain optional.",
+      "uncertainty": null,
+      "referenceChanged": true,
+      "metadataChanged": true
+    },
+    {
+      "id": "old-review-actions",
+      "originalSha256": "6abb401578740b1c9567b5f094a171baa941378d8da942955765f13cb1441a6f",
+      "currentSha256": "dfeadfc30cb17b35af5cf2f28d14b2356aee89f700047815f4ace95dc6e3bc82",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "out-of-range-forecast",
+      "originalSha256": "b0ad687901ffaa5907501bb0759b9eaea7b2d9a79dbc1d64e311838f85ae71d3",
+      "currentSha256": "05e788539020c78bbcb9e853054efc88037eb097142919d854c06c47fd63c0b3",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "physical-mail-retrieval",
+      "originalSha256": "5e192fbf75bcc74b2033009ed5cd325795047fe387a12439e52883d28d4e9922",
+      "currentSha256": "1ffa7b7735dd5cb1b42d56df9db4f122aba41f63e8926e5037f81fbdb3456e01",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "reading-desk-record",
+      "originalSha256": "980cb559121603d27910a8535c06b3394fd1ddb738c764e72a8b97adcdf88163",
+      "currentSha256": "8eba9ff4defbb7b18e850b16abb2b3ad3da892f315afa2bbb01a529c779f1456",
+      "reason": "Only the explicitly requested final results are mandatory; intermediate receipts remain optional.",
+      "uncertainty": null,
+      "referenceChanged": true,
+      "metadataChanged": true
+    },
+    {
+      "id": "regional-brief",
+      "originalSha256": "76a47c3f07c1176af64e8597a16c03c7425a8cd0ba63bf038e027116dbef8a18",
+      "currentSha256": "2cac39d8dee0ab9822a31334a016c5cbb165a967595158824b724a073c74b5af",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "repair-and-check",
+      "originalSha256": "5879e0d9eda7370eed99e9ef43e3c51a8488f2443a04208beebbf314e5795787",
+      "currentSha256": "f3f16f18ec1ae677fb4921d172fce35e251f81445a47d6c7a2352d2c8efda30c",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "sample-file-statistics",
+      "originalSha256": "af83cada096aef9ef0041b51909afee9321a600f2bc5dbdf4c8a9281af4f9d95",
+      "currentSha256": "c15b68f51952f2ca03fc82e0e10e6c818612cfd77934ed487a25c4bfe9268d1e",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "saved-track-cover",
+      "originalSha256": "cc3e8e689c3a5cdf267c3db86efa3ce55a2ebf1852df5f1af7b438f146bf2b9e",
+      "currentSha256": "82b9f3bd92bf801f0ebb773d63f6c6818e75901ef9be9a186fa347a093843cc0",
+      "reason": "Original reference retained.",
+      "uncertainty": "Summary-only music output does not establish structured song-name extraction; semantic uncertainty remains.",
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "seedling-distribution",
+      "originalSha256": "1399f22e5b6b2a1db0473c30940c8800772879c44eac32586a09b6c065f4b89a",
+      "currentSha256": "97e2e45ccc7ee3004d915437c63e101f523bd166d0684acd1056bf285d53d3f0",
+      "reason": "Only the explicitly requested final results are mandatory; intermediate receipts remain optional.",
+      "uncertainty": null,
+      "referenceChanged": true,
+      "metadataChanged": true
+    },
+    {
+      "id": "tactile-exhibition",
+      "originalSha256": "75f15032822e64d2190bac177b7827326594097445a600a68a77223e17614c48",
+      "currentSha256": "b3d85df8a439892a6595ce4d9d8d809564776107f00bc382e642de7cb886af3c",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "task-progress-board",
+      "originalSha256": "14b4b2d63c2ac2f2ac9b59503b1ece63712e32bd3560ddb44ad185015a7054d3",
+      "currentSha256": "7087ce9231c17300af9e9cbfd1d1f9b2915b620c6a3d72efc718ee814eb1cc05",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    },
+    {
+      "id": "timed-listening",
+      "originalSha256": "1ddb0335469d8dee8b9a7838de6a2f10458a300fddab116ef6be85b9fa5b00e9",
+      "currentSha256": "6b8179d10973ef5561e222ceb5fed5deb8a3df27c7453ee74962ceb80e2b53d3",
+      "reason": "Original reference retained.",
+      "uncertainty": null,
+      "referenceChanged": false,
+      "metadataChanged": true
+    }
+  ]
+}

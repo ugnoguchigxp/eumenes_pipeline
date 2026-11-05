@@ -1,3 +1,4 @@
+import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
 /**
  * P4 selection tuning (plan §10 P4): learning-equivalent parameter search over the
  * Wave B retrieval methods, tuned on the DEV split only.
@@ -316,6 +317,7 @@ export type TuningCaseResult = {
 };
 
 export type SelectionTuningReport = {
+	caseSnapshot: CaseSnapshot;
 	runId: string;
 	startedAt: string;
 	split: "dev" | "holdout";
@@ -404,6 +406,7 @@ export async function runSelectionTuning(options: {
 		const flatPassages = perCard.flatMap((c) => c.passages);
 
 		const allCases = loadCases(options.casesDir);
+		const caseSnapshot = captureCases(allCases, options.casesDir);
 		const splitCases = allCases.filter((c) => c.split === options.split);
 		const evaluated: EvalCase[] = [];
 		const excludedByKind = new Map<string, number>();
@@ -533,6 +536,7 @@ export async function runSelectionTuning(options: {
 		}
 
 		return {
+			caseSnapshot,
 			runId,
 			startedAt,
 			split: options.split,

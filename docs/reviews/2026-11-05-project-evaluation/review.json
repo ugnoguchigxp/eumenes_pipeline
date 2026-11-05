@@ -1,0 +1,1054 @@
+{
+	"rubric_version": "1.1.0",
+	"mode": "full",
+	"depth": "deep",
+	"technical_profile": "library",
+	"assessment_kind": "current",
+	"target": {
+		"locator": "/Users/y.noguchi/Code/eumenes_pipeline",
+		"snapshot": "6640de20103626039b7f87f7a4849005657bc2aa",
+		"reviewed_at": "2026-11-05",
+		"stage": "Research prototype / pre-integration library",
+		"scope": "Current full/deep review, library profile fixed before findings. Covers all principal src modules; bench parser, prompt, scoring, replay, driver, work DB, export and package path. Runtime: Bun 1.4.4, Darwin arm64, isolated git-archive copy sharing installed dependencies by symlink. No product modifications, server lifecycle, live model calls or real tool execution. Eumenes current checkout inspected read-only for package integration only. Historical live experiments treated as author records, not independently replayed: data/runs and data/work are absent. User demand, retention, costs, target-model acceptance and production safety remain unknown. Optional dimensions are not excluded."
+	},
+	"evidence": [
+		{
+			"id": "E01",
+			"kind": "code",
+			"locator": "git status/log/rev-parse @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Clean main, HEAD 6640de2; exact snapshot archived for probes. No project source modifications.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E02",
+			"kind": "code",
+			"locator": "src/contracts/{definition,authoring,execution,component,record}.ts; src/{catalog,check,ports,index}.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Trace: parsed unknown -> strict Zod schema -> unique/reserved IDs -> backward-only references -> offered exact entry resolution -> argument schema check -> revision-pinned ExecutionPlan. Semantics delegated to model. Only zod dependency, no environmental IO. Max 8 serial steps; unknown schema conversion produces a warning, host must still enforce authorization and actual argument validation.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E03",
+			"kind": "execution",
+			"locator": "check-all.log; command bun run check:all",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 1 on Bun 1.4.4 Darwin arm64 in isolated snapshot, no tokenizer environment override. Typecheck (99/9 files), lint and format pass. 328 tests: 326 pass / 2 fail, both bench/tokens.test.ts external tokenizer and source.json dependency. No tests skipped or assertions weakened.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E04",
+			"kind": "code",
+			"locator": "bench/mock/driver.ts; bench/mock/driver.test.ts; src/contracts/execution.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Sequential execution passes only declared references, adopts completed results only, rejects missing/invalid output and results after cancel/deadline, returns delivered=null on partial failure. Tests cover all noncompleted states; actual queues/restart/external effects are owned by Eumenes, not verified here.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E05",
+			"kind": "execution",
+			"locator": "bench-verify.log; command bun run bench:verify --db :memory:",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0, 87/87 checks pass; no external reach attempts. Run 4470c884-8e44-40bb-9f8e-6f705362da6c. Isolated snapshot and in-memory work DB; synthetic validation, not real task success.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E06",
+			"kind": "code",
+			"locator": "bench/mock/guard.ts; bench/mock/guard.test.ts; bench/test-preload.ts; bunfig.toml @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Runtime reach guard and static source restrictions block network/process/thread/real-tool calls by default; test suite passes guard and src purity checks. Allowances explicit at first install. Guard is an in-process test control, not an OS isolation boundary for arbitrary hostile code.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E07",
+			"kind": "execution",
+			"locator": "probes.log (wrong-flow); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Ran registered edo-research-image-music case with image and music before research; neither consumes research, output.from contains research only. ScoreBreakdown has all criteria true including passed; delivered=[research]. No live model or real tools; mock only.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E08",
+			"kind": "code",
+			"locator": "bench/scoring/score.ts:158-216; bench/cases/cases.ts:10-24; data/cases/edo-research-image-music.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "requiredMaterials only checks consumption anywhere or final output, no required producer-consumer pair. finalArtifact checks any adopted output rather than delivered outputs, intentionally documented as adopted outputs. No semantic judgement is invoked by runFormat. Gold notes require research for both image and music. Thus passing is a limited structural metric.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E09",
+			"kind": "execution",
+			"locator": "probes.log (prototype-key); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. JSON text with sole __proto__ object containing status=unsupported and reasons is parsed into an object with no own keys; shared outcome discriminator reads inherited status, and authoring gate returns a valid unsupported outcome. Native JSON.parse retains own __proto__ key. This is local object-prototype mutation; global Object.prototype compromise or production RCE is not established.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E10",
+			"kind": "code",
+			"locator": "bench/formats/strict-json.ts:67-89; bench/formats/outcome.ts:52-100 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Strict JSON reader creates {} then assigns out[key]. JS __proto__ setter changes prototype, contradicting data-preserving parsing; discriminator reads ordinary properties/in operator. Parser only ships in bench, not dist.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E11",
+			"kind": "execution",
+			"locator": "probes.log (gold-drift); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Replayed prime-count run b775b63a-98b0-469f-9f04-a4db13dadea9; exported it, changed requiredBundles to web.search in a separate cases directory, exported same run again. New goldSha256 appears but passed=1 and summary cross-check differences=[] with every applicable check true. Source case files untouched.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E12",
+			"kind": "code",
+			"locator": "bench/format/run.ts:975-1014; bench/export/export.ts:388-410 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Run input pins case IDs but not case content hashes, scorer code digest or repository revision. Export hashes cases present at export time and recomputes totals from score rows, not outcomes under historic gold. Git versions could help manual recovery if separately known, but DB does not link that revision.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E13",
+			"kind": "code",
+			"locator": "bench/tokens.test.ts:30-37,90-99; bench/tokens.ts:27-50; docs/evaluation.md:25-35 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Tests inject fakeRunner but still assume an external tokenizer.json exists. Provenance test reads external source.json without a temporary fixture. Docs promise null counts when tokenizer absent, yet ordinary check:all fails without files outside repo.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E14",
+			"kind": "execution",
+			"locator": "pack-check.log, pack.log; source/artifacts/eumenes-pipeline-0.0.0-8f5388402289/manifest.json",
+			"observed_at": "2026-11-05",
+			"observation": "bun run pack:check exit 0, bun run pack exit 0. Artifact 21 files, 13,579 bytes; SHA256 25b34b23d9b7aff4fec98f7f0fc9b39398b2ee9cb3809f14c6df875fc0a9b3a1. Fresh consumer install/typecheck/runtime smoke pass. Tarball matches prior repository build byte-for-byte. Isolated archive manifest has gitSha/dirty null, source digest retained. No Eumenes changes.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E15",
+			"kind": "code",
+			"locator": "scripts/pack.ts; package.json; bun.lock; tsconfig.build.json; vendor/router/manifest.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Only ESM/types and package metadata ship. Dist excludes tests/test-support. Digests cover source and lock/config, exclusive target creation prevents same-name replacement; consumer checks before publication. Router tarball source/digest recorded; seven-day dependency minimum age and lockfile. Registry/package known versions inspected; no reachability-aware vulnerability assessment or long-term update practice independently verified.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E16",
+			"kind": "code",
+			"locator": "bench/store/work-db.ts; bench/store/work-db.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "SQLite foreign keys, recursive triggers, transactions for initial schema, immutable finished records, unique attempts, rejects REPLACE/delete, explicit parent-run retry. Relevant tests pass. Experiment replay can start new runs; no recovery/dedup of actual product side effects is implemented or claimed by this library.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E17",
+			"kind": "primary_doc",
+			"locator": "README.md:19-26; plan.md:415-435; AGENTS.md; src/index.ts:1-10; docs/handoff/2026-11-04-p1.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Entry documents describe P0/provisional and undone evaluation while source fixes p0-2 in P1 and later handoffs record P4 and follow-ups. Main plan also calls mock evaluator unimplemented. Known drift acknowledged by P1 handoff; target-model wording shifts LFM -> Luna/Haiku in later records.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E18",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-p4.md:1-137 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author-recorded agent-model holdout raw passed=27/40, repaired=35/40; catalog-only and fixture-dependent reported separately. Repair mostly ID shape; selection prefix top12=30/34 vs29/34 baseline. No target-model acceptance; not actual task outputs, latency or provider costs. Raw records absent locally, so numeric claims not independently rechecked.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E19",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-accuracy-3.md:25-51 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "After P4 freeze/holdout, union follow-up evaluates k=3..6 on dev and already seen holdout; recommends k=5 and uses holdout 32/34 as adoption condition. Dev also supports k=5; this does not erase original P4 one-pass result, but follow-up is diagnostic reused-holdout evidence, not fresh final confirmation. No union-compose measurement.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E20",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-staged.md; accuracy-1/2/4/5.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author records both successful and failed hypotheses; staged long-chain 7/8 baseline vs1/8 staged, coverage marks 100% with wrong entry choice; rejected, flags stay default off. Evidence for useful research feedback, not independent user feedback or target-model success.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E21",
+			"kind": "code",
+			"locator": "bench/format/{prompt,run,conditions,enumerate,triage}.ts; bench/infer/{recorded,muse-exec}.ts; related tests @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Prompt builder receives request/materials/cards, excludes expected; replay keyed to purpose/system/prompt digest, missing/mismatched recordings refused. Mechanical repair limited to one attempt and no gold. Inference adapter uses separate temp dir and configurable provider interface. Muse subprocess outputs and isolation tested with stubs; real target calls not run. run.ts 1803 lines, export.ts946 lines reflect increasing bench condition complexity.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E22",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-p2.md; docs/handoff/2026-11-04-p3.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Adapter mapping and separate consumer checks reported on another local Eumenes branch. Actual prepare/execute/adopt transactions, screen E2E and main integration explicitly unexecuted. Old Pipeline Studio structural comparison only; no same-task old-vs-new outcome benchmark. Old flow targets reusable toolchains, new one-off request-specific plans, so naive benchmark would be unfair.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E23",
+			"kind": "code",
+			"locator": "/Users/y.noguchi/Code/eumenes/package.json @ 056afd43115c0ae7df91449ad62baa0000d73c60",
+			"observed_at": "2026-11-05",
+			"observation": "Read-only local Eumenes main package contains eumenes_router but no eumenes-pipeline dependency; expected new adapter/vendor path absent in inspected locations. No source changes or tests there. Does not establish remote branches or deployments state; existing unrelated dirty files left untouched.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E24",
+			"kind": "execution",
+			"locator": "performance.log; command bun run review-performance.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit0 Bun1.4.4 Darwin arm64, warmed pure checkDefinition,24 synthetic entries,10000 iterations each:1step p50=.000958ms p95=.001417ms;8steps p50=.003667ms p95=.004625ms. No argument schema conversion, inference, IO, contention or operating-budget measurement. Establishes only local validator cost, not product latency/scale.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E25",
+			"kind": "primary_doc",
+			"locator": "https://docs.langchain.com/oss/javascript/langgraph/persistence (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official current documentation states checkpointers persist thread graph state for interruption/failure recovery, human-in-loop and continuity. Comparative source only; no performance or feature-parity benchmark executed.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E26",
+			"kind": "primary_doc",
+			"locator": "https://pydantic.dev/docs/ai/graph/graph/ (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official documentation describes typed asynchronous Python graphs/state machines with nodes and edges from type hints, explicit states, branches and resumable transitions. This demonstrates prior art for typed graph orchestration, not equivalent Eumenes integration or measured superiority.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E27",
+			"kind": "code",
+			"locator": "LICENSE; package.json; installed zod/yaml/jsonrepair/typescript/oxlint package metadata @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Project MIT, zod4.4.3 MIT, yaml2.9.1 ISC,jsonrepair3.15.0 ISC,typescript7.0.2 Apache-2.0,oxlint1.86.0 MIT. Runtime dependency only zod; project license and README in artifact. Does not constitute legal opinion or complete provenance of arbitrary future catalog content.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E28",
+			"kind": "code",
+			"locator": "git tracked files and git log; data/cases; docs/handoff; filesystem data/work and data/runs @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "116 tracked cases, dev76/holdout40; no tracked CI configuration under .github; local historical work DB and session runs absent. Short active history by named owner/Muse Agent plus detailed handoffs; no evidence of retained users, independent demand, support resources or sustained governance. Absence of historical artifacts limits independent verification, not proof of fabricated experiments.",
+			"scope": "Current snapshot; limits stated in observation."
+		}
+	],
+	"claims": [
+		{
+			"id": "C01",
+			"type": "Fact",
+			"statement": "Portable contract library and offline state checks work, default full gate has two external-fixture failures.",
+			"evidence_ids": ["E02", "E03", "E05", "E14"],
+			"limitations": "No real model or actual tool effects exercised."
+		},
+		{
+			"id": "C02",
+			"type": "Inference",
+			"statement": "The strongest present asset is a small integration contract plus an experimental harness; product outcome readiness is unestablished.",
+			"evidence_ids": ["E02", "E07", "E11", "E18", "E22", "E23"],
+			"limitations": "Current local Eumenes dependency inspected only; remote deployments/branches not audited."
+		},
+		{
+			"id": "C03",
+			"type": "Unknown",
+			"statement": "Demand, retained adoption, target-model reliability, economic impact and durable advantage are unknown.",
+			"evidence_ids": ["E18", "E22", "E28"],
+			"limitations": "No user observations, production telemetry or live target-model path supplied."
+		},
+		{
+			"id": "C04",
+			"type": "Assumption",
+			"statement": "Decision context is continued internal Eumenes development over the next12months, not an investment valuation or universal framework ranking.",
+			"evidence_ids": [],
+			"limitations": "No commercial rollout goal or resourcing provided."
+		}
+	],
+	"findings": [
+		{
+			"id": "F01",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P0",
+			"priority_reason": "Before benchmark pass is used as product acceptance.",
+			"confidence": "High",
+			"title": "Aggregate structural pass can accept wrong order and undelivered required artifacts",
+			"evidence_ids": ["E07", "E08"],
+			"root_cause": "Gold represents producer membership/use-anywhere, not required source->consumer edges or final delivery; no separate semantic gate.",
+			"condition": "A plan contains required entries but creates artifacts before research and delivers research only.",
+			"consequence": "Benchmark pass is not evidence of request fulfilment; optimizing it can select semantically wrong plans.",
+			"counterevidence": "Scorer explicitly disclaims prose semantics and finalArtifact is documented as any adopted output; this is a metric/acceptance gap, not a claim of mock runtime failure.",
+			"fix": "Keep structural checks; add evaluator-only permitted dependency/delivery constraints where explicit, plus separate blind LLM or human semantic review. Never add scenario-keyword judgement to product code.",
+			"verification": "Wrong-flow counterexample fails dependency/delivery or semantic evaluation while valid alternatives pass; producer prompts never receive gold. Two metrics reported separately.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "contracts",
+					"reason": "Primary evaluation verdict does not cover required fulfilment contract."
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "risk_coverage",
+					"reason": "Missing negative controls for required relation and delivery."
+				}
+			]
+		},
+		{
+			"id": "F02",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Export attributes current gold to an old run without detecting drift",
+			"evidence_ids": ["E11", "E12"],
+			"root_cause": "Case content/scorer revision not pinned at run creation; export reads current cases.",
+			"condition": "Cases change after run, same run exported again.",
+			"consequence": "Unchanged historical scores can be accompanied by a new gold hash and clean cross-check, weakening reproducibility and audit.",
+			"counterevidence": "Immutable DB prevents score rewrites and file digest identifies export-time cases, but not cases used by run.",
+			"fix": "Record evaluator-only case hashes and code/scorer revision at run start; compare at export, retain snapshot/reference or flag old runs unknown.",
+			"verification": "Changing a case after run must produce explicit drift error or use original pinned snapshot; old scores cannot claim new gold.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "reliability",
+					"criterion": "recovery",
+					"reason": "Replay/audit depends on original inputs."
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "quality",
+					"reason": "Cross-check cannot detect changed test expectations."
+				}
+			]
+		},
+		{
+			"id": "F03",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Strict JSON __proto__ property changes local object prototype and outcome",
+			"evidence_ids": ["E09", "E10"],
+			"root_cause": "Object constructed as {} with out[key] assignment and inherited status read.",
+			"condition": "Input contains __proto__ object.",
+			"consequence": "Key lost as own data, inherited authoring status accepted; JSON/YAML outcome comparison and validation can be distorted.",
+			"counterevidence": "Bench-only parser; no global prototype pollution or real tool privilege escalation demonstrated.",
+			"fix": "Construct safe own-property data (Object.create(null) or defineProperty/standard parse plus duplicate-key detection), and discriminate outcomes on own fields.",
+			"verification": "__proto__, constructor/prototype and escaped-key fixtures preserve native JSON data meaning without inherited status; normal/duplicate-key/depth checks retain behavior.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "edge_cases",
+					"reason": "Valid JSON property semantics broken."
+				},
+				{
+					"track": "technical",
+					"dimension": "security",
+					"criterion": "input_secrets",
+					"reason": "Input controls allow inherited discriminator values."
+				}
+			]
+		},
+		{
+			"id": "F04",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Default offline test gate relies on untracked external tokenizer files",
+			"evidence_ids": ["E03", "E13"],
+			"root_cause": "Fake runner tests do not supply their own tokenizer/source fixtures.",
+			"condition": "Fresh clone/Mac environment lacks ~/workspace/tools/lfm-tokenizer.",
+			"consequence": "Required check:all exits1 even without optional model measurements, preventing portable regression gate.",
+			"counterevidence": "Other326 tests, type/lint/format and bench87 checks pass; production countTokens correctly returns null.",
+			"fix": "Use temporary fixtures and explicit env for unit tests; keep absent-file tests; make real-tokenizer integration separate.",
+			"verification": "Fresh checkout with no tokenizer env/files passes all offline tests and missing tokenizer returns null, with no skip/weakened assertion.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "automation",
+					"reason": "Ordinary documented gate not reproducible."
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "lifecycle",
+					"reason": "Install/check lifecycle requires hidden external fixture."
+				},
+				{
+					"track": "project",
+					"dimension": "adoption",
+					"criterion": "entry",
+					"reason": "Concrete internal adoption friction."
+				}
+			]
+		},
+		{
+			"id": "F05",
+			"status": "confirmed",
+			"severity": "Low",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Canonical current-stage documents contradict implementation and handoffs",
+			"evidence_ids": ["E17", "E22"],
+			"root_cause": "Entry docs/plan not reconciled with p0-2/P1-P4 work and changed target-model acceptance.",
+			"condition": "Maintainer follows README or plan current-state sections.",
+			"consequence": "Wrong assumptions about fixed contracts, remaining work and measurement target cause avoidable investigation/rework.",
+			"counterevidence": "Detailed dated handoffs identify actual evidence and gaps; core comments are clearer.",
+			"fix": "Update canonical current-state/decision index, distinguish library completion from model/dispatch acceptance, point to final decisions and experimental conditions.",
+			"verification": "README/plan/AGENTS/index agree on p0-2, latest target model class, unfinished live integration and evidence status.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "maintainability",
+					"criterion": "clarity",
+					"reason": "Main entry documents misstate current contracts."
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "lifecycle",
+					"reason": "New integrators cannot determine accurate prerequisites and stage."
+				}
+			]
+		},
+		{
+			"id": "F06",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Later selection recommendation reuses exposed holdout for tuning/acceptance",
+			"evidence_ids": ["E18", "E19"],
+			"root_cause": "Post-P4 follow-up sweeps k on an already viewed holdout and uses its result as adoption condition.",
+			"condition": "Union k3..6 evaluated against same holdout after original freeze.",
+			"consequence": "94.1% is valid posthoc inclusion observation but cannot serve as independent fresh final estimate of selected improvement.",
+			"counterevidence": "Dev also chooses k5 and original P4 one-pass result stays valid; not proof that k was chosen solely from holdout or that improvement is false.",
+			"fix": "Label reused holdout diagnostic; freeze final configuration and assess once on new sealed group-separated cases and exact target model, including compose outcomes.",
+			"verification": "Predeclared immutable config/cases and new holdout hashes, no parameter choice from new final results; old/new numbers separated.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "quality",
+					"reason": "Final-generalization evidence requires independent held-out evaluation."
+				},
+				{
+					"track": "project",
+					"dimension": "execution",
+					"criterion": "focus",
+					"reason": "Posthoc proxy gains should not replace target-model validation."
+				}
+			]
+		}
+	],
+	"tracks": {
+		"technical": {
+			"dimensions": {
+				"architecture": {
+					"criteria": {
+						"boundaries": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E06", "E14"],
+							"rationale": "Pure contracts/checker, host ports, bench and package separation independently enforced by purity tests and fresh consumer.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"flow": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E04", "E16"],
+							"rationale": "Traceable plan revision, references and terminal states; negative path checks preserve bench handoff and immutable record invariants.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"fit": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E15", "E22"],
+							"rationale": "Serial <=8-step one-off request scope stays small; no duplicate product runtime or platform dependencies. Package consumer verifies portability; live host still unconnected.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						}
+					}
+				},
+				"correctness": {
+					"criteria": {
+						"contracts": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E03", "E07", "E08"],
+							"rationale": "Primary valid checker/bench paths work, but aggregate benchmark pass does not prove required flow or delivered artifact."
+						},
+						"edge_cases": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E09", "E10"],
+							"rationale": "Many invalid IDs/references/schema/depth cases covered; __proto__ counterexample breaks JSON data invariants in bench."
+						},
+						"concurrency": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E04", "E05", "E16"],
+							"rationale": "Serial ordering, stopping, cancellation/deadline adoption and attempt uniqueness tested; concurrency is deliberately out of product scope.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						}
+					}
+				},
+				"security": {
+					"criteria": {
+						"access": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E06", "E21"],
+							"rationale": "Offered-entry boundary is enforced and excluded names fail. Library has no authority/credentials; real action authorization belongs to host and is not certified."
+						},
+						"input_secrets": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E06", "E09", "E10", "E14"],
+							"rationale": "No credentials in package; strict parsers and schemas reduce input risk, but local prototype mutation affects outcome interpretation. No evidence of global pollution or real execution compromise."
+						},
+						"abuse": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E06", "E21"],
+							"rationale": "Guard blocks tested unwanted processes/network and bounds inference timeout; parser limits depth64/chars100000. Adequate for trusted developer bench, not adversarial OS sandbox."
+						}
+					}
+				},
+				"reliability": {
+					"criteria": {
+						"failure": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E04", "E05", "E21"],
+							"rationale": "Missing outputs, seven noncompleted states, cancellation, expiry and inference errors observable, post-failure delivery blocked in mock.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"recovery": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E11", "E16", "E21"],
+							"rationale": "Bench retries preserve old runs and replay exact recordings; product recovery/idempotency excluded as host responsibility. Gold provenance gap limits historic replay confidence."
+						},
+						"resilience": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E05", "E13", "E21"],
+							"rationale": "Mock/state failures stop safely, absent optional tokenizer gives null in implementation, inference timeout bounded; no real-provider outage/saturation evidence."
+						}
+					}
+				},
+				"maintainability": {
+					"criteria": {
+						"clarity": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E17", "E21"],
+							"rationale": "Code responsibilities and contracts understandable; entry docs conflict with actual fixed contract/current status."
+						},
+						"change": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E06", "E20", "E21"],
+							"rationale": "Schema, parser, scorer, mock and format-condition changes have identifiable boundaries and negative controls; experiments remain opt-in and do not change public schema.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"debt": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E17", "E21"],
+							"rationale": "Runtime library stays small, but 1803-line runner/946-line exporter and accumulated rejected conditions need bounded maintenance; short history cannot prove sustained low cost."
+						}
+					}
+				},
+				"common_components": {
+					"criteria": {
+						"duplication": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E04", "E21"],
+							"rationale": "Formats converge on shared authoring/check contracts; repair and main generation share evaluation path. Host receipt-vs-completion difference explicitly documented.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"reuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E14", "E15"],
+							"rationale": "Zod reused for schemas, Router packaged as dev-only adapter, host execution retained; artifact and consumer confirm no runtime platform coupling.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"abstraction": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E04", "E14", "E21"],
+							"rationale": "Narrow PipelineHost/InferencePort have mock/replay/provider implementations and independent package consumer without service framework.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						}
+					}
+				},
+				"testing": {
+					"criteria": {
+						"risk_coverage": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E05", "E07", "E08", "E22"],
+							"rationale": "Good structural/state negative tests; missing directed dependency/delivery negative controls and untested real host/model paths limit coverage."
+						},
+						"quality": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E07", "E09", "E11", "E21"],
+							"rationale": "Meaningful negative assertions and gold separation; review probes expose untested parser/provenance/score counterexamples, so not exceptional assurance."
+						},
+						"automation": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E13", "E28"],
+							"rationale": "Default offline gate fails after clean transfer because external tokenizer files assumed; no tracked CI observed."
+						}
+					}
+				},
+				"supply_chain": {
+					"criteria": {
+						"dependencies": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E15", "E27"],
+							"rationale": "Known locked versions, fixed router digest, seven-day age rule and narrow runtime dependency. No independent vulnerability audit/update history; no security-clean claim."
+						},
+						"build_release": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E14", "E15"],
+							"rationale": "Actual package allowlist, checksum/source manifest, exclusive artifact publication, fresh consumer checks and reproducible tarball; no signed update chain.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"license": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E14", "E27"],
+							"rationale": "Project MIT and actual runtime zod MIT provenance/metadata verified; public artifact includes license, dev-only code not shipped."
+						}
+					}
+				},
+				"performance": {
+					"criteria": {
+						"budget": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No representative target-model latency, provider cost, resource budget or end-to-end performance acceptance measured."
+						},
+						"hot_path": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E24"],
+							"rationale": "Bounded step count and small catalog checker have low measured local overhead; excludes arbitrary argument schema/inference/IO."
+						},
+						"measurement": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Historical agent-model token counts not independently replayable here; no target-model timing/cost regression envelope. Pure validator smoke insufficient."
+						}
+					}
+				},
+				"operability": {
+					"criteria": {
+						"signals": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["E02", "E05", "E11", "E16", "E21"],
+							"rationale": "Path-coded errors, explicit incomplete/mismatch status, immutable runs and split reports support diagnosis; export validity has provenance limitation reported.",
+							"countercheck": "Normal and negative paths compared in source and executed offline tests; limits restricted to library/bench, not live host."
+						},
+						"lifecycle": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E13", "E17", "E22"],
+							"rationale": "Packaging works but documented ordinary validation fails without hidden files; setup/current-stage guidance conflicts and actual dispatch absent."
+						},
+						"interaction": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E05", "E14", "E21"],
+							"rationale": "SDK checked plans and path-level errors and CLI incomplete exit codes usable by integrators; real user flow/UI not present in target scope."
+						}
+					}
+				}
+			}
+		},
+		"project": {
+			"dimensions": {
+				"problem": {
+					"criteria": {
+						"need": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22"],
+							"rationale": "Concrete Eumenes integrator task: turn one user request into registered-component steps and host references, distinct from reusable toolchain Studio."
+						},
+						"impact": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No measured current user loss, time saving or same-job old/new outcome baseline."
+						},
+						"validation": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Author-defined problem/cases only; no independent user or actual operational demand observations."
+						}
+					}
+				},
+				"solution": {
+					"criteria": {
+						"mechanism": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E05", "E14"],
+							"rationale": "Core schema/check/host contract produces usable execution plans and passes independent consumer mock flow; live model and host outcomes unproven."
+						},
+						"experience": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E17", "E22", "E23"],
+							"rationale": "Integrator can install artifact but users cannot obtain actual Eumenes task outcomes from this main snapshot; dispatch integration and reproducible setup unfinished."
+						},
+						"outcomes": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Synthetic and agent-model proxy outcomes only; no attributable real-user results."
+						}
+					}
+				},
+				"differentiation": {
+					"criteria": {
+						"alternatives": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22", "E25", "E26"],
+							"rationale": "Credible narrow TS contract layer compared with existing Eumenes Studio and graph frameworks; no head-to-head result claim."
+						},
+						"advantage": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E14", "E22"],
+							"rationale": "Concrete narrow advantage: single-request <=8-step shape avoids reusable-toolchain metadata/expressions and adds no new product runtime; artifact is13.6KB with one runtime dependency. Quality superiority unknown."
+						},
+						"tradeoffs": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22", "E25", "E26"],
+							"rationale": "Worth considering when Eumenes is already the runtime and serial plans suffice; native Studio wins reusable publication, graph frameworks offer general branches/persistence at broader integration cost."
+						}
+					}
+				},
+				"novelty": {
+					"criteria": {
+						"prior_art": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E25", "E26"],
+							"rationale": "Typed graph orchestration and model-plus-validation are established; local simplification/integration is incremental, no substantive new algorithm demonstrated."
+						},
+						"substance": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No attribution experiment isolates a novel contribution from standard typed orchestration."
+						},
+						"verification": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No reproducible independent prior-art comparison for a substantive novel claim."
+						}
+					}
+				},
+				"adoption": {
+					"criteria": {
+						"entry": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E13", "E17", "E22"],
+							"rationale": "Hidden tokenizer fixture dependency and unconnected dispatch create concrete adoption friction even for expected internal integrator."
+						},
+						"reach": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E22", "E23", "E27"],
+							"rationale": "Existing same-owner Eumenes host gives concrete internal integration channel; no external uptake inferred."
+						},
+						"retention": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No continued user use/outcome evidence."
+						}
+					}
+				},
+				"defensibility": {
+					"criteria": {
+						"assets": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E16", "E20", "E28"],
+							"rationale": "Versioned cases/contracts and documented failed experiments accumulate reusable integration/evaluation knowledge; durability depends on maintaining raw evidence and cases."
+						},
+						"substitution": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No sustained deployment or switching evidence establishes resistance to platform-native substitution."
+						},
+						"incentives": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Ongoing resourcing/contribution incentives unverified."
+						}
+					}
+				},
+				"execution": {
+					"criteria": {
+						"delivery": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E14", "E22", "E23"],
+							"rationale": "Library and bench delivered, but important promised request-to-real-outcome path not wired into inspected Eumenes main."
+						},
+						"focus": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E19", "E20", "E22"],
+							"rationale": "Scope is bounded and rejected hypotheses retained off by default; continued bench variants before target-model gate and reused holdout weaken prioritization."
+						},
+						"feedback": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E18", "E20", "E21"],
+							"rationale": "Research experiments explicitly drive adoption/rejection and separate mechanical vs semantic error. This is experiment feedback, not field-user feedback."
+						}
+					}
+				},
+				"timing": {
+					"criteria": {
+						"drivers": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E22", "E23", "E25", "E26"],
+							"rationale": "Own host has existing pipeline capability, current typed-agent ecosystem makes implementation feasible; no market-size assertion."
+						},
+						"readiness": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E18", "E22", "E23"],
+							"rationale": "Target model route, production dispatch and user-screen verification not ready in observed environment."
+						},
+						"window": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No resourced delivery window established."
+						}
+					}
+				},
+				"health": {
+					"criteria": {
+						"ownership": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E17", "E27", "E28"],
+							"rationale": "Named owner, license, constraints and handoffs identify responsibility and knowledge; no backup maintainer or continuity track record established."
+						},
+						"activity": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E20", "E28"],
+							"rationale": "Current short research phase has actual delivered artifacts and documented experiments; frequency not used as a popularity/quality proxy."
+						},
+						"governance": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Authority documented but long-term essential support/resources unverified."
+						}
+					}
+				},
+				"expansion": {
+					"criteria": {
+						"adjacency": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E05", "E14", "E28"],
+							"rationale": "Same checked plan core handles multiple catalog domains via host interfaces; credible internal cross-domain reuse, no external demand evidence."
+						},
+						"scalability": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No representative rollout costs, quality preservation or large-catalog/real-model measurements."
+						},
+						"path": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E17", "E22", "E28"],
+							"rationale": "Stages and exit ideas exist but canonical roadmap/status stale and model/resource acceptance unclosed; broader resourced expansion sequence not established."
+						}
+					}
+				}
+			}
+		}
+	},
+	"improvement_backlog": [
+		{
+			"reference": "F01",
+			"priority": "P0",
+			"reason": "Before benchmark pass is used as product acceptance.",
+			"action": "Keep structural checks; add evaluator-only permitted dependency/delivery constraints where explicit, plus separate blind LLM or human semantic review. Never add scenario-keyword judgement to product code.",
+			"dependencies": [],
+			"acceptance": "Wrong-flow counterexample fails dependency/delivery or semantic evaluation while valid alternatives pass; producer prompts never receive gold. Two metrics reported separately.",
+			"affected_criteria": [
+				"technical.correctness.contracts",
+				"technical.testing.risk_coverage"
+			],
+			"effort": "M",
+			"effort_basis": "Evaluator contract and blind semantic review require agreement on alternative valid solutions."
+		},
+		{
+			"reference": "F02",
+			"priority": "P1",
+			"reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"action": "Record evaluator-only case hashes and code/scorer revision at run start; compare at export, retain snapshot/reference or flag old runs unknown.",
+			"dependencies": [],
+			"acceptance": "Changing a case after run must produce explicit drift error or use original pinned snapshot; old scores cannot claim new gold.",
+			"affected_criteria": [
+				"technical.reliability.recovery",
+				"technical.testing.quality"
+			],
+			"effort": "M",
+			"effort_basis": "Touches run input, export and backward-compatible handling for old evidence."
+		},
+		{
+			"reference": "F03",
+			"priority": "P1",
+			"reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"action": "Construct safe own-property data (Object.create(null) or defineProperty/standard parse plus duplicate-key detection), and discriminate outcomes on own fields.",
+			"dependencies": [],
+			"acceptance": "__proto__, constructor/prototype and escaped-key fixtures preserve native JSON data meaning without inherited status; normal/duplicate-key/depth checks retain behavior.",
+			"affected_criteria": [
+				"technical.correctness.edge_cases",
+				"technical.security.input_secrets"
+			],
+			"effort": "S",
+			"effort_basis": "Local parser object construction/discrimination plus property edge regression tests."
+		},
+		{
+			"reference": "F04",
+			"priority": "P1",
+			"reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"action": "Use temporary fixtures and explicit env for unit tests; keep absent-file tests; make real-tokenizer integration separate.",
+			"dependencies": [],
+			"acceptance": "Fresh checkout with no tokenizer env/files passes all offline tests and missing tokenizer returns null, with no skip/weakened assertion.",
+			"affected_criteria": [
+				"technical.testing.automation",
+				"technical.operability.lifecycle",
+				"project.adoption.entry"
+			],
+			"effort": "S",
+			"effort_basis": "Two unit tests can use temporary files and explicit env; no new model integration."
+		},
+		{
+			"reference": "F05",
+			"priority": "P1",
+			"reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"action": "Update canonical current-state/decision index, distinguish library completion from model/dispatch acceptance, point to final decisions and experimental conditions.",
+			"dependencies": [],
+			"acceptance": "README/plan/AGENTS/index agree on p0-2, latest target model class, unfinished live integration and evidence status.",
+			"affected_criteria": [
+				"technical.maintainability.clarity",
+				"technical.operability.lifecycle"
+			],
+			"effort": "S",
+			"effort_basis": "Reconcile a few canonical documents against dated handoff evidence."
+		},
+		{
+			"reference": "F06",
+			"priority": "P1",
+			"reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"action": "Label reused holdout diagnostic; freeze final configuration and assess once on new sealed group-separated cases and exact target model, including compose outcomes.",
+			"dependencies": ["F01", "F02"],
+			"acceptance": "Predeclared immutable config/cases and new holdout hashes, no parameter choice from new final results; old/new numbers separated.",
+			"affected_criteria": [
+				"technical.testing.quality",
+				"project.execution.focus"
+			],
+			"effort": "M",
+			"effort_basis": "New group-separated cases and frozen target model route; dependent on provider availability."
+		},
+		{
+			"reference": "E18,E22,E23",
+			"priority": "P1",
+			"reason": "Next evidence gate for actual usefulness, not a claim of a new implementation defect.",
+			"action": "Freeze configuration, validate the current Luna/Haiku-class target on new cases, then exercise limited real host flows with failure/cancel/permission boundaries.",
+			"dependencies": ["F01", "F02", "F03", "F04", "F05", "F06"],
+			"acceptance": "Separate model generation, structural validity, actual execution and user fulfilment results; real latency/cost and provenance reported. Host integration requires its own authorized implementation task.",
+			"affected_criteria": [
+				"project.solution.outcomes",
+				"technical.performance.budget"
+			],
+			"effort": "Unknown",
+			"effort_basis": "Model route, host integration authorization and acceptance budget not provided."
+		}
+	]
+}

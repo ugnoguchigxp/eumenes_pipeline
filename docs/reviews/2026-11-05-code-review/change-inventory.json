@@ -1,0 +1,24 @@
+{
+	"baselineSource": "d8ac16d99861d43ae8be84f19ef82eef3d7242447b07bdba6b0eafaf9dd0ba25",
+	"reviewedSource": "74a4ba53967566892d27aa7feab6d08cf20a4ac7ae9fb2a6ff61eda9f120bdb8",
+	"changedOrAddedSourceFiles": [
+		"bench/cases/freeze.ts",
+		"bench/cases/freeze-integration.test.ts",
+		"bench/cli/judge-requests.ts",
+		"bench/cli/quality-report.ts",
+		"bench/scoring/judge.ts",
+		"bench/scoring/prepare-judge.ts",
+		"bench/format/run.ts",
+		"bench/infer/provenance.ts",
+		"bench/infer/run-api.test.ts",
+		"bench/infer/api.ts",
+		"bench/infer/run-api.ts",
+		"bench/infer/prepared.ts",
+		"bench/infer/api.test.ts",
+		"bench/export/quality-report.test.ts",
+		"bench/export/quality-report.ts",
+		"bench/export/bundle.test.ts",
+		"bench/export/bundle.ts"
+	],
+	"publicLibraryChangesInThisReview": []
+}

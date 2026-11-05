@@ -29,6 +29,7 @@ import type { CatalogView } from "../../src/catalog.ts";
 import { REQUEST_REF } from "../../src/contracts/definition.ts";
 import type { EvalCase } from "../cases/cases.ts";
 import type { AttemptResults } from "./evaluate.ts";
+import { matchesWiring } from "./wiring.ts";
 
 export type ScoreBreakdown = {
 	/** Parsed, and (for a ready outcome) passed `checkDefinition`. */
@@ -39,6 +40,8 @@ export type ScoreBreakdown = {
 	/** Mock run completed (pipeline cases), or correctly never executed (other states). */
 	execution: boolean;
 	artifact: boolean;
+	wiring: boolean;
+	delivery: boolean;
 	passed: boolean;
 };
 
@@ -64,6 +67,8 @@ export type CaseScore = {
 	/** Null when no mock run was attempted. */
 	mockCompleted: boolean | null;
 	finalArtifactMatch: boolean | null;
+	finalArtifactDelivered: boolean | null;
+	wiringMatch: boolean | null;
 	score: ScoreBreakdown;
 };
 
@@ -196,6 +201,27 @@ export function scoreCase(
 						isRecord(s.result.output) &&
 						s.result.output.kind === expected.finalArtifact,
 				);
+	const delivered = run?.delivered ?? [];
+	const finalArtifactDelivered =
+		expected.finalArtifact === undefined
+			? null
+			: (run?.steps.some(
+					(step) =>
+						step.adopted &&
+						isRecord(step.result.output) &&
+						step.result.output.kind === expected.finalArtifact &&
+						delivered.some(
+							(d) => d.from === step.stepId && d.references.length > 0,
+						),
+				) ?? false);
+	const wiringMatch =
+		expected.wiringAlternatives === undefined
+			? null
+			: matchesWiring(
+					steps,
+					delivered.map((d) => d.from),
+					expected.wiringAlternatives,
+				);
 
 	const score: ScoreBreakdown = {
 		structure: parseOk && (authoredKind !== "pipeline" || checkOk === true),
@@ -205,6 +231,8 @@ export function scoreCase(
 		execution:
 			expected.kind === "pipeline" ? mockCompleted === true : run === undefined,
 		artifact: finalArtifactMatch !== false,
+		wiring: wiringMatch !== false,
+		delivery: finalArtifactDelivered !== false,
 		passed: false,
 	};
 	score.passed =
@@ -213,7 +241,9 @@ export function scoreCase(
 		score.bundles &&
 		score.materials &&
 		score.execution &&
-		score.artifact;
+		score.artifact &&
+		score.wiring &&
+		score.delivery;
 
 	return {
 		caseId: evalCase.id,
@@ -232,6 +262,8 @@ export function scoreCase(
 		materialsMissing,
 		mockCompleted,
 		finalArtifactMatch,
+		finalArtifactDelivered,
+		wiringMatch,
 		score,
 	};
 }

@@ -1,0 +1,9 @@
+$ bun bench/cli/format.ts --session quality-repair-verified-luna --case prime-count --format json --repair
+[json]
+  catalog-only    : cells 1 (scored 1, missing 0, digest-mismatch 0, inference-error 0) | parse 1/1, authoring 1/1 | check 0/1, state 1/1, bundles 1/1 | mock 0/0 | passed 0/1
+  fixture-dependent: cells 0 (scored 0, missing 0, digest-mismatch 0, inference-error 0) | parse 0/0, authoring 0/0 | check 0/0, state 0/0, bundles 0/0 | mock 0/0 | passed 0/0
+  total           : cells 1 (scored 1, missing 0, digest-mismatch 0, inference-error 0) | parse 1/1, authoring 1/1 | check 0/1, state 1/1, bundles 1/1 | mock 0/0 | passed 0/1
+ALL: cells 1 (scored 1, missing 0, digest-mismatch 0, inference-error 0) | parse 1/1, authoring 1/1 | check 0/1, state 1/1, bundles 1/1 | mock 0/0 | passed 0/1
+repair: attempted 1 (scored 1, missing 0, digest-mismatch 0, inference-error 0) | passed 0 -> 1 over attempted cells | repair prompt tokens n/a, output tokens n/a
+condition baseline (cardSet all, style full, shots 0, output default); tokenizer unavailable; prompt tokens n/a (tokenizer unavailable), output tokens n/a (tokenizer unavailable)
+run 556d3d67-2b7b-4a03-bd52-f40c674a933a; session data/runs/format/quality-repair-verified-luna (summary.json written there)

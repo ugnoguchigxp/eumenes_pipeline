@@ -6,7 +6,7 @@ Muse Code はこのファイルをプロジェクト規則として読む。計�
 
 ツールチェーンバンドル（Eumenesに登録済みの部品）を組み合わせ、利用者の依頼を `request`・`steps`・`output` の短い定義にする。最終的に **Eumenesへtarballで取り込む**（plan §7）。
 
-2026-11-03時点: 骨格・評価用カタログ・Eumenesから抽出した契約・モック・作業用SQLite・Museの推論口・オフライン検証は構築済み。**P0a〜P0e（棚卸しの確認、契約、比較の足場、実測、決定）とP1以降はMuseの担当。** 記述形式（JSON/YAML）、Routerの利用範囲、`src/` の定義schemaは未確定（provisional）。
+2026-11-05時点: P1で内部データ契約p0-3を固定済み。形式比較・選択実験・記録再生・exportを実装済みで、品質改善とClaude/OpenAI API検証、同一基準の技術品質再評価を完了（正式80.9点）。CIと本体への取込みは今回の対象外。本体の実dispatchと画面の受入は未完了。追加コードレビューでAPIの入力固定・証拠照合・容量・秘匿化を修正し、388件と87件の検証を完了。現在地は [品質改善記録](docs/handoff/2026-11-05-quality-improvement.md) を優先する。旧holdoutは既見の診断集合であり、新しい条件の未見評価へ再利用しない。
 
 ## コマンド
 
@@ -24,7 +24,7 @@ Muse Code はこのファイルをプロジェクト規則として読む。計�
 ## 構成
 
 - `src/` — **配布ライブラリ（Eumenesへ取り込む）**。`zod` と `src/` 内部以外をimportしない。Bun・node・DOM・bench・Eumenesに依存しない（`bench/mock/guard.test.ts` が強制）。lib ES2022・`types: []` でビルドできること。
-  - `contracts/definition.ts` 定義schema（暫定）、`contracts/component.ts` 部品カードとホスト側記録、`contracts/execution.ts` 1手順の実行契約（Eumenesの `ChildExecution`/`ChildResult` の部分集合）
+  - `contracts/definition.ts` 定義schema（内部契約p0-3）、`contracts/component.ts` 部品カードとホスト側記録、`contracts/execution.ts` 1手順の実行契約（Eumenesの `ChildExecution`/`ChildResult` の部分集合）
   - `catalog.ts` 部品の解決（契約のみ。名前の類似や暗黙の既定入口で推測しない）、`check.ts` 定義の検査と実行計画、`ports.ts` ホストが渡す接続口（`PipelineHost`・`InferencePort`）
 - `bench/` — P0評価専用。配布しない。
   - `catalog/` スナップショット読込み（immutable・digest照合）、契約の参照、棚卸し、カタログ版
@@ -51,7 +51,8 @@ Muse Code はこのファイルをプロジェクト規則として読む。計�
 
 ### 評価の公正さ（plan §9・§10）
 - 正解ラベル・模範手順・許容解を、制作AI・検索器・モックの入力へ混ぜない。`MockHost` は正解を受け取らない作りを保つ。
-- 実モデルの呼出しは `MuseExecInference` だけを使う。生きた実験では `installGuard({ allowProcess: allowMuseExec() })` を最初に呼び、`muse exec` 以外の外部到達を塞ぐ。Museは一時ディレクトリで動くので、このAGENTS.mdやケースは推論側へ渡らない。この隔離を弱めない。
+- 実モデルの呼出しは `MuseExecInference`、または利用者が2026-11-05に指定したClaude APIとOpenAI GPT-6 Luna用の `ApiInference` を使う（品質改善計画Q14）。Muse経路では `installGuard({ allowProcess: allowMuseExec() })` を最初に呼ぶ。API経路では最初に `installGuard({ allowFetch: allowApiEndpoint(provider) })` を設置し、選択した公式HTTPS endpointだけを許可する。直接APIでも正解、リポジトリ、個人文脈を渡さず、通常の試験では外部到達0件を維持する。
+- 今回のClaudeとLunaの実API検証は生成、修復、評価、疎通を合計10米ドル以内とする。共通の永続予算台帳で呼出し前に費用枠を確保し、成否とusageが不明なら枠を保持する。`.zprofile` の `CLAUDE_API_KEY` と `OPEN_AI_API_KEY` を優先し、値を出力せずプロジェクト別 `.env` を要求しない。
 - すべての実行を作業DBへrunとして記録する。条件を変えたら新しいrun（`parentRunId`）。完了した試行を消したり、同じ試行番号でやり直したりしない。
 - 診断・選定用の例と、最終評価用の未見例を分ける。見た例を「未見」と呼ばない。
 - 取得できない値（トークン、費用）を0や推定値で埋めない。null のまま報告する。

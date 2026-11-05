@@ -1,0 +1,24 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/infer/api.test.ts:
+(pass) direct API inference > Anthropic cache opt-in cannot be enabled through request overrides [3.08ms]
+(pass) direct API inference > maps the request without tools and records raw evidence with unknown costs/calls preserved [1.63ms]
+(pass) direct API inference > HTTP 401 is one recorded failed call without hidden retry [0.68ms]
+(pass) direct API inference > HTTP 403 is one recorded failed call without hidden retry [0.51ms]
+(pass) direct API inference > HTTP 429 is one recorded failed call without hidden retry [0.47ms]
+(pass) direct API inference > HTTP 500 is one recorded failed call without hidden retry [0.47ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.52ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.46ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.44ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.45ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.43ms]
+(pass) direct API inference > Anthropic text/usage mapping is separate from provider completion status [0.58ms]
+(pass) direct API inference > missing credentials, cancellation and exhausted budget cannot send a request [0.51ms]
+(pass) direct API inference > timeout and cancellation retain unknown reservations [6.12ms]
+(pass) oversized response streams are cancelled before their entire body is read [0.70ms]
+(pass) escaped credentials and reflected response identifiers cannot enter saved evidence [0.53ms]
+
+ 16 pass
+ 0 fail
+ 46 expect() calls
+Ran 16 tests across 1 file. [80.00ms]

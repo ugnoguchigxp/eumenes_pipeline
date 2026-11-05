@@ -4,6 +4,49 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { openWorkDb } from "./work-db.ts";
+import { apiBudget } from "./api-budget.ts";
+
+test("version-one migration preserves completed runs and shares the budget across connections", () => {
+	const dir = mkdtempSync(join(tmpdir(), "work-db-migration-"));
+	const path = join(dir, "work.sqlite3");
+	const original = openWorkDb(path);
+	const runId = original.startRun({
+		kind: "legacy",
+		config: { retained: true },
+		inputs: {},
+	});
+	original.finishRun(runId, "completed");
+	const before = original.db
+		.query("SELECT * FROM runs WHERE run_id = ?")
+		.get(runId);
+	original.close();
+	const old = new Database(path);
+	old.run("DROP TABLE api_budget_events");
+	old.run("DROP TABLE api_budgets");
+	old.run("PRAGMA user_version = 1");
+	old.close();
+	const migrated = openWorkDb(path);
+	const second = openWorkDb(path);
+	try {
+		expect(
+			migrated.db.query("SELECT * FROM runs WHERE run_id = ?").get(runId),
+		).toEqual(before);
+		expect(() =>
+			migrated.db.run("UPDATE runs SET note='changed' WHERE run_id=?", [runId]),
+		).toThrow("finished");
+		const one = apiBudget(migrated.db, "shared", 1);
+		const two = apiBudget(second.db, "shared", 1);
+		const reservation = one.reserve(0.7, {});
+		expect(() => two.reserve(0.4, {})).toThrow("exhausted");
+		two.settle(reservation, 0.1, {});
+		one.reserve(0.8, {});
+		expect(two.status().committedCostCeilingUsd).toBe(0.9);
+	} finally {
+		migrated.close();
+		second.close();
+		rmSync(dir, { recursive: true, force: true });
+	}
+});
 
 const usage = {
 	inputTokens: 10,

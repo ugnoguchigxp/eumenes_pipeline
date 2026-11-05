@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { InferenceRequest } from "../../src/ports.ts";
 import { inferenceDigest, RecordedInference } from "./recorded.ts";
+import type { ApiRecordingSource } from "./recorded.ts";
 
 const request = (prompt: string): InferenceRequest => ({
 	purpose: "compose",
@@ -12,6 +13,66 @@ const request = (prompt: string): InferenceRequest => ({
 });
 
 describe("RecordedInference", () => {
+	test("legacy API records with unknown schema identity cannot silently qualify as current input", async () => {
+		const req = request("legacy-api");
+		const digest = inferenceDigest(req);
+		const source: ApiRecordingSource = {
+			version: 1,
+			evidence: "api",
+			runId: "run",
+			trialId: "trial",
+			provider: "openai",
+			model: "fixture",
+			usage: {
+				inputTokens: null,
+				outputTokens: null,
+				cachedTokens: null,
+				reasoningTokens: null,
+				calls: null,
+			},
+			durationMs: 1,
+			promptDigest: digest,
+			outputDigest: "a".repeat(64),
+			requestId: null,
+		};
+		const legacy = new RecordedInference(
+			[{ promptDigest: digest, output: "x", evidence: "api" }],
+			new Map([[digest, source]]),
+		);
+		const failed = await legacy.complete(req);
+		expect(failed.ok).toBe(false);
+		if (!failed.ok) expect(failed.error).toContain("schema identity");
+		const verified = new RecordedInference(
+			[{ promptDigest: digest, output: "x", evidence: "api" }],
+			new Map([[digest, { ...source, outputSchemaDigest: null }]]),
+		);
+		expect((await verified.complete(req)).ok).toBe(true);
+	});
+	test("request identity includes the forced output schema", async () => {
+		const req = request("same prompt");
+		const one = { ...req, outputSchema: { type: "string" } };
+		const two = { ...req, outputSchema: { type: "number" } };
+		expect(inferenceDigest(one)).not.toBe(inferenceDigest(req));
+		expect(inferenceDigest(two)).not.toBe(inferenceDigest(one));
+		const recorded = new RecordedInference([
+			{ promptDigest: inferenceDigest(one), output: '"a"' },
+		]);
+		expect((await recorded.complete(one)).ok).toBe(true);
+		expect((await recorded.complete(two)).ok).toBe(false);
+		expect((await recorded.complete(req)).ok).toBe(false);
+	});
+	test("an API marker without provenance cannot become an agent-model record", () => {
+		expect(
+			() =>
+				new RecordedInference([
+					{
+						promptDigest: inferenceDigest(request("r")),
+						output: "x",
+						evidence: "api",
+					},
+				]),
+		).toThrow("provenance missing");
+	});
 	test("replays the recording whose digest matches the request; usage stays null", async () => {
 		const req = request("依頼A");
 		const inference = new RecordedInference([

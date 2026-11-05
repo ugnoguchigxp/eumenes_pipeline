@@ -100,6 +100,7 @@ try {
 			network: report.embedding.network,
 		},
 		inputs: {
+			caseSnapshot: report.caseSnapshot,
 			snapshotSha256: report.catalog.snapshotSha256,
 			contractsSha256: report.catalog.contractsSha256,
 			fixturesSha256: report.catalog.fixturesSha256,
