@@ -86,7 +86,13 @@ class Reader {
 				this.#raise("syntax", "expected ':' after object key");
 			this.#index++;
 			this.#ws();
-			out[key] = this.#value(depth + 1);
+			// Define JSON data directly, including names with inherited setters.
+			Object.defineProperty(out, key, {
+				value: this.#value(depth + 1),
+				enumerable: true,
+				writable: true,
+				configurable: true,
+			});
 			this.#ws();
 			const next = this.#peek();
 			if (next === ",") {

@@ -1,0 +1,50 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/infer/api.test.ts:
+(pass) direct API inference > Anthropic cache opt-in cannot be enabled through request overrides [3.23ms]
+(pass) direct API inference > maps the request without tools and records raw evidence with unknown costs/calls preserved [1.45ms]
+(pass) direct API inference > HTTP 401 is one recorded failed call without hidden retry [0.67ms]
+(pass) direct API inference > HTTP 403 is one recorded failed call without hidden retry [0.48ms]
+(pass) direct API inference > HTTP 429 is one recorded failed call without hidden retry [0.46ms]
+(pass) direct API inference > HTTP 500 is one recorded failed call without hidden retry [0.47ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.50ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.44ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.44ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.45ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [0.43ms]
+(pass) direct API inference > Anthropic text/usage mapping is separate from provider completion status [0.57ms]
+(pass) direct API inference > missing credentials, cancellation and exhausted budget cannot send a request [0.52ms]
+(pass) direct API inference > timeout and cancellation retain unknown reservations [6.15ms]
+265 |   let reads=0, cancelled=false;
+266 |   const budget=apiBudget(work.db,"stream-limit",1);
+267 |   const port=new ApiInference(profile,{budget,maxOutputTokens:100,timeoutMs:1000,env:{OPEN_AI_API_KEY:"secret-sample"},fetcher:async()=>new Response(new ReadableStream<Uint8Array>({pull(controller){reads++;if(reads>8)controller.close();else controller.enqueue(new Uint8Array(600_000));},cancel(){cancelled=true;}}))});
+268 |   const result=await port.complete({purpose:"compose",prompt:"x"});
+269 |   expect(result.ok).toBe(false);
+270 |   expect(cancelled).toBe(true);
+                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/infer/api.test.ts:270:21)
+(fail) oversized response streams are cancelled before their entire body is read [3.19ms]
+279 |   let evidence:ApiEvidence|undefined;
+280 |   const secret="secret-sample";
+281 |   const port=new ApiInference(profile,{budget:apiBudget(work.db,"redaction",1),maxOutputTokens:100,timeoutMs:1000,env:{OPEN_AI_API_KEY:secret},onEvidence:value=>{evidence=value;},fetcher:async()=>new Response(JSON.stringify({...success,id:secret,output:[{type:"message",content:[{type:"output_text",text:secret}]}]}).replaceAll(secret,"\\u0073ecret-sample"),{headers:{"x-request-id":secret}})});
+282 |   const result=await port.complete({purpose:"compose",prompt:"x"});
+283 |   expect(result.ok).toBe(true);
+284 |   expect(JSON.stringify(evidence)).not.toContain(secret);
+                                             ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "secret-sample"
+Received: "{\"requestId\":\"a91de8d6-9d29-4dc5-93e8-7bf23b7873e7\",\"providerRequestId\":\"secret-sample\",\"responseId\":\"secret-sample\",\"requestedModel\":\"fixture-model\",\"returnedModel\":\"fixture-model\",\"provider\":\"openai\",\"promptDigest\":\"c88e71f0d0cdbf76f1f1847eb794d8b5fda725e034f1ed8bee36a909114daf76\",\"status\":200,\"requestBody\":{\"model\":\"fixture-model\",\"instructions\":\"\",\"input\":\"x\",\"max_output_tokens\":100,\"store\":false,\"service_tier\":\"default\"},\"response\":{\"id\":\"secret-sample\",\"model\":\"fixture-model\",\"status\":\"completed\",\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"secret-sample\"}]}],\"usage\":{\"input_tokens\":10,\"output_tokens\":2}},\"durationMs\":0.14570799999999906,\"usage\":{\"inputTokens\":10,\"outputTokens\":2,\"cachedTokens\":null,\"reasoningTokens\":null,\"calls\":null},\"actualBilledUsd\":null}"
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/infer/api.test.ts:284:40)
+(fail) escaped credentials and reflected response identifiers cannot enter saved evidence [0.95ms]
+
+ 14 pass
+ 2 fail
+ 43 expect() calls
+Ran 16 tests across 1 file. [86.00ms]

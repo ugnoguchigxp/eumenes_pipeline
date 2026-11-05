@@ -14,10 +14,12 @@ import { dirname } from "node:path";
 import type { Issue } from "../../src/check.ts";
 import type { InferenceResult } from "../../src/ports.ts";
 import { canonicalJson, sha256 } from "../catalog/load.ts";
+import { sourceProvenance } from "../cases/provenance.ts";
 import type { MockCall } from "../mock/host.ts";
+import { API_BUDGET_SCHEMA } from "./api-budget.ts";
 
 export const DEFAULT_WORK_DB = "data/work/bench.sqlite3";
-export const WORK_DB_VERSION = 1;
+export const WORK_DB_VERSION = 2;
 
 const SCHEMA_V1 = `
 CREATE TABLE runs(
@@ -210,6 +212,12 @@ export function openWorkDb(path: string = DEFAULT_WORK_DB): WorkDb {
 		if (path !== ":memory:") db.run("PRAGMA journal_mode = WAL");
 		db.transaction(() => {
 			db.exec(SCHEMA_V1);
+			db.exec(API_BUDGET_SCHEMA);
+			db.run(`PRAGMA user_version = ${WORK_DB_VERSION}`);
+		})();
+	} else if (version === 1) {
+		db.transaction(() => {
+			db.exec(API_BUDGET_SCHEMA);
 			db.run(`PRAGMA user_version = ${WORK_DB_VERSION}`);
 		})();
 	} else if (version !== WORK_DB_VERSION) {
@@ -238,7 +246,7 @@ export function openWorkDb(path: string = DEFAULT_WORK_DB): WorkDb {
 				created: iso(),
 				config: configJson,
 				digest: sha256(configJson),
-				inputs: canonicalJson(inputs),
+				inputs: canonicalJson({ ...inputs, source: sourceProvenance() }),
 				note: note ?? null,
 			});
 			return runId;

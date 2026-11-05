@@ -1,0 +1,9 @@
+{
+	"protectedChanges": [],
+	"adjacentEumenesClean": true,
+	"newCiWorkflows": [],
+	"newPaidHttpRequests": 0,
+	"newCommits": 0,
+	"newPushes": 0,
+	"llmBoundaryReview": "Only byte/hash/schema/state/phase/budget validation added. No utterance/scenario semantic rules."
+}

@@ -1,11 +1,16 @@
+import {
+	recordPreparedRequests,
+	type PreparedApiRequest,
+} from "../infer/prepared.ts";
 /**
  * bench:format — the format comparison runner (plan §10 P0c/P0d).
  *
  * One invocation = one work-db run over (case × format) cells under ONE prompt condition
  * (`conditions.ts`: which cards are offered, how they are rendered, whether the prompt
  * carries a worked example; the `baseline` condition is every offered card, full rendering,
- * no example). Inference is agent-model (`bench/infer/recorded.ts`): the runner never calls
- * a model. For each cell it builds the prompt, digests it, and looks for the recording the
+ * no example). Inference uses recorded files (`bench/infer/recorded.ts`), with legacy or
+ * verified API provenance: this runner never calls a model. It builds and digests each prompt,
+ * then looks for the recording the
  * generation step prepared; a cell without a recording gets a request file under
  * `<session>/requests/` and is counted as missing — never skipped silently, never filled in.
  * A recording whose digest does not match the current prompt is refused, not used.
@@ -104,7 +109,9 @@ import type { AuthoringOutcome } from "../../src/contracts/authoring.ts";
 import type { ComponentCard } from "../../src/contracts/component.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
-import { loadCases, type EvalCase } from "../cases/cases.ts";
+import { loadCases, DEFAULT_CASES_DIR, type EvalCase } from "../cases/cases.ts";
+import { captureCases } from "../cases/provenance.ts";
+import { verifyFreeze } from "../cases/freeze.ts";
 import { FORMAT_PARSERS, FORMAT_IDS, type FormatId } from "../formats/index.ts";
 import {
 	ID_NORMALIZE_VERSION,
@@ -166,7 +173,7 @@ import {
 } from "./triage.ts";
 
 export const DEFAULT_RUNS_ROOT = "data/runs/format";
-export const FORMAT_SCORER = "bench-format-v1";
+export const FORMAT_SCORER = "bench-format-v3";
 
 const SESSION_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/;
 
@@ -548,6 +555,7 @@ const verdictOf = (
 
 export type FormatRunOptions = {
 	session: string;
+	freezePath?: string;
 	runsRoot?: string;
 	dbPath?: string;
 	casesDir?: string;
@@ -660,8 +668,33 @@ export async function runFormat(
 		mkdirSync(enumRecordingsDir, { recursive: true });
 	}
 
+	const frozen = options.freezePath
+		? verifyFreeze(
+				options.freezePath,
+				options.session,
+				undefined,
+				options.casesDir ?? DEFAULT_CASES_DIR,
+			)
+		: undefined;
+	if (frozen) {
+		const method = {
+			condition: options.condition ?? BASELINE_CONDITION,
+			formats: options.formats ?? FORMAT_IDS,
+			repair: !!options.repair,
+			restoreSyntax: !!options.restoreSyntax,
+			normalizeIds: !!options.normalizeIds,
+			triage: !!options.triage,
+			staged: !!options.staged,
+			coverageRepair: !!options.coverageRepair,
+			candidates: options.candidates ?? null,
+		};
+		if (canonicalJson(method) !== canonicalJson(frozen.protocol.formatMethod))
+			throw new Error("format method differs from frozen protocol");
+	}
 	const catalog = loadBenchCatalog({ policy: "ready+partial" });
 	const allCases = loadCases(options.casesDir);
+	if (frozen && options.caseIds && options.caseIds.length !== allCases.length)
+		throw new Error("frozen evaluation cannot select a partial case set");
 	const cases = options.caseIds
 		? allCases.filter((c) => options.caseIds?.includes(c.id))
 		: allCases;
@@ -968,11 +1001,31 @@ export async function runFormat(
 		cell.promptTokens = promptCounts[i] ?? null;
 	});
 
+	const composeRecordings = RecordedInference.fromDirectory(recordingsDir);
+	const preparedRepairRecordings =
+		options.repair || options.coverageRepair
+			? RecordedInference.fromDirectory(repairRecordingsDir)
+			: undefined;
+	const apiSources = Object.fromEntries(composeRecordings.provenance);
 	const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
 	const runId = work.startRun({
 		kind: "format",
 		config: {
-			evidence: "agent-model",
+			...(frozen ? { freezeDigest: frozen.digest } : {}),
+			...(preparedRepairRecordings
+				? {
+						repairEvidence:
+							preparedRepairRecordings.provenance.size > 0
+								? "api-replay"
+								: "agent-model",
+					}
+				: {}),
+			evidence:
+				composeRecordings.provenance.size > 0
+					? composeRecordings.provenance.size === composeRecordings.files.size
+						? "api-replay"
+						: "mixed-recordings"
+					: "agent-model",
 			contractVersion: CONTRACT_VERSION,
 			formats,
 			promptTemplate: PROMPT_TEMPLATE_VERSION,
@@ -982,6 +1035,7 @@ export async function runFormat(
 			seed,
 			session: options.session,
 			condition: conditionInfo,
+			conditionDefinition: condition,
 			tokenizer: provenance,
 			...(options.repair
 				? { repair: true, repairTemplate: REPAIR_TEMPLATE_VERSION }
@@ -1011,6 +1065,16 @@ export async function runFormat(
 			fixturesSha256: catalog.contracts.fixturesSha256,
 			catalogVersion: catalog.view.version,
 			caseIds: cases.map((c) => c.id),
+			caseSnapshot: captureCases(cases, options.casesDir),
+			...(options.candidates ? { candidates: options.candidates } : {}),
+			...(composeRecordings.provenance.size > 0 ? { apiSources } : {}),
+			...(preparedRepairRecordings?.provenance.size
+				? {
+						apiRepairSources: Object.fromEntries(
+							preparedRepairRecordings.provenance,
+						),
+					}
+				: {}),
 		},
 	});
 
@@ -1021,6 +1085,17 @@ export async function runFormat(
 	const repairOutputTexts = new Map<string, string>();
 	const cellKey = (cell: { caseId: string; format: FormatId }) =>
 		`${cell.caseId}\0${cell.format}`;
+	const preparedRequests: PreparedApiRequest[] = prepared
+		.filter((c) => !c.triageBlocked && !c.enumBlocked)
+		.map((c) => ({
+			phase: "compose",
+			name: `${c.evalCase.id}--${c.format}.json`,
+			promptDigest: inferenceDigest({
+				purpose: COMPOSE_PURPOSE,
+				system: c.system,
+				prompt: c.prompt,
+			}),
+		}));
 	let sweepDone = false;
 	try {
 		// Record the triage calls as this run's trials (phase `triage`, one per case).
@@ -1085,7 +1160,7 @@ export async function runFormat(
 					});
 			}
 		}
-		const { inference, files } = RecordedInference.fromDirectory(recordingsDir);
+		const { inference, files } = composeRecordings;
 		for (const cell of prepared) {
 			const blocked = cell.triageBlocked ?? cell.enumBlocked;
 			if (blocked) {
@@ -1138,9 +1213,11 @@ export async function runFormat(
 		}
 		if (options.repair || options.coverageRepair) {
 			const repairRecordings =
+				preparedRepairRecordings ??
 				RecordedInference.fromDirectory(repairRecordingsDir);
 			for (const [index, cell] of prepared.entries()) {
 				await runRepair({
+					preparedRequests,
 					cell,
 					report: cells[index] as FormatCellReport,
 					files: repairRecordings.files,
@@ -1162,6 +1239,13 @@ export async function runFormat(
 				});
 			}
 		}
+		if (frozen)
+			recordPreparedRequests(work, {
+				session: options.session,
+				freezeDigest: frozen.digest,
+				requests: preparedRequests,
+				parentRunId: runId,
+			});
 		sweepDone = true;
 	} finally {
 		work.finishRun(runId, sweepDone ? "completed" : "failed");
@@ -1342,6 +1426,7 @@ export async function runFormat(
 			{
 				runId,
 				condition: conditionInfo,
+				conditionDefinition: condition,
 				tokenizer: provenance,
 				byFormat,
 				totals,
@@ -1467,7 +1552,9 @@ async function evaluateAttempt(ctx: {
 	const attempt: AttemptResults = { parse };
 	let check: CheckResult | undefined;
 	if (authored?.status === "ready") {
-		check = checkDefinition(authored.definition, ctx.catalog.view);
+		check = checkDefinition(authored.definition, ctx.catalog.view, {
+			sourceRequest: evalCase.request,
+		});
 		attempt.check = check;
 		ctx.work.recordChecks(ctx.trialId, check.issues);
 		if (check.ok) {
@@ -1493,6 +1580,8 @@ async function evaluateAttempt(ctx: {
 		materials: score.score.materials,
 		execution: score.score.execution,
 		artifact: score.score.artifact,
+		wiring: score.score.wiring,
+		delivery: score.score.delivery,
 		passed,
 	};
 	for (const [criterion, value] of Object.entries(breakdown))
@@ -1635,6 +1724,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 }
 
 type RepairContext = {
+	preparedRequests: PreparedApiRequest[];
 	/** The prepared composing cell (its system + prompt are the repair's raw material). */
 	cell: {
 		evalCase: EvalCase;
@@ -1721,6 +1811,11 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		promptTokens: null,
 		outputTokens: null,
 	};
+	ctx.preparedRequests.push({
+		phase: "repair",
+		name: fileName,
+		promptDigest: digest,
+	});
 	ctx.report.repair = repair;
 	ctx.repairPromptTexts.set(ctx.cellKey, `${built.system}\n${built.prompt}`);
 	const trialId = ctx.work.startTrial({

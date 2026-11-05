@@ -18,17 +18,20 @@
 
 ## 状態
 
-**P0（契約と接続設計）の足場まで。** 記述形式（JSON/YAML）、Routerの利用範囲、定義schemaは未確定で、`src/` の定義と検査は暫定。実モデルでの比較・実測はこれから。計画は [plan.md](plan.md)、現在地と次の作業は [引き継ぎ](docs/handoff/2026-11-03-skeleton.md) を参照。
+内部データ契約は **p0-3** として固定済みです。JSON生成、検査、モック実行、追記専用DB、結果のexport、Claude/OpenAI APIの検証口を実装しています。Eumenes本体の実dispatchと画面での受入は未完了です。モック成功は実ツールの成功を表しません。
+
+現在の確認範囲は [品質改善記録](docs/handoff/2026-11-05-quality-improvement.md)、計画の正本は [plan.md](plan.md)、改善項目は [実装計画](docs/plans/quality-improvement-2026-11-05.md) を参照してください。JSONは基準の比較条件で、既定は全カード提示です。修復・構文復元・ID正規化・triage・段階生成は既定offの実験条件です。段階生成とtriageは採用していません。旧holdout40件は既見の診断集合として扱います。
 
 ## 必要なもの
 
 - [Bun](https://bun.sh) 1.4.4（`packageManager` で固定）
-- 実モデルを使う実験のみ: Muse Code の `muse` CLI（ログイン済み）。オフラインの検査・テストには不要
+- API検証のみ: 環境変数 `CLAUDE_API_KEY` と `OPEN_AI_API_KEY`。標準名 `ANTHROPIC_API_KEY` と `OPENAI_API_KEY` も使えます。プロジェクトの `.env` は不要です
+- Muse経路を明示して使う場合だけ、ログイン済みの `muse` CLIが必要です
 
 ## 使い方
 
 ```sh
-bun install
+bun install --frozen-lockfile
 bun run check:all                 # 型検査（通常・配布ビルド設定）・lint・整形確認・全テスト
 bun run bench:catalog             # カタログの写しから部品を棚卸し → data/catalog/
 bun run bench:verify --db :memory: # 通信なしの配線検証（定義の検査・モック実行・停止規則・到達ガード）
@@ -38,12 +41,38 @@ bun run pack                      # artifacts/<名前-版-digest>/ に tarball�
 
 テストと `bench:verify` の実行中は、ネットワーク・外部プロセス・実ツールへの到達を到達ガードが塞ぐ。
 
+## APIでの検証
+
+最初に `bun run bench:format -- --session <名前> --format json` で送信対象の依頼ファイルを用意します。この段階の未生成表示は想定どおりです。キーを環境から継承したログインシェルで次を実行します。Claudeは `--provider anthropic --model claude-sonnet-5-5` に置き換えます。
+
+```sh
+/bin/zsh -lc 'exec bun run bench:infer -- --provider openai --model gpt-6-luna --session <名前> --budget data/policies/api-validation-standard-2026-11-05.json'
+bun run bench:format -- --session <名前> --format json
+bun run bench:export -- --run <採点runのID>
+```
+
+両社・生成・修復・judgeは共通の予算台帳を使い、実行上限8.5 USD、承認上限10 USDです。タイムアウトやusage不明の試行も予約を残し、無断で再送しません。同じ記録へ上書きせず、新しい試行は別sessionとrunを使います。生成時間と再生時間、費用上限の計算値と実請求を区別します。実請求を取得できない欄はnullです。
+
+`bench:judge:prepare` は元の依頼・公開カード・候補だけから評価用の入力を用意します。正解、生成モデル名、費用は評価モデルへ渡しません。APIの成功は、候補が依頼を満たしたという判定ではありません。
+
+評価では、構文と契約への適合、参照ケースへの適合、意味の適切性を別に示します。判定器には公開契約と既存checkerの解決結果を渡し、入口IDとバンドル名の違いを再推測させません。これらの判定は実ツールの成功や実利用での成果を表しません。旧条件のHaikuやキャッシュを含む保守的な予算policyは、診断記録の再現用に保持します。
+
+## 利用側の境界
+
+p0-3では、公開validatorの型を `Schema<T>`（`parse` と `safeParse`）へ限定しました。定義のJSON形はp0-2と同じです。Zod固有の拡張メソッドを使っていた利用側は、この公開口へ移行してください。修正版Zodの内部型が要求するブラウザー型を、利用側の要件へ持ち込まないための変更です。
+
+引数はJSONのデータだけを受け付け、先頭32キー、深さ64、合計10,000要素、文字列とキーの合計100,000文字単位までです。循環参照・関数・アクセサー・非有限数を拒否し、受理した値は複製して計画へ渡します。
+
+実行前に `checkDefinition(definition, catalog, { sourceRequest: originalRequest })` を使うと、ホストが保持した原文との完全一致を照合し、検査できない引数もエラーとして止めます。2引数の旧呼出しでは原文の真正性を保証せず、`arguments_unchecked` は警告に留まります。
+
+ホストは入口の権限、参照の所有とdigest、版、取消、期限、作用の重複を既存の実行基盤で検査する必要があります。ライブラリとbenchのガードは、権限管理やOSの隔離の代わりにはなりません。
+
 ## 構成
 
 | パス | 内容 |
 | --- | --- |
 | `src/` | 配布ライブラリ。定義schemaと検査、部品の解決、1手順の実行契約、ホストの接続口（`PipelineHost`・`InferencePort`）。`zod` 以外に依存せず、Bun・Node・DOM・Eumenesをimportしない |
-| `bench/` | P0評価専用（配布しない）。カタログの読込みと棚卸し、契約どおりの値を返すモック、実行ドライバー、到達ガード、追記専用の作業用SQLite、`muse exec` の推論口 |
+| `bench/` | 評価専用（配布しない）。カタログ、モック、到達ガード、追記専用DB、Muse・Claude・OpenAIの推論口、記録再生、意味評価の入力準備 |
 | `scripts/` | Eumenesからの契約の抽出（読み取りのみ）、梱包と空の利用側での検査 |
 | `data/source/` | Eumenesのカタログ6テーブルの写し（読み取り専用、manifestのSHA-256で照合） |
 | `data/contracts/` | Eumenesのコードから抽出した入出力のJSON Schema、benchだけで使うfixture契約 |

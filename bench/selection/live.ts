@@ -57,26 +57,39 @@ export class HttpEmbedTransport implements EmbedTransport {
 	readonly network: string;
 	readonly #url: string;
 
-	constructor(config: LiveConfig) {
+	constructor(
+		config: LiveConfig,
+		private readonly timeoutMs = 30_000,
+	) {
+		if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 300_000)
+			throw new Error("invalid embed timeout");
 		this.#url = config.url;
 		this.network = config.network;
 	}
 
 	async embed(texts: readonly string[]) {
-		const response = await fetch(this.#url, {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({ texts }),
-		});
-		if (!response.ok)
-			throw new Error(
-				`embed endpoint answered ${response.status} for ${texts.length} texts`,
-			);
-		const parsed = embedResponse.safeParse(await response.json());
-		if (!parsed.success)
-			throw new Error(
-				`embed endpoint response has an unexpected shape: ${parsed.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join("; ")}`,
-			);
-		return parsed.data;
+		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
+		try {
+			const response = await fetch(this.#url, {
+				signal: controller.signal,
+				redirect: "error",
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ texts }),
+			});
+			if (!response.ok)
+				throw new Error(
+					`embed endpoint answered ${response.status} for ${texts.length} texts`,
+				);
+			const parsed = embedResponse.safeParse(await response.json());
+			if (!parsed.success)
+				throw new Error(
+					`embed endpoint response has an unexpected shape: ${parsed.error.issues.map((i) => `${i.path.join(".")} ${i.message}`).join("; ")}`,
+				);
+			return parsed.data;
+		} finally {
+			clearTimeout(timeout);
+		}
 	}
 }

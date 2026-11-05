@@ -63,9 +63,5 @@ if (!cross.summaryFound) {
 	);
 	for (const d of cross.differences) console.log(`  difference: ${d}`);
 }
-const mismatch =
-	cross.runMatches &&
-	(cross.totalsEqual === false ||
-		cross.cellsEqual === false ||
-		cross.repairEqual === false);
+const mismatch = cross.runMatches && cross.differences.length > 0;
 process.exit(mismatch ? 1 : 0);

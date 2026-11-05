@@ -60,6 +60,8 @@ const { values } = parseArgs({
 	options: {
 		session: { type: "string" },
 		case: { type: "string" },
+		cases: { type: "string" },
+		freeze: { type: "string" },
 		format: { type: "string" },
 		condition: { type: "string" },
 		candidates: { type: "string" },
@@ -119,6 +121,7 @@ if (formats && formats.some((f) => !FORMAT_IDS.includes(f))) {
 }
 const report = await runFormat({
 	session: values.session,
+	...(values.freeze ? { freezePath: values.freeze } : {}),
 	condition,
 	...(values.repair ? { repair: true } : {}),
 	...(values["restore-syntax"] ? { restoreSyntax: true } : {}),
@@ -128,6 +131,7 @@ const report = await runFormat({
 	...(values["coverage-repair"] ? { coverageRepair: true } : {}),
 	...(candidates ? { candidates } : {}),
 	...(values.db ? { dbPath: values.db } : {}),
+	...(values.cases ? { casesDir: values.cases } : {}),
 	...(values.case ? { caseIds: values.case.split(",") } : {}),
 	...(formats ? { formats } : {}),
 });

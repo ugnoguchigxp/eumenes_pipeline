@@ -1,0 +1,10 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/export/quality-report.test.ts:
+(pass) blinded judgements must match the exact scored candidate, not just an authentic API output [210.09ms]
+(pass) reported API usage cannot be changed by editing an untrusted provenance sidecar [128.40ms]
+
+ 2 pass
+ 0 fail
+ 5 expect() calls
+Ran 2 tests across 1 file. [418.00ms]

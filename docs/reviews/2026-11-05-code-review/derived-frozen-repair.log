@@ -1,0 +1,10 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/infer/run-api.test.ts:
+(pass) API repair preserves legacy composition provenance and requires its own manifest [170.24ms]
+(pass) API calls and offline replay retain their separate provenance and never overwrite a recording [167.72ms]
+
+ 2 pass
+ 0 fail
+ 20 expect() calls
+Ran 2 tests across 1 file. [443.00ms]

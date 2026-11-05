@@ -1,0 +1,10 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/cases/freeze-integration.test.ts:
+(pass) frozen evaluation blocks method changes and partial API batches before network access [96.05ms]
+(pass) same-size API input replacement is rejected even with a recomputed self-consistent digest [70.89ms]
+
+ 2 pass
+ 0 fail
+ 7 expect() calls
+Ran 2 tests across 1 file. [249.00ms]

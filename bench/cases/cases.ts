@@ -37,6 +37,7 @@ import { join } from "node:path";
 import { z } from "zod";
 import { byCodeUnit } from "../../src/catalog.ts";
 import { ENTRY_PATTERN } from "../../src/contracts/component.ts";
+import { wiringAlternative } from "../scoring/wiring.ts";
 
 export const DEFAULT_CASES_DIR = "data/cases";
 
@@ -65,6 +66,8 @@ export const evalCase = z.strictObject({
 		requiredMaterials: z.array(z.string().min(1).max(100)).max(9).optional(),
 		/** The fixture artifact `kind` expected among the adopted outputs. */
 		finalArtifact: z.string().min(1).max(100).optional(),
+		/** Evaluator-only valid role/dependency/delivery alternatives; not producer input. */
+		wiringAlternatives: z.array(wiringAlternative).min(1).max(8).optional(),
 	}),
 	/** True when an acceptable solution depends on legacy entries or bench fixture contracts. */
 	usesFixtureContracts: z.boolean(),

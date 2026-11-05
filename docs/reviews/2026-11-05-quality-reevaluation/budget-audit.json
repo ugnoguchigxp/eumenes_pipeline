@@ -1,0 +1,35 @@
+{
+	"phases": [
+		{
+			"phase": "compose",
+			"completedHttpRequests": 66
+		},
+		{
+			"phase": "judge",
+			"completedHttpRequests": 251
+		},
+		{
+			"phase": "repair",
+			"completedHttpRequests": 2
+		}
+	],
+	"counts": [
+		{
+			"event": "reserve",
+			"count": 319,
+			"microusd": 563981000
+		},
+		{
+			"event": "settle",
+			"count": 319,
+			"microusd": 5204023
+		}
+	],
+	"active": {
+		"count": 0
+	},
+	"approvedUsd": 10,
+	"operationalUsd": 8.5,
+	"committedCostCeilingUsd": 5.204023,
+	"actualBilledUsd": null
+}

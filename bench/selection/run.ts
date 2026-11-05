@@ -10,6 +10,7 @@
  */
 import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases } from "../cases/cases.ts";
+import { captureCases } from "../cases/provenance.ts";
 import { openWorkDb, DEFAULT_WORK_DB } from "../store/work-db.ts";
 import type { SelectionPort, SelectionResult } from "./port.ts";
 
@@ -50,6 +51,7 @@ export async function runSelection(
 			fixturesSha256: catalog.contracts.fixturesSha256,
 			catalogVersion: catalog.view.version,
 			caseIds: cases.map((c) => c.id),
+			caseSnapshot: captureCases(cases, options.casesDir),
 		},
 	});
 	const results: SelectionRunReport["results"] = [];

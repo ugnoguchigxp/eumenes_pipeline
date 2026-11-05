@@ -58,6 +58,7 @@ import { DEFAULT_CASES_DIR, loadCases } from "../cases/cases.ts";
 import type { ConditionSummary } from "../format/conditions.ts";
 import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
 import { validateAuthoring } from "../formats/normalize-ids.ts";
+import { captureCases, readCaseSnapshot } from "../cases/provenance.ts";
 import type { ParseResult } from "../formats/outcome.ts";
 import { parseJsonWithRestore } from "../formats/restore.ts";
 import {
@@ -185,6 +186,8 @@ export type RunExport = {
 		contractVersion: string | null;
 		/** The definition contract version of the code performing this export. */
 		contractVersionAtExport: string;
+		casesPinned: boolean;
+		caseSetSha256: string | null;
 	};
 	condition: ConditionSummary | null;
 	cases: ExportCase[];
@@ -392,19 +395,39 @@ export function buildRunExport(options: {
 			: [];
 
 		// Gold provenance: the case files, digested byte-for-byte.
-		const allCases = loadCases(casesDir);
+		const pinned =
+			inputs.caseSnapshot === undefined
+				? null
+				: readCaseSnapshot(inputs.caseSnapshot);
+		const allCases = pinned?.cases ?? loadCases(casesDir);
+		if (pinned && options.casesDir) {
+			const supplied = loadCases(casesDir).filter((c) =>
+				caseIds.includes(c.id),
+			);
+			const observed = captureCases(supplied, casesDir);
+			if (observed.digest !== pinned.snapshot.digest)
+				throw new Error(
+					"export: case snapshot drift; use the run's pinned cases",
+				);
+		}
 		const caseById = new Map(allCases.map((c) => [c.id, c]));
 		const cases: ExportCase[] = caseIds.map((id) => {
 			const found = caseById.get(id);
 			if (!found) throw new Error(`export: run names unknown case "${id}"`);
-			const raw = readFileSync(join(casesDir, `${id}.json`), "utf8");
+			const raw = pinned
+				? pinned.snapshot.files.find((f) => f.id === id)?.content
+				: readFileSync(join(casesDir, `${id}.json`), "utf8");
+			if (raw === undefined)
+				throw new Error(`export: pinned case missing: ${id}`);
 			return {
 				id,
 				split: found.split,
 				group: found.group ?? null,
 				expectedKind: found.expected.kind,
 				usesFixtureContracts: found.usesFixtureContracts,
-				goldSource: `${casesDir}/${id}.json`,
+				goldSource: pinned
+					? `run:${run.run_id}/cases/${id}.json`
+					: `${casesDir}/${id}.json`,
 				goldSha256: sha256(raw),
 			};
 		});
@@ -813,6 +836,8 @@ export function buildRunExport(options: {
 				fixturesSha256: str(inputs.fixturesSha256),
 				contractVersion: str(config.contractVersion),
 				contractVersionAtExport: CONTRACT_VERSION,
+				casesPinned: pinned !== null,
+				caseSetSha256: pinned?.snapshot.digest ?? null,
 			},
 			condition:
 				config.condition && typeof config.condition === "object"

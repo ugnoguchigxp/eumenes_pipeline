@@ -1,0 +1,56 @@
+{
+  "id": "quality-2026-11-05-shared-10usd",
+  "ceilingUsd": 8.5,
+  "approvedCeilingUsd": 10,
+  "maxOutputTokens": 4096,
+  "timeoutMs": 90000,
+  "note": "Shared ceiling for all Claude/Luna API phases. Conservative upper rates cover published long-context/cache rates, with 1.5 USD headroom below the user limit. Actual billed costs remain null unless provided by billing. No automatic retries. Adaptive/low reasoning calibration. Same shared ledger, not a new spending allowance. Sonnet uses standard pricing across 1M context; input bound includes the highest 1h cache-write rate. Fast mode and regional premiums are not requested.",
+  "profiles": [
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "contextTokensCeiling": 1050000,
+      "inputUsdPerMillionCeiling": 0.5,
+      "outputUsdPerMillionCeiling": 1,
+      "pricingSource": "https://developers.openai.com/api/docs/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "reasoning": {
+          "effort": "low"
+        }
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "apiVersion": "2026-10-21",
+      "contextTokensCeiling": 1000000,
+      "inputUsdPerMillionCeiling": 1,
+      "outputUsdPerMillionCeiling": 5,
+      "pricingSource": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "thinking": {
+          "type": "adaptive",
+          "display": "omitted"
+        }
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "apiVersion": "2026-10-21",
+      "contextTokensCeiling": 1000000,
+      "inputUsdPerMillionCeiling": 4,
+      "outputUsdPerMillionCeiling": 10,
+      "pricingSource": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "thinking": {
+          "type": "adaptive",
+          "display": "omitted"
+        }
+      }
+    }
+  ]
+}

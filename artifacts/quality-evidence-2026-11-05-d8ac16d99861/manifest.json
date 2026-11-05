@@ -1,0 +1,10 @@
+{
+  "sourceSha256": "d8ac16d99861d43ae8be84f19ef82eef3d7242447b07bdba6b0eafaf9dd0ba25",
+  "archiveSha256": "f16c6410c3ff4c8a55fd405e37834b4fdf08fd121154d82e549815115eb82945",
+  "files": 2091,
+  "bytes": 4562269,
+  "httpReplayRequests": 0,
+  "comparison": "48 mechanical and semantic cells equal; run IDs excluded only",
+  "originalApiBilledUsd": null,
+  "originalApiCostCeilingUsd": 5.204023
+}

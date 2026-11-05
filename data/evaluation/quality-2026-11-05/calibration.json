@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "confirmedAt": "2026-11-05",
+  "humanConfirmation": "The user approved three presented reference judgements in this conversation. This was confirmation of stated labels, not blind independent annotation.",
+  "references": [
+    {"id": "missing-material", "expected": "appropriate", "humanConfirmed": true},
+    {"id": "unavailable-transfer", "expected": "appropriate", "humanConfirmed": true},
+    {"id": "missing-dependency", "expected": "inappropriate", "humanConfirmed": true},
+    {"id": "valid-alternative", "expected": "appropriate", "humanConfirmed": false, "source": "author-AI reference"}
+  ],
+  "results": [
+    {"session": "quality-calibration3-openai", "model": "gpt-6-luna", "setting": "reasoning low", "correct": 2, "unknown": 1, "falseNegative": 1, "falsePositive": 0, "qualified": false},
+    {"session": "quality-calibration3-anthropic", "model": "claude-haiku-5-5", "setting": "adaptive thinking", "correct": 3, "unknown": 0, "falseNegative": 0, "falsePositive": 1, "qualified": false},
+    {"session": "quality-calibration-sonnet", "model": "claude-sonnet-5-5", "setting": "adaptive thinking", "correct": 4, "unknown": 0, "falseNegative": 0, "falsePositive": 0, "qualified": true}
+  ],
+  "limitation": "Four controls are insufficient to estimate general judge accuracy. Qualified means usable for this scoped evaluation with independent structural checks and explicit disagreements. It is not a guarantee. Raw requests and API responses are preserved in separate sessions and work DB runs."
+}

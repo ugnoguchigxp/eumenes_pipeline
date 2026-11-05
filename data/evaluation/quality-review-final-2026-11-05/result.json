@@ -1,0 +1,4357 @@
+{
+  "catalogCoverage": {
+    "enabledDenominator": 26,
+    "offered": 24,
+    "chosenEntries": [
+      "browser.capture",
+      "browser.operate",
+      "claude-code.repair",
+      "claude-code.request",
+      "cli.run",
+      "codex-tasks.manage",
+      "compute.python",
+      "docling.desk",
+      "dots.delegate",
+      "excalidraw.edit",
+      "history.research",
+      "image.create",
+      "kanban.manage",
+      "model3d.studio",
+      "music.create",
+      "music.library",
+      "object-recognition.manage",
+      "ocr.manage",
+      "stock.quote",
+      "timers.manage",
+      "weather.forecast",
+      "web.search",
+      "web.service-search",
+      "world.query"
+    ]
+  },
+  "version": 2,
+  "reportRun": "d3d61b80-7c88-4352-a666-1ddcfb978a8a",
+  "freezeDigest": "9a0a4d819d27751efb60998cab9c9b0f4a3157217a2fd4cef3ed2816bb085fa6",
+  "sourceSha256": "74a4ba53967566892d27aa7feab6d08cf20a4ac7ae9fb2a6ff61eda9f120bdb8",
+  "protocol": {
+    "acceptance": {
+      "humanCalibration": "Three presented reference labels confirmed by the user, one additional author-AI positive control",
+      "mechanicalAndSemantic": "report each independently and their conjunction; mock success is not real execution",
+      "required": "all requests traceable to original frozen inputs; no secrets/gold in producer or judge prompts; missing/unknown/disagreement reported; spending within shared budget; technical score uses the unchanged full library rubric"
+    },
+    "apiSessions": {
+      "quality-review-final-luna": {
+        "model": "gpt-6-luna",
+        "phase": "compose",
+        "provider": "openai",
+        "replayOf": "quality-finalized-luna",
+        "requestCount": 24
+      },
+      "quality-review-final-luna-judge-luna": {
+        "model": "gpt-6-luna",
+        "phase": "judge",
+        "provider": "openai",
+        "qualified": false,
+        "requestCount": 24,
+        "source": "quality-review-final-luna"
+      },
+      "quality-review-final-luna-judge-sonnet": {
+        "model": "claude-sonnet-5-5",
+        "phase": "judge",
+        "provider": "anthropic",
+        "qualified": true,
+        "requestCount": 24,
+        "source": "quality-review-final-luna"
+      },
+      "quality-review-final-sonnet": {
+        "model": "claude-sonnet-5-5",
+        "phase": "compose",
+        "provider": "anthropic",
+        "replayOf": "quality-finalized-sonnet",
+        "requestCount": 24
+      },
+      "quality-review-final-sonnet-judge-luna": {
+        "model": "gpt-6-luna",
+        "phase": "judge",
+        "provider": "openai",
+        "qualified": false,
+        "requestCount": 24,
+        "source": "quality-review-final-sonnet"
+      },
+      "quality-review-final-sonnet-judge-sonnet": {
+        "model": "claude-sonnet-5-5",
+        "phase": "judge",
+        "provider": "anthropic",
+        "qualified": true,
+        "requestCount": 24,
+        "source": "quality-review-final-sonnet"
+      }
+    },
+    "budgets": {
+      "approvedUsd": 10,
+      "httpRetries": 0,
+      "inferenceP95Ms": 90000,
+      "operationalUsd": 8.5,
+      "repairsPerCell": 0,
+      "structureP95Ms": 5
+    },
+    "caseCount": 24,
+    "evaluationChanges": [
+      "Four intermediate-receipt delivery requirements corrected by gold-only independent audit",
+      "Judge receives public authoring contract and deterministic name-resolution results",
+      "Mechanical validity, reference conformity and semantic votes are reported separately"
+    ],
+    "formatMethod": {
+      "candidates": null,
+      "condition": {
+        "cardSet": "all",
+        "cardStyle": "full",
+        "id": "baseline",
+        "outputStyle": "default",
+        "shots": 0
+      },
+      "coverageRepair": false,
+      "formats": [
+        "json"
+      ],
+      "normalizeIds": false,
+      "repair": false,
+      "restoreSyntax": false,
+      "staged": false,
+      "triage": false
+    },
+    "id": "quality-review-final-2026-11-05",
+    "intent": "recording-regrade",
+    "judge": {
+      "diagnostic": "gpt-6-luna",
+      "mode": "plan",
+      "nativeSchema": true,
+      "primary": "claude-sonnet-5-5",
+      "reason": "Sonnet matched 7/7 controls including entry/bundle distinction, wrong capability and an injected candidate instruction. Luna matched 6/7 and is diagnostic only.",
+      "version": "semantic-judge-v3"
+    },
+    "limitations": [
+      "No repeatability estimate with one sample",
+      "The author AI has seen these cases; producer APIs and judges receive no gold",
+      "Group labels do not prove statistical independence",
+      "No real-host or real-tool acceptance is claimed",
+      "No subset/Router path is used; no Ruri data-independence claim",
+      "Native-schema judgement is separate from unconstrained JSON composition; native composition acceptance remains unmeasured"
+    ],
+    "metadataMigration": {
+      "httpRequests": 0,
+      "manifest": "data/work/quality-improvement-2026-11-05/recording-migration.json",
+      "reason": "Schema-aware request identity reconstructed from exact requests verified against immutable API-run hashes; model inputs and outputs unchanged."
+    },
+    "originalFreeze": "445544683dc316b86caf42d6da7e8dad0e66b64c4c2e37c867feebf61f522e42",
+    "referenceAuditUncertainty": {
+      "eight-part-showcase": "Target facility and final aggregation admit differing interpretations; original reference retained, do not claim an unequivocal failure.",
+      "saved-track-cover": "Song-name extraction from a summary-only library response remains unconfirmed."
+    },
+    "repetitions": 1,
+    "reviewChanges": [
+      "Reconstruct exact judge request from the scored candidate",
+      "Verify API request bytes and recorded usage against immutable work DB",
+      "Reject duplicate HTTP call attribution",
+      "No new paid requests or producer sampling"
+    ],
+    "sampleDecision": "Offline regrade of the same 48 recorded producer outputs after evaluator defects were found. No new producer calls, producer prompt tuning or additional generation sampling. These cases are exposed dev data. This is not a second unseen acceptance result.",
+    "scope": "Standalone eumenes_pipeline repository only. No CI, Eumenes integration, real-tool dispatch or user adoption claim."
+  },
+  "budget": {
+    "budgetId": "quality-2026-11-05-shared-10usd",
+    "ceilingUsd": 8.5,
+    "committedCostCeilingUsd": 5.204023,
+    "actualBilledUsd": null
+  },
+  "calls": [
+    {
+      "session": "quality-review-final-luna",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "compose",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 3715.0867089999956,
+        "p95": 6396.3553329999995
+      },
+      "providerUsage": {
+        "inputTokens": 150225,
+        "outputTokens": 7132,
+        "cachedTokens": 0,
+        "reasoningTokens": 2228,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    },
+    {
+      "session": "quality-review-final-luna-judge-luna",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "judge",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 2739.1711250000008,
+        "p95": 3592.848915999999
+      },
+      "providerUsage": {
+        "inputTokens": 153112,
+        "outputTokens": 3092,
+        "cachedTokens": 6432,
+        "reasoningTokens": 0,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    },
+    {
+      "session": "quality-review-final-luna-judge-sonnet",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "judge",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 4071.7864169999957,
+        "p95": 8450.463875000001
+      },
+      "providerUsage": {
+        "inputTokens": 225891,
+        "outputTokens": 9671,
+        "cachedTokens": 0,
+        "reasoningTokens": null,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    },
+    {
+      "session": "quality-review-final-sonnet",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "compose",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 5662.603458000001,
+        "p95": 8670.77012500001
+      },
+      "providerUsage": {
+        "inputTokens": 183918,
+        "outputTokens": 11121,
+        "cachedTokens": 0,
+        "reasoningTokens": null,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    },
+    {
+      "session": "quality-review-final-sonnet-judge-luna",
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "phase": "judge",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 2517.538207999998,
+        "p95": 6380.356166999998
+      },
+      "providerUsage": {
+        "inputTokens": 154891,
+        "outputTokens": 3172,
+        "cachedTokens": 0,
+        "reasoningTokens": 0,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    },
+    {
+      "session": "quality-review-final-sonnet-judge-sonnet",
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "phase": "judge",
+      "expected": 24,
+      "successfulHttpRequests": 24,
+      "complete": true,
+      "generationLatencyMs": {
+        "median": 3968.236165999995,
+        "p95": 4878.888666000001
+      },
+      "providerUsage": {
+        "inputTokens": 228238,
+        "outputTokens": 7596,
+        "cachedTokens": 0,
+        "reasoningTokens": null,
+        "calls": null
+      },
+      "actualBilledUsd": null
+    }
+  ],
+  "generations": [
+    {
+      "session": "quality-review-final-luna",
+      "model": "gpt-6-luna",
+      "scoredRunId": "4a63db9a-486b-4f46-ac3f-2aa4ddba74c7",
+      "cells": [
+        {
+          "chosenEntries": [
+            "web.service-search",
+            "browser.capture",
+            "browser.capture"
+          ],
+          "contractTier": "fixture",
+          "caseId": "archive-navigation",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "archive-navigation",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "web.service-search",
+              "browser.capture"
+            ],
+            "requiredMisses": [
+              "browser.operate"
+            ],
+            "score": {
+              "artifact": true,
+              "bundles": false,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": false,
+              "state": true,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "サイト内検索で資料を探し、そのURLをブラウザー操作へ渡して開き、撮影入口でページ画像を保存する計画は依頼を満たす。各入口の機能と受け渡しは適合しており、検索結果と保存画像の提示も指定されている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "検索には web.service-search を使っており、NDLサイト内検索として適切です。しかし資料ページを開く工程に browser.capture を割り当てている点が不適合です。browser.capture は開いているタブや画面を画像保存する部品で、URLを開く用途は browser.operate のカードに書かれています。そのため開く工程は browser.operate が担当するべきです。依存の受け渡し(検索結果のURLから開き、開いたページから保存)と、検索結果と保存画像を示す最終配送は妥当です。不要な作用もありません。ただし選択の誤りが一つあるため、全体は不適切です。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-audio-identity",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-audio-identity",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "曲名またはライブラリ内で曲を特定できる参照を尋ねており、依頼どおり再生操作はしていません。曲が特定できていないため確認質問が適切で、追加の部品や資料は不要です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、曲名も参照も未提供のため今はライブラリを操作せず、どの曲か確認する質問だけをすること。候補は needs_input で、曲名またはライブラリ内で特定できる参照だけを尋ねており、必要な情報に限られている。music.library は再生に適した入口だが、依頼で操作が禁止されているため今は選ばなくてよい。不要なツール呼び出しや配送もなく、依存や資料の受渡しも不要。したがって妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-card-target",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-card-target",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "対象カードと移動先が未指定のため、操作前に必要な二点だけを質問している。今は操作しないという依頼にも沿っており、部品の選択や実行は不要。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "利用者は今は操作せず、移動対象のカードと移動先の二点だけを確認するよう明示している。候補はneeds_inputで、まさにその二点だけを質問しており、不足情報の確認として妥当である。ツールは選ばず操作もしないため、依存・資料の受渡し・配送は不要で、不要な作用もない。カードの選択もkanban.manageを実行しない判断として適切である。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-comparison-targets",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-comparison-targets",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "比較対象の資料が未指定のため、指定を尋ねるのは妥当です。検索や他の操作をせず、比較作業に必要な資料の提示またはURLを確認しています。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "利用者は比較対象の資料をまだ示しておらず、勝手に検索して選ばず先に指定を確認するよう明示している。候補はneeds_inputで、必要な情報（二つの資料の指定と、貼り付け・添付・URLのいずれかの提示方法）だけを質問している。ツールの選択や実行、検索などの不要な作用はなく、依存や配送も不要なので適切。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "excalidraw.edit",
+            "browser.capture"
+          ],
+          "contractTier": "fixture",
+          "caseId": "circuit-diagram-record",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": false,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "circuit-diagram-record",
+            "checkOk": false,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "excalidraw.edit",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": true,
+              "structure": false,
+              "wiring": false
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "構造検査では依頼文の不一致が報告されていますが、評価対象の依頼と候補の手順は、電池・スイッチ・電球の直列回路図をExcalidrawで作成・表示し、表示画面を保存して示す内容で一致しています。公開入口IDが正しく指定され、図の作成後に画面を撮影する依存関係と配送も適切です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "構造検査が request_mismatch をエラーとして返しています。定義内の request が、ホストの元の依頼と原文一致していません。原文一致は構造検査が正本なので、この計画は依頼を正確に引き継いだものと認められず、coverage を fail とします。意味の面では、excalidraw.edit で直列回路図を作成して表示し、browser.capture でその画面を画像保存する流れは妥当です。2番目の手順は1番目の結果を受け取っており、最終配送でも図と画像の両方を示しています。不要な作用も見当たりません。ただし原文不一致は明確なエラーのため、全体は inappropriate とします。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "code-and-command",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "code-and-command",
+            "checkOk": null,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [
+              "claude-code.request",
+              "cli.run"
+            ],
+            "score": {
+              "artifact": true,
+              "bundles": false,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": false,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": false,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "fail",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼には試験用フォルダーの場所と対象CSVの指定がありません。確認質問は必要で、依存と配送が未着手なのもこの状態では適切ですが、対象CSVはフォルダー内の全CSVとするなど合理的な既定値で進められるため、質問のみで停止する計画は依頼を満たせません。Claude Codeとシェル実行に対応する公開部品はあるものの、候補はどちらも選択していません。なお計画段階のため、実行結果は未確認です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "unknown",
+                "criteria": {
+                  "coverage": "unknown",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "候補は作業を進めず、試験用フォルダーのパスと対象CSVを質問している。ただし依頼には「このプロジェクト内の試験用フォルダー」とあり、利用者の資料は提供されておらず、プロジェクトの構成も見えない。そのため、フォルダーの特定や対象CSVの選択が本当に必要かを判断する根拠が足りない。フォルダーはClaude Codeやシェルで探索できる可能性があり、CSVもフォルダー内の全件と解釈して進められる余地がある。これらの質問が過剰な確認である可能性も否定できない。一方、質問自体は妥当な範囲にあり、ツール操作や配送は行わない。needs_inputの状態では依存や配送は不要なのでpass、不要な作用もない。coverageは、質問が本当に必要かの判断材料が不足するためunknown。全項目passではなくfailもないので、総合はunknown。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "dedicated-ticket-purchase",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "dedicated-ticket-purchase",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "候補は、鉄道予約専用の登録部品がなく、指定席の検索・購入に対応できないと説明している。依頼はその部品だけを使うよう限定し、ブラウザー操作や他手段を禁じているため、unsupportedは妥当。手順・部品・追加依存や配送は不要で、禁止された操作も計画していない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は鉄道予約専用の登録部品のみで指定席を購入することを求め、ブラウザー操作・シェル・コーディング・委任を明示的に禁止している。カード一覧に鉄道予約・購入専用の部品はなく、禁止された部品以外に購入を担える入口もない。そのため unsupported で、公開部品では対応できないと説明するのは妥当。依存や資料の受渡しは不要で、最終配送は対応不可の説明で足りる。購入のような実作用は行っておらず、不要な作用もない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "dots.delegate",
+            "docling.desk"
+          ],
+          "contractTier": "ready",
+          "caseId": "delegated-reading",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": false,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "delegated-reading",
+            "checkOk": false,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "dots.delegate",
+              "docling.desk"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": true,
+              "structure": false,
+              "wiring": false
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "選択した公開入口IDは、dotsへの作業委任とDocling Deskの画面準備にそれぞれ適合し、添付メモを委任作業へ渡して結果と画面案内を返す計画も依頼を満たす。構造検査のrequest_mismatchは候補定義の依頼文がホストの依頼と異なることを示すが、この定義内の処理内容は依頼に沿っており、選択した入口の不一致を示すものではない。余計な操作もない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "fail",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "部品の選択は妥当です。メモの整理には dots.delegate、画面を開くには docling.desk が合っています。2つの作業は独立しており、最終出力は両方の結果をまとめて示すので、依頼の内容と配送は満たせます。余計な作用もありません。ただし structuralCheck が request_mismatch をエラーとしています。定義の request に、原文にない「利用者が渡した資料: …」の行が加わっており、構造検査の結果が正本です。メモを dots に渡す経路が request の参照に頼る形なので、資料の受渡しを確実と認められず、dependencies を fail としました。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "eight-part-showcase",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "eight-part-showcase",
+            "checkOk": null,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [
+              "web.service-search",
+              "web.search",
+              "compute.python",
+              "excalidraw.edit",
+              "image.create",
+              "model3d.studio",
+              "music.create",
+              "kanban.manage"
+            ],
+            "score": {
+              "artifact": true,
+              "bundles": false,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": false,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": false,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "fail",
+                  "dependencies": "fail",
+                  "delivery": "fail",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "市立科学館サイトの所在が不明なため市名を尋ねること自体は妥当だが、それ以外の依頼を進める計画も示していない。公開部品にはサイト内検索、公開Web検索、収支計算、Excalidraw作図、画像生成、3Dモデル生成、音楽生成、共通ボード登録の各機能がある。必要な前段階の結果を後続作業へ渡す計画がなく、成果物を示す最終配送も計画されていない。質問以外の作用はない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼にある「市立科学館サイト」は市名が不明で、どのサイトか特定できません。サイト内検索の対象が決まらなければ、そこから得る用語、Webでの調査、工程図、告知画像、3D看板、BGMの作成が進められません。市名だけを尋ねる質問は、本当に必要な情報に絞られていて妥当です。確認段階なので、部品の選択、依存、配送が未提示でも問題ありません。余計な作用も行っていません。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "form-draft-evidence",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "form-draft-evidence",
+            "checkOk": null,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [
+              "browser.operate",
+              "browser.capture"
+            ],
+            "score": {
+              "artifact": true,
+              "bundles": false,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": false,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": false,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼には氏名と参加区分が必要ですが、資料の内容が提示されていないため、その内容を求める質問は妥当です。ブラウザー操作と撮影はまだ不要で、送信しない指示にも反していません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "pass",
+                  "dependencies": "fail",
+                  "delivery": "fail",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼にある「渡したテスト用の氏名と参加区分」は、providedMaterialsに「テスト参加者.txt」として既に渡されている。それなのに候補は内容の貼り付けか添付を求めており、質問は不要である。必要な情報は揃っているので、browser.operateでフォームに入力し(送信はしない)、browser.captureで入力済み画面を保存して示す計画が立てられた。この計画が無く、資料を入力手順へ渡す依存も扱っていないため、依頼を満たせない。画面の画像保存と提示という最終配送も計画されていない。質問自体は外部への作用を伴わないので、不要な作用の問題はない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "compute.python",
+            "kanban.manage"
+          ],
+          "contractTier": "ready",
+          "caseId": "inventory-action",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "inventory-action",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "計算部品は各品目の不足数を算出でき、共通ボード部品は計算結果を受けて発注確認カードを登録できる。封筒のみ不足するという指定も一致し、計算結果とカード内容・登録結果を示す計画になっている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は不足分の計算、その結果を使った共通ボードへの発注確認カード登録、計算とカードの提示である。計算は compute.python（数値計算、依存なし）、登録は kanban.manage（共通ボードの登録）で、いずれも用途に合う。登録は calc-shortages の結果に依存し、from に request と calc-shortages が指定されているため、不足数が正しく渡る。最終出力は両ステップの結果を示すので、依頼された「計算とカードを示す」を満たす。不足は封筒2箱のみ（紙12、ラベル8は発注点以上）で、計算の定義とも整合する。余計な作用はなく、構造検査も合格している。plan モードのため実行結果は未確認だが、計画としては妥当である。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "ocr.manage",
+            "world.query"
+          ],
+          "contractTier": "fixture",
+          "caseId": "label-world-check",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "label-world-check",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "ocr.manage",
+              "world.query"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "OCRは添付画像から文字を読む公開機能に合い、結果の型番をWorld照会へ渡して保守記録と根拠を調べる流れも依頼を満たす。Web検索は使わず、構造検査でも入口と参照が解決されている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、添付画像のOCR、読み取った型番によるWorld内の保守記録の照会、根拠付きの提示、Web不使用の4点。計画はこれらを2手順で満たす。1手目のocr.manageは画像の文字を読む入口で、useWhenに合致する。2手目のworld.queryはWorldの記録を根拠付きで調べる読み取り専用の入口で、Webには問い合わせない。保守記録の検索はその機能範囲に収まる。依存は、OCR結果と型番がread-labelからfind-maintenance-recordsへ渡る形で適切。添付画像はrequestから1手目へ渡る。最終出力は照会手順から出ており、利用者への提示として依頼に合う。Web検索や書き込みなど余計な作用は無い。ocr.manageにはwrite効果があるが、OCR結果の保存の範囲と解釈でき、問題とは言えない。構造検査も合格。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "history.research",
+            "kanban.manage"
+          ],
+          "contractTier": "fixture",
+          "caseId": "old-review-actions",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "old-review-actions",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "history.research",
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": false,
+              "state": true,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "過去半年の保存済み会話ログを根拠付きで調べる依頼に history.research が適合し、その結果を受けて kanban.manage で共通ボードに確認用カードを登録する構成も適合しています。調査結果がカード作成へ渡され、最終配送も依頼を満たす計画です。構造検査も合格しており、不要な操作はありません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は2段階で、(1)過去半年の会話ログから防災訓練の振り返りで決めた未完了の改善事項を根拠付きで調べる、(2)その結果で共通ボードに確認用カードを作る。計画はこの2段階を過不足なく含む。history.research は何か月も前の会話を遡り、決定事項を根拠付きで報告する読み取り専用の部品で、調査に合う。kanban.manage（bundle kanban-shared）は共通ボードへの登録を担い、カード作成に合う。research-history の結果を create-board-card に渡す依存も正しく、調査の根拠と参照をカードに載せる指示がある。最終出力はカード登録結果で、依頼の配送先と一致する。該当なしの場合の扱いも明記されている。計画に余計な作用はなく、実行（実行結果の確認）は plan モードの評価対象外。構造検査も合格。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "out-of-range-forecast",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "out-of-range-forecast",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼の対象は1か月後の毎時気温で、天気部品の対応範囲外です。明示された代替手段の禁止も踏まえ、対応不可とする判断は妥当です。代替部品や不要な手順は提示していません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "利用者は天気予報の専用部品(weather.forecast)だけを使い、代替手段を使わないよう制約している。この部品は今日・明日・明後日の予報に限られ、時刻ごとの天気や4日以上先の予報は対象外とカードに明記されている。そのため1か月後の毎時の気温は取得できない。Web検索などの代替を禁じられているので、対応不可(unsupported)とする判断と、その理由の説明は妥当である。不要な作用や依存、配送の問題もない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "physical-mail-retrieval",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "physical-mail-retrieval",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は現物の封筒を移動することですが、現地のロボットや協力者は利用できず、提示部品にも物理操作の機能はありません。unsupportedとの説明は妥当で、実行可能な代替手段を装ったり不要な操作を行ったりしていません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は現地で現物の封筒を物理的に動かす作業で、依頼文でロボットや協力者が利用できないと明示されている。提示された部品はブラウザ操作、コード実行、タスク管理、検索、メディア生成などデジタル操作に限られ、物理的な移動を担えるものはない。unsupportedとして対応不可を説明した判断は妥当である。不要な部品選択や作用はなく、依存や配送も不要なのでpassとする。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "docling.desk",
+            "browser.capture"
+          ],
+          "contractTier": "ready",
+          "caseId": "reading-desk-record",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "reading-desk-record",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "docling.desk",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "Docling Desk は文書の取り込み・閲覧画面を別タブで開く入口で、browser.capture は開いている画面を画像として保存する入口なので、依頼された作業と順序に適合しています。撮影結果が配送対象として指定され、文書の新規執筆など余計な作業もありません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は閲覧画面を開き、その画面を画像で記録して届けることである。手順1のdocling.deskは文書の取り込み・閲覧画面を別タブで開く入口で、読み取りのみ。手順2のbrowser.captureは開いているタブやEumenesの画面を画像として保存でき、撮影用途に合う。手順2はopen-docling-deskの結果から続くため依存関係は適切で、構造検査でも解決済み。出力は撮影ステップから画像を利用者へ届ける形で、依頼に合致する。文書の新規執筆や他の操作は含まれず、不要な作用はない。planモードでは計画の妥当性のみ評価しており、実際の撮影成功は確認済みとしていない。</br>"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "stock.quote",
+            "weather.forecast"
+          ],
+          "contractTier": "partial",
+          "caseId": "regional-brief",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "regional-brief",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "stock.quote",
+              "weather.forecast"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "株価と明日の奈良市の予報を各専用担当に割り当て、出力で両方の結果をまとめる計画です。入口の解決と参照も構造検査に合格しており、不要な操作はありません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は任天堂一社の現在の株価と明日の奈良市の天気を、それぞれの専用担当で確認して一緒に示すこと。計画は stock.quote と weather.forecast の二つを使い、どちらも読み取り専用で依頼どおりの専用担当である。stock.quote は query=任天堂 で一社の現在値を扱え、weather.forecast は place=奈良市、prefecture=奈良県、day=tomorrow で明日の予報を扱える。両ステップは独立で request のみを入力とするため依存に問題はなく、structuralCheck も合格している。最終出力は両ステップの結果を from で参照して一つにまとめて示す。出典の添付は出力説明に書かれているが、各部品の出力形式は未定義で、計画の妥当性を損なわない。不要な作用はない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "claude-code.repair",
+            "cli.run"
+          ],
+          "contractTier": "ready",
+          "caseId": "repair-and-check",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "repair-and-check",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "claude-code.repair",
+              "cli.run"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "Claude Codeのエラー調査・承認範囲内の修正と、シェルでのテスト実行はいずれも公開入口の機能に適合しています。修正結果をテスト手順へ渡す依存関係も明確で、要求された修正内容とテスト結果を示す計画です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、Claude Codeによる調査と承認範囲内の修正、その結果を使ったシェルでの再現テスト実行、修正内容とテスト結果の提示である。候補はclaude-code.repairで調査と修正を行い、cli.runでテストを実行する二段構成で、これをすべて満たす。claude-code.repairはエラーの原因調査と承認範囲内の修正に合致し、cli.runはシェルコマンドの実行と終了コード・出力の取得に合致する。依存関係も妥当である。第1段は添付資料(request)を入力とし、第2段は第1段の修正結果と再現テスト手順を受け取る。最終出力は両段の結果を参照しており、依頼された修正内容とテスト結果を示せる。余計な作用は見当たらない。structuralCheckも合格している。実行結果は未観測だが、planモードでは計画の妥当性で評価する。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "cli.run",
+            "compute.python"
+          ],
+          "contractTier": "ready",
+          "caseId": "sample-file-statistics",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "sample-file-statistics",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "cli.run",
+              "compute.python"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "構造検査で公開入口が正しく解決され、CLIでsample.txtを読み取り、内容を計算担当へ渡して文字頻度を集計する計画は依頼を満たす。読み取り専用で、不要な作用もない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、シェルでsample.txtを読み取り、計算担当で文字頻度を集計して上位5文字を示す内容で、ファイルは書き換えない。計画はこの順序どおりで、cli.run(read-sample)、compute.python(count-characters)の2段になっている。cli.runはシェルコマンドの実行と出力の受け取りができ、読み取りに適合する。compute.pythonは統計・数値計算に使え、文字頻度の集計に適合する。count-charactersはread-sampleの出力を入力として受け取るため、ファイル内容は計算担当へ渡る。最終出力はcount-charactersから、上位5文字と出現回数を示す。タスク文は読み取り専用と非変更を指定しており、書き込み、削除、外部送信などの余分な作用は計画にない。cli.runにはwrite効果があるが、計画の指示は読み取りのみに限られる。実行結果は未観測だが、計画としては依頼を満たせる。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "music.library",
+            "image.create"
+          ],
+          "contractTier": "fixture",
+          "caseId": "saved-track-cover",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "saved-track-cover",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "music.library",
+              "image.create"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "fail",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "構造検査では入口IDが正しく解決され、一覧の結果を画像生成へ渡す依存も妥当です。しかし music.library は保存済み曲の再生やプレイリストを開く機能で、曲名一覧の取得には対応すると確認できません。image.create は新しい画像を生成できますが、曲名を反映した表紙を作れる根拠もありません。したがって依頼された一覧と表紙の両方を担保できず、指定どおり新曲生成などの不要な作用は計画されていません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は「保存済み曲の一覧取得」と「その一覧を材料にした架空のアルバム表紙画像の作成」、一覧と表紙の提示。計画は music.library で保存済み曲を探して曲名一覧を得て、その結果を image.create に渡し、最終出力で一覧と表紙を示す構成で、依頼を満たせる。music.library は保存済み曲のライブラリを扱う入口で、曲名一覧の取得に使える。カードの summary は再生とプレイリスト表示が中心で、一覧取得の明示は弱い。ただしライブラリやプレイリストを開く用途であり、一覧の把握は合理的に担える。image.create は新規画像生成に適合する。create-cover が find-saved-songs の結果を受け取り、構造検査も通っているので依存と受渡しは妥当。最終出力も両ステップを参照している。新曲生成の music.create は使わず、再生や新曲生成を避ける指示もあり、不要な作用はない。plan モードのため実結果は未確認だが、計画としては妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "object-recognition.manage",
+            "compute.python"
+          ],
+          "contractTier": "fixture",
+          "caseId": "seedling-distribution",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "seedling-distribution",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "object-recognition.manage",
+              "compute.python"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "unknown",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "unknown",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "物体認識の結果を計算担当へ渡して種類ごとに集計する計画で、依存関係と最終出力は依頼に沿う。構造検査も合格している。一方、物体認識入口は画像を表示して会話LLMに見せる画面操作であり、画像の検出結果を計算担当へ渡せるかは公開契約だけでは確認できない。文字起こしは依頼しておらず、余分な処理はない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は「添付画像の物体検出→計算担当で種類ごとに集計→提示」で、計画は object-recognition.manage で画像の物体検出を行い、compute.python で種類別に集計する2段になっており全体を満たす。物体検出の入口は選択画像の物体名・座標を読む機能があり、OCRではなく妥当で、文字起こし不要の指定にも沿う。集計は detect-objects の結果を from で受け取っており、依存と受渡しは適切。最終出力は count-by-kind から種類別の数を示す形で依頼に合う。余分な作用もない。出力スキーマが missing でも機能の有無とは無関係なので不利にしない。計画段階のため実行結果は未確認だが、計画として適切。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "web.search",
+            "image.create",
+            "music.create",
+            "model3d.studio"
+          ],
+          "contractTier": "fixture",
+          "caseId": "tactile-exhibition",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "tactile-exhibition",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "web.search",
+              "image.create",
+              "music.create",
+              "model3d.studio"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "調査、画像生成、BGM生成、参考画像を基にした3Dモデル作成の各工程が依頼を網羅しています。公開入口は構造検査で正しく解決され、各機能も指定用途に適合し、調査結果と画像が必要な後続工程に渡されます。出力では画像・3D・BGM・出典をそれぞれ提示する計画です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "調査(web.search)→参考画像(image.create)とBGM(music.create)→3Dモデル(model3d.studio)の流れで、依頼の4成果物(出典・画像・BGM・3D)を満たす。web.searchは公開情報を出典付きで調べる入口で、調査項目が一つにまとまるため適合する。image.createとmusic.createは新規生成用で、model3d.studioは作った画像から3Dを作る用途に合致する。調査結果は画像とBGMの両方へ、画像は3Dへ渡され、依存関係が正しい。最終出力は4ステップすべてを参照し、要点・出典・画像・3D・BGMを個別に提示する。不要なブラウザ操作やコード実行などの作用はない。planモードのため実生成の品質は未確認だが、計画として妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "codex-tasks.manage",
+            "kanban.manage"
+          ],
+          "contractTier": "ready",
+          "caseId": "task-progress-board",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "task-progress-board",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "codex-tasks.manage",
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "fail"
+                },
+                "rationale": "Codexの既存タスク状態確認から共通ボード更新へ結果を渡す構成は依頼を満たし、公開入口も目的に適合する。ただし codex-tasks.manage は新規作成や続行などの作用を持つ入口であり、カード上に状態確認だけに限定する手段が示されていないため、不要な作用を十分に避けられる根拠がない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は既存Codexタスクの状態確認と、その結果を使った共通ボードの整理・更新だった。codex-tasks.manage は既存Codexカードの状況確認に使えるため、1段目に適合する。kanban.manage は共通ボードの整理を担えるため、2段目に適合する。2段目は1段目の結果を入力として受け取るので依存と受渡しは正しい。最終出力は両ステップの結果を示し、依頼の「状態確認とボードの更新結果だけ」を満たす。タスクの新規作成・続行・停止は明示的に禁止されており、余計な作用はない。構造検査も問題なし。planモードのため実行結果は未確認だが、計画としては十分。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "timers.manage",
+            "music.library"
+          ],
+          "contractTier": "fixture",
+          "caseId": "timed-listening",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "timed-listening",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "timers.manage",
+              "music.library"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-luna-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "タイマー開始と保存済み曲のプレイリスト画面を開く二つの依頼に、それぞれ適合する公開入口を選んでいる。出力は両方の結果を案内し、新しい音楽の生成など不要な作用もない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-luna-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は7分タイマーの開始と、保存済み曲のプレイリスト画面を開くことの二点で、どちらも計画に含まれる。timers.manage は相対時間タイマーの開始と確認ができ、music.library は保存済み曲のプレイリストとプレイヤーを開けるため、選択は適切。新しい曲の生成用である music.create は使っておらず、「新しい音楽は生成しない」という条件も守られている。二つの手順は独立しており、互いに受け渡す資料は不要で、どちらも request のみを入力とする点も妥当。最終出力は両手順の結果を参照し、タイマーの状態とプレイリストへの案内を示すので、依頼された配送を満たす。余計な作用もない。構造検査も合格している。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        }
+      ],
+      "totals": {
+        "count": 24,
+        "mechanicallyValid": 22,
+        "mechanicalAndQualifiedSemantic": 19,
+        "referencePassed": 17,
+        "qualifiedJudgeAppropriate": 19,
+        "qualifiedAndReference": 17,
+        "allJudgesAppropriate": 15,
+        "disagreements": 9
+      }
+    },
+    {
+      "session": "quality-review-final-sonnet",
+      "model": "claude-sonnet-5-5",
+      "scoredRunId": "6c3d7c94-9783-411b-97a9-1d025c2b0484",
+      "cells": [
+        {
+          "chosenEntries": [
+            "web.service-search",
+            "browser.operate",
+            "browser.capture"
+          ],
+          "contractTier": "fixture",
+          "caseId": "archive-navigation",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "archive-navigation",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "web.service-search",
+              "browser.operate",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "サイト内検索、検索結果から関連資料ページを開く操作、ページ画像の保存という依頼を計画がすべてカバーしている。各公開入口は機能に適合し、構造検査でも参照関係が解決済み。検索結果と保存画像・保存先を示す配送も依頼に合い、不要な作用は見当たらない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "計画は依頼の三段階を過不足なく含む。(1) web.service-searchで国立国会図書館サイト内を検索して郷土玩具の資料のタイトルとURLを出典付きで得る。(2) browser.operateで最有力資料のページを利用者のBraveで開く。(3) browser.captureで開いたページを画像保存する。各入口のカード機能は各工程に合う。検索結果のURLがopen-pageへ、開いたページがcaptureへ渡る依存も妥当。最終出力はsearch-ndlとcapture-pageから、検索結果一覧と保存画像（保存先付き）を利用者に示すので、依頼の配送要件を満たす。ページ読み取りや保存以外に副作用のある操作はなく、不要な作用は見当たらない。構造検査も問題なし。「最も関連の高いもの」を一件選ぶ解釈は妥当な範囲。実行結果は未観測だが、planモードでは計画の適合性のみを評価する。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-audio-identity",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-audio-identity",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "曲名も参照も不明で、依頼は再生前に曲を特定する質問のみ。候補は曲名と、代替となる参照や特定の手がかりを尋ねており、今はライブラリを操作していない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、曲名も参照も未提示なので、ライブラリを操作せずにどの曲か確認する質問をすること。候補はneeds_inputで、曲名と、分からない場合の特定の手がかり(参照ID、アーティスト、時期、雰囲気)だけを尋ねている。music.libraryは参照を必要とする再生向けの部品で、情報が揃うまで呼ばないのは妥当。部品の呼び出しや不要な作用はなく、質問は利用者へ直接渡るので配送も適切。依存する資料は無い。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-card-target",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-card-target",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "対象カードと移動先が未指定のため、操作前に必要な二点だけを確認しています。現時点では実行を控えており、追加の部品や資料は不要です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "利用者は、今は操作せず、対象カードと移動先の二点だけを確認する質問を求めている。候補はneeds_inputで、まさにその二点（カードの特定情報と移動先の列・ステータス）を質問しており、余計な質問はない。部品は呼び出さず、ステップも作らないため、依存・配送は不要で問題なく、不要な作用もない。kanban.manageは次の指示後に使える可能性があるが、今は不要で、選択を省いたのは妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "ask-comparison-targets",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "ask-comparison-targets",
+            "checkOk": null,
+            "expectedKind": "needs_input",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "比較対象の資料と比較観点が未指定のため、資料を勝手に選ばず必要な指定を尋ねている。実行手順や部品の利用はまだ不要で、質問によって依頼を進められる。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は二つの資料を比較することだが、対象資料が未指定で、利用者も勝手に検索や選定をしないよう求めている。比較に不可欠な資料の指定を最初の質問で確認しており、needs_inputとして妥当である。比較の観点も尋ねているが、比較の質を上げる補助的な質問で、過剰とまでは言えない。部品の選択、検索、実行などの不要な作用はなく、依存や配送も現段階では不要である。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "excalidraw.edit",
+            "browser.capture"
+          ],
+          "contractTier": "fixture",
+          "caseId": "circuit-diagram-record",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "circuit-diagram-record",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "excalidraw.edit",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "Excalidrawの入口は図を作成・編集して再表示する機能に合い、ブラウザ撮影は表示中の画面を画像として保存する依頼に合致する。撮影に先立って図を作る依存関係と、図・画像の参照を示す配送計画も適切で、不要な操作は見当たらない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、直列回路図をExcalidrawで作成・表示し、その表示を画像として保存し、図と画像を示すこと。excalidraw.editは図の作成と表示を担い、browser.captureは今の画面を画像として保存する入口なので、どちらもtaskに合う。capture-screenはdraw-circuitの後に置かれ、表示済みの図を撮影するという依存関係が正しい。最終配送は図への参照と画像の参照の両方を示す内容で、依頼を満たす。不要な作用は見当たらない。planモードなので実行結果は未確認だが、計画としては妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "claude-code.request",
+            "cli.run"
+          ],
+          "contractTier": "ready",
+          "caseId": "code-and-command",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "code-and-command",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "claude-code.request",
+              "cli.run"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "Claude Codeにスクリプト作成を依頼し、その作成結果を受けてCLIで実行する流れは依頼を満たす。入口IDは構造検査で正しく解決され、作成結果が実行手順へ渡り、標準出力と終了コードを利用者に示す計画になっている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、Claude Codeにスクリプトを作成させ、その作成結果を受けてシェルで実行し、標準出力と終了コードを示すこと。計画はclaude-code.requestで作成し、cli.runで実行する二段で、順序も依頼どおり。claude-code.requestはコーディング作業の依頼に適し、cli.runはシェル実行で終了コードと出力を受け取れる。create-scriptの結果(場所と実行方法)がrun-scriptへ渡り、構造検査も通っている。最終配送はrun-scriptの標準出力と終了コードを示すもので依頼を満たす。余計な作用は見当たらない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "dedicated-ticket-purchase",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "dedicated-ticket-purchase",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "指定された制約下で利用できる鉄道予約・購入の入口はなく、禁止されたブラウザー操作などに頼らず、対応できない理由を示している。購入には進めず、架空の入口も作っていない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は「鉄道予約専用の登録部品だけ」で指定席を購入することを求めている。しかしカードに鉄道予約・購入の入口は無い。購入を担える可能性があるbrowser.operateは禁止されており、cli.run、claude-code系、dots.delegate、codex-tasks.manage、kanban.manageも禁止されている。web.service-searchは購入などの操作を避ける対象と明記されている。したがってunsupportedは妥当で、架空の入口を作らず、不要な作用も提案していない。購入の成果物や配送は不要なので、依存と配送に問題はない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "dots.delegate",
+            "docling.desk"
+          ],
+          "contractTier": "ready",
+          "caseId": "delegated-reading",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "delegated-reading",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "dots.delegate",
+              "docling.desk"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "dots.delegateは登録済みdotsへの文章整理の委任と回答取得に適合し、添付メモも作業対象として指定されている。docling.deskは文書の取り込み・閲覧画面を別タブで開く用途に合う。両結果を最終出力に含める接続があり、不要な操作も見当たらない。計画として依頼を満たしている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は2点で、(1) 登録済みdotsへ添付メモの整理を任せて回答を受け取ること、(2) 文書の取り込み・閲覧用の画面を開くこと。計画は両方を別ステップで扱っている。dots.delegateは登録済みdotsへの作業委任に合致し、docling.deskはDocling Deskを別タブで開く入口で、useWhenにも合う。2ステップは互いに独立で、依存は不要。添付の展示メモ.txtはtaskにファイル名で明示されている。構造検査は合格。dotsが本文を実際に読めるかは本文受渡しの詳細に依存するが、計画上は「添付」として扱われ、資料名も明示されているので許容範囲。最終出力は両ステップの結果を参照し、整理結果と画面への案内を示す形になっている。余計な書き込みや別部品の使用はなく、依頼にない作用も見られない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "eight-part-showcase",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": false,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "needs_input",
+            "caseId": "eight-part-showcase",
+            "checkOk": null,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [
+              "web.service-search",
+              "web.search",
+              "compute.python",
+              "excalidraw.edit",
+              "image.create",
+              "model3d.studio",
+              "music.create",
+              "kanban.manage"
+            ],
+            "score": {
+              "artifact": true,
+              "bundles": false,
+              "delivery": true,
+              "execution": false,
+              "materials": true,
+              "passed": false,
+              "state": false,
+              "structure": true,
+              "wiring": false
+            },
+            "stateMatch": false,
+            "unresolvedSteps": [],
+            "wiringMatch": false
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "fail",
+                  "dependencies": "fail",
+                  "delivery": "fail",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "市立科学館サイト内の検索に必要な市名またはサイトURLを尋ねるのは妥当だが、これは依頼の一部だけを確認しており、地域が未指定でも進められる計算や、依頼された制作・登録手順を含む計画を示していない。さらに、Excalidrawの図作成、告知画像、3D看板、BGM、共通ボード登録の公開入口が計画されていない。needs_inputとしての質問は作業に必要な範囲で、不要な作用はない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は「市立科学館サイト」とだけ指定していて、どの市かもURLも書かれていない。サイト内検索（web.service-search）は対象サービスやドメインが決まらないと実行できず、公開情報から一意に推定する根拠もない。そのため、市名かURLだけを尋ねる確認質問は本当に必要な情報に絞られており、妥当である。後続の工程（用語調査、計算、図、画像、3D、BGM、カード登録）はこの情報に依存するので、今の時点で手順を出さなくても欠落とは言えない。質問の段階では、依存関係や最終配送は不要で、不要な作用も起こしていない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "browser.operate",
+            "browser.capture"
+          ],
+          "contractTier": "ready",
+          "caseId": "form-draft-evidence",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "form-draft-evidence",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "browser.operate",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "ブラウザー操作で指定資料の内容を入力し、送信せずに撮影する手順は依頼を満たします。入口IDは公開部品と一致し、撮影は入力完了に依存し、保存画像の受領情報を利用者に示す計画です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "2段の計画で依頼を満たせる。browser.operateは利用者のBraveの開いているタブを操作して入力でき、browser.captureは入力済みの画面を画像として保存できるため、入口の選択は適切。添付資料「テスト参加者.txt」はfill-formのtaskで明示され、request由来の資料として渡る。captureはfill-formの後に置かれ、順序と依存が正しい。両stepで送信しないと明記され、余計な作用はない。最終出力は保存画像を示し、入力済みで未送信であることを伝えるため、依頼どおりの配送になっている。構造検査も通っている。planモードのため実行結果の成功は前提にしていない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "compute.python",
+            "kanban.manage"
+          ],
+          "contractTier": "ready",
+          "caseId": "inventory-action",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "inventory-action",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "計算入口で発注点との差を算出し、その結果を受け取る共通ボード入口で不足品のみのカードを登録する計画は依頼に適合する。結果と登録カードの内容を利用者に示す構成で、余計な手順もない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "計算はcompute.pythonで足りる。不足は紙0・封筒2・ラベル0で、封筒のみ不足と正しく見込んでいる。カード登録は共通ボードのkanban.manageが担える。register-cardはrequestとcalc-shortageの結果を受け取るため、依存と受渡しは適切。最終出力は計算結果とカード内容の両方を示すので、依頼の「計算とカードを示してください」を満たす。不足していない備品のカードは作らず、余計な作用もない。planモードなので実行成功は未確認だが、計画としては依頼を満たせる。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "ocr.manage",
+            "world.query"
+          ],
+          "contractTier": "fixture",
+          "caseId": "label-world-check",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "label-world-check",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "ocr.manage",
+              "world.query"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "OCRは添付画像から文字を読み取る入口に適合し、World照会は読み取った型番を根拠付きで調べる依頼に適合しています。構造検査で入口と依存関係が正しく解決され、Webへの問い合わせも含まれていません。最終出力は保守記録とWorld内参照を利用者に示す計画です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、添付ラベル画像のOCR、読み取った型番によるWorld内の保守記録の検索、根拠付きの提示、Web不使用の4点です。計画はocr.manage、world.queryの順で、これらをすべて満たします。ocr.manageは画像の文字を読み取り、保存済み原文を参照できるため、添付画像のOCRに適合します。world.queryはWorldの記録を根拠付きで調べる読み取り専用の入口で、Web問い合わせをしない指示とも合います。依存は、型番を持つread-labelの結果をfind-recordsへ渡す形で正しく、画像はrequestから最初の手順へ渡ります。最終出力はfind-recordsから、型番と記録を参照付きで利用者に示す内容で、配送として妥当です。Web検索や書き込みなど余計な作用はありません。構造検査も合格しています。planモードのため実際のOCR精度や記録の有無は未確認ですが、計画としては成立します。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "history.research",
+            "kanban.manage"
+          ],
+          "contractTier": "fixture",
+          "caseId": "old-review-actions",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "old-review-actions",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "history.research",
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "過去半年の会話履歴を根拠付きで調べる入口と、共通ボードに登録する入口を選び、調査結果を次の手順へ渡しています。カードは確認用として登録し、実行キューに入れない指定も守る計画です。構造検査も合格しています。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "history.research は半年前までの会話ログを遡り、根拠付きで報告する読み取り専用の入口で、前半の依頼に合う。kanban.manage は共通ボードへの登録を担い、後半に合う。カード作成の手順は research-history の結果を from で受け取っており、依存と資料の受渡しは適切。最終報告は作成したカード一覧と調査結果の両方を利用者に返すので、配送も依頼を満たす。カード作成の task に「実行キューには入れず登録のみ」とあり、依頼外の実行を避けている。構造検査も合格。不要な作用は見当たらない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "out-of-range-forecast",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "out-of-range-forecast",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "weather.forecastは今日・明後日までが対象で、1か月後や毎時の気温には対応しない。指定された専用部品だけでは依頼を満たせないため、対象外であることを説明したunsupported判断は妥当。代替手段を使わず、不要な操作や依存もない。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は weather.forecast だけを使い、1か月後の東京の毎時の気温を取得するもの。カードでは weather.forecast は今日から明後日までの予報に限られ、4日以上先と時刻ごとの天気・気温は avoidWhen と summary で対象外とされている。Web検索やブラウザー等の代替も禁止されているため、公開部品では満たせない。unsupported と判断した根拠は妥当で、理由も範囲外の2点と代替禁止を正確に説明している。不要な作用も、依存や資料の受け渡しも無く、配送は対応不可の説明として適切。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [],
+          "contractTier": "no-plan",
+          "caseId": "physical-mail-retrieval",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "unsupported",
+            "caseId": "physical-mail-retrieval",
+            "checkOk": null,
+            "expectedKind": "unsupported",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": null,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": null
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は現物の封筒を移動する物理作業であり、ロボットや現地の協力者もなく、登録部品に物を動かす機能がありません。unsupportedとの説明は妥当です。追加の部品選択や受渡しは不要です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は郵便受けから現物の封筒を取り出して机に置く物理作業で、利用者もロボットや現地の協力者がないと明言している。カードにある部品はブラウザ、CLI、計算、画像・音声生成、OCR、検索などデジタル上の操作に限られ、物を動かせるものはない。dots.delegateやkanbanなどの委任系部品も、物理作業ができる根拠が公開契約にない。unsupportedとして対応不可を説明した判断は妥当で、不要な部品の呼び出しや配送もない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "docling.desk",
+            "browser.capture"
+          ],
+          "contractTier": "ready",
+          "caseId": "reading-desk-record",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "reading-desk-record",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "docling.desk",
+              "browser.capture"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "文書閲覧画面を開く入口と、その直前に開いた画面を画像保存する入口を選び、依存関係と画像保存結果の受渡しも計画されています。新規執筆や追加操作は含まれず、依頼された作業と配送を満たす計画です。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、文書取り込み用の閲覧画面を開くことと、開いた画面を画像で記録することの二点。docling.deskのカードは、取り込み・閲覧用の画面を準備して別タブで開く入口なので、一点目に合う。browser.captureは、開いているタブやEumenesの画面を画像として保存する入口で、二点目に合う。capture-deskはopen-deskの後に置かれ、開いた画面を撮影する順序になっている。構造検査も通っている。最終出力は撮影結果の保存を利用者に伝える内容で、依頼に沿う。文書の新規執筆や画像生成などの余計な作用はない。planモードのため、実際に撮影できるかは未確認だが、計画としては十分に成立する。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "stock.quote",
+            "weather.forecast"
+          ],
+          "contractTier": "partial",
+          "caseId": "regional-brief",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "regional-brief",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "stock.quote",
+              "weather.forecast"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "株価と明日の奈良市の天気を、それぞれ対応する専用担当に依頼し、両方の結果を一つの回答にまとめる計画です。引数は公開契約に適合し、各結果の受け渡しと最終配送も明示されています。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は任天堂一社の現在株価と明日の奈良市の天気を専用担当で確認し、まとめて示すこと。stock.quote は一社の現在株価、weather.forecast は明日の天気予報を担当でき、どちらも avoidWhen に該当しない。引数も妥当で、query は「任天堂」、place は奈良市、prefecture は奈良県、day は tomorrow。両ステップとも依頼文だけで足り、互いの出力に依存しないため、from が request でよい。最終出力は両結果を見出し分けで一つの回答にまとめており、配送も依頼に沿う。読み取り専用の2部品のみで余計な作用はない。structuralCheck も問題なし。plan モードなので実行結果は未確認だが、計画としては依頼を満たせる。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "claude-code.repair",
+            "cli.run"
+          ],
+          "contractTier": "ready",
+          "caseId": "repair-and-check",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "repair-and-check",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "claude-code.repair",
+              "cli.run"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "Claude Codeで添付資料に基づく原因調査と承認範囲内の修正を依頼し、その結果を受けてシェルで指定テストを実行する構成で、入口の機能と依存順序は適切です。修正内容と変更箇所、コマンド・終了コード・出力・成否を報告する配送も依頼に合っています。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、Claude Codeによる原因調査と承認範囲内の修正、その修正後にシェルで再現テストを実行すること、修正内容とテスト結果の提示である。計画は claude-code.repair と cli.run の2段で、これらを満たせる。claude-code.repair はエラーの調査と承認範囲での修正というカードの用途に合い、cli.run はコマンド実行と終了コード・出力の取得というカードの用途に合う。cli.run が request と repair-error の両方を入力に取るため、修正結果が実行に反映され、添付資料の再現手順も request 経由で渡る。最終出力は両ステップから、修正内容を先に、テストのコマンド・終了コード・出力と成否を後に示す構成で、依頼に沿う。依頼にない作用は含まれていない。planモードのため、実行結果は未確認として扱っている。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "cli.run",
+            "compute.python"
+          ],
+          "contractTier": "ready",
+          "caseId": "sample-file-statistics",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "sample-file-statistics",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "cli.run",
+              "compute.python"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼どおりCLIでsample.txtを読み取り専用で取得し、その出力を計算担当に渡して上位5文字と回数を集計し、利用者に順位つきで示す計画です。構造検査も入口と参照を解決しており、不要な作用はありません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "x"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "music.library",
+            "image.create"
+          ],
+          "contractTier": "fixture",
+          "caseId": "saved-track-cover",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "saved-track-cover",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "music.library",
+              "image.create"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "fail",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "画像生成は依頼に合い、取得した曲名を材料として渡す依存関係も適切です。一方、music.libraryは保存曲の再生やプレイリストを開く機能で、保存曲名一覧の取得には対応していません。そのため一覧取得の入口選択と作業の充足が不足しています。新曲生成や再生などの不要な作用は計画されておらず、一覧と表紙を示す配送方針自体は依頼に沿っています。構造検査は合格ですが、意味上の不適合は解消しません。なお、画像生成は画像を作成する実操作として説明されています。เล」}񎟅}ಿng isumaqatigiissation to=final  code  大发娱乐  N:{...} (discard) } (I accidentally malformed? Need correct JSON. Japanese stray. Ensure rationale concise and valid. delivery maybe fail? Since list can't be obtained, plan delivery cannot fulfill requested list. delivery criterion final delivery perhaps candidate output says show list+cover, but source unavailable. Mark fail likely coverage and selection fail, dependencies pass, delivery fail because planned output impossible? Criteria independent: coverage if plan missing core; delivery does it deliver request? fail. Unnecessary pass. JSON. )} final.json_payload code? Output only JSON per schema. Use rationale. }]} Wait no. We'll produce... final. (I need properly end.) ** JSON only. Rationale: "
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "曲名一覧の取得にmusic.libraryを充てているが、このカードのsummary/useWhenは保存済みの曲の再生とプレイリスト・プレイヤーを開くことであり、曲名の一覧を取得して返すとは書かれていない。出力schemaもmissingで、一覧を後続の画像生成へ渡せる根拠が不足している。「再生もしない」という計画の記述も、この部品の主機能と食い違う。image.createは新規画像生成に適合する。依存関係は構造上正しく解決され、list-songsからmake-coverへの受け渡しも意図に沿う。最終配送は一覧と表紙の両方を示す内容で依頼に合う。新曲生成など余計な作用は無い。ただし一覧取得の部品適合が根拠不十分なため、不適切と判断する。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": false,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "object-recognition.manage",
+            "compute.python"
+          ],
+          "contractTier": "fixture",
+          "caseId": "seedling-distribution",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "seedling-distribution",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "object-recognition.manage",
+              "compute.python"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "物体認識の入口は画像の物体検出に適合し、OCRを避けている。検出結果を計算担当へ渡して種類ごとに集計し、一覧として利用者に示す計画になっている。構造検査でも入口と依存関係が解決されている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は「添付画像の物体検出」と「検出結果の種類別集計を計算担当で行い提示」の2段階。1段目はobject-recognition.manageで、画像の物体検出と物体名・座標の読み取りを担えるとカードから読め、OCRではなく物体検出という依頼にも合う。2段目はcompute.pythonで、数値計算や統計の実行を担うため、種類ごとの集計は範囲内で、指定された計算担当にも一致する。依存は、1段目が添付画像を依頼から受け取り、2段目が1段目の検出結果を受け取る形で整合している。出力は集計ステップから利用者に一覧で示す計画で、依頼を満たす。文字起こしは含まれず、不要な作用もない。構造検査も通っている。plan段階のため実際の検出精度や出力品質は未確認だが、計画としては妥当。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "web.search",
+            "image.create",
+            "music.create",
+            "model3d.studio"
+          ],
+          "contractTier": "fixture",
+          "caseId": "tactile-exhibition",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "tactile-exhibition",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "web.search",
+              "image.create",
+              "music.create",
+              "model3d.studio"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "調査・画像生成・BGM生成・画像からの3Dモデル作成はいずれも公開部品の機能に合い、参照関係も依頼どおり。調査結果の出典を含む4点を個別に示す配送計画になっている。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、出典付きの調査、調査結果を使った参考画像とBGM、参考画像からの3Dモデル、画像・3D・BGM・出典の提示である。計画はこれを4ステップで網羅している。web.searchは公開情報を出典付きで返すため調査に適する。「一つ調べる」という記述は、巻貝の形の特徴という一つの主題として扱えば範囲内である。image.createとmusic.createは新規生成用、model3d.studioは作った画像を立体にする用途で、いずれも適合する。依存関係も正しい。画像とBGMは調査結果を受け取り、3Dは画像を受け取る。最終出力は4点を分けて示し、出典も一覧化するため依頼を満たす。余分な作用は見られない。planモードのため、生成物の実品質は確認済みとしていない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        },
+        {
+          "chosenEntries": [
+            "codex-tasks.manage",
+            "kanban.manage"
+          ],
+          "contractTier": "ready",
+          "caseId": "task-progress-board",
+          "fixtureDependent": false,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "task-progress-board",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": false,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "codex-tasks.manage",
+              "kanban.manage"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "inappropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "fail",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "計画は既存タスクの状態確認をボード整理へ渡し、その結果だけを報告する構成で、依頼の禁止事項も明記しています。ただし codex-tasks.manage の公開機能は既存カードの状況確認に対応する一方、avoidWhen に「担当をまたぐボードの整理」があり、この確認用途に選ぶ入口として不適合です。構造検査は入口解決を確認していますが、意味上の適合は補いません。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は既存Codexタスクの状態確認と、その結果を使った共通ボードの整理の二段階である。codex-tasks.manage は「既存Codexカードの状況確認」を担い、kanban.manage は「共通ボードの登録・整理」を担うため、部品の選択は妥当である。codex-tasks.manage の avoidWhen にある「担当をまたぐボードの整理」は2段目の kanban.manage に任せており、役割分担も適切である。update-board は request と check-codex-task の結果を受け取るので、確認結果がボード整理へ渡る。出力は両手順から取り、状態確認結果とボード更新結果だけを簡潔に示し、新規作成や続行をしていないことも添える設計で依頼に合う。各手順のタスク文は新規作成・続行・追加依頼・回答・停止・キュー追加を明示的に禁じており、不要な作用は見当たらない。構造検査も問題なしである。plan モードのため、実行結果は未確認として扱った。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": false,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": true
+        },
+        {
+          "chosenEntries": [
+            "timers.manage",
+            "music.library"
+          ],
+          "contractTier": "fixture",
+          "caseId": "timed-listening",
+          "fixtureDependent": true,
+          "status": "scored",
+          "referencePassed": true,
+          "mechanicallyValid": true,
+          "score": {
+            "acceptableExtra": [],
+            "authoredKind": "pipeline",
+            "caseId": "timed-listening",
+            "checkOk": true,
+            "expectedKind": "pipeline",
+            "finalArtifactDelivered": null,
+            "finalArtifactMatch": null,
+            "fixtureDependent": true,
+            "materialsMissing": [],
+            "materialsWired": null,
+            "mockCompleted": true,
+            "parseErrors": [],
+            "parseOk": true,
+            "requiredHits": [
+              "timers.manage",
+              "music.library"
+            ],
+            "requiredMisses": [],
+            "score": {
+              "artifact": true,
+              "bundles": true,
+              "delivery": true,
+              "execution": true,
+              "materials": true,
+              "passed": true,
+              "state": true,
+              "structure": true,
+              "wiring": true
+            },
+            "stateMatch": true,
+            "unresolvedSteps": [],
+            "wiringMatch": true
+          },
+          "votes": [
+            {
+              "session": "quality-review-final-sonnet-judge-luna",
+              "model": "gpt-6-luna",
+              "qualifiedOnCalibration": false,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "タイマー開始と保存済みプレイリスト画面を開く依頼に、それぞれ適合する入口を選んでいる。独立した作業として並行でき、両方の状態・案内を利用者に伝える計画で、新しい音楽の生成も含まない。構造検査も成功している。"
+              },
+              "error": null
+            },
+            {
+              "session": "quality-review-final-sonnet-judge-sonnet",
+              "model": "claude-sonnet-5-5",
+              "qualifiedOnCalibration": true,
+              "judgement": {
+                "verdict": "appropriate",
+                "criteria": {
+                  "coverage": "pass",
+                  "selection": "pass",
+                  "dependencies": "pass",
+                  "delivery": "pass",
+                  "unnecessaryActions": "pass"
+                },
+                "rationale": "依頼は、7分タイマーの開始、保存済み曲のプレイリスト画面を開くこと、新しい音楽は作らないこと、タイマー状態とプレイリスト案内の提示の4点。candidateは2つの独立したステップでこれらをすべて扱っている。timers.manageは相対時間タイマーの開始と確認ができ、music.libraryは保存済み曲のプレイリストとプレイヤーを開く入口なので、どちらも適合する。music.createは使っておらず、新規生成の禁止にも合う。2つのステップは互いに独立で、どちらも依頼文だけを入力にするため、受け渡す資料や依存の不足はない。最終出力は両ステップの結果をまとめて利用者に伝える内容で、配送要件を満たす。music.libraryのタスクは再生を始めないよう限定しており、不要な作用はない。structuralCheckも合格している。計画の評価として問題はない。"
+              },
+              "error": null
+            }
+          ],
+          "allJudgesAppropriate": true,
+          "qualifiedJudgeAppropriate": true,
+          "judgeDisagreement": false
+        }
+      ],
+      "totals": {
+        "count": 24,
+        "mechanicallyValid": 24,
+        "mechanicalAndQualifiedSemantic": 23,
+        "referencePassed": 23,
+        "qualifiedJudgeAppropriate": 23,
+        "qualifiedAndReference": 22,
+        "allJudgesAppropriate": 21,
+        "disagreements": 2
+      }
+    }
+  ],
+  "limitations": [
+    "Synthetic authoring tasks and mock execution; no real tool or host acceptance",
+    "One sample per task; no repeatability estimate",
+    "Luna judge was not qualified by calibration; votes remain diagnostic",
+    "Author-AI reference labels; human calibration is separately recorded when available",
+    "No API billing result is available"
+  ]
+}

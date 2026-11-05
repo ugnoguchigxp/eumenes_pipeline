@@ -1,6 +1,8 @@
-import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { afterAll, describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
 	countTokens,
 	isTokenizerCommand,
@@ -27,21 +29,40 @@ const fakeRunner: TokenCountRunner = (_command, input) =>
 		})
 		.join("\n") + "\n";
 
+// The injected runner tests the protocol, not a real model tokenizer.
+const fixtureDir = mkdtempSync(join(tmpdir(), "pipeline-tokenizer-test-"));
+const fixture = JSON.stringify({ fixture: "protocol-only" });
+const source = {
+	repo: "test/protocol-fixture",
+	revision: "fixture-v1",
+	sha256: createHash("sha256").update(fixture).digest("hex"),
+};
+const env = {
+	PIPELINE_TOKENIZER_FILE: join(fixtureDir, "tokenizer.json"),
+	PIPELINE_TOKENIZER_PYTHON: "python3",
+};
+writeFileSync(env.PIPELINE_TOKENIZER_FILE, fixture);
+writeFileSync(join(fixtureDir, "source.json"), JSON.stringify(source));
+afterAll(() => rmSync(fixtureDir, { recursive: true, force: true }));
+
 describe("countTokens", () => {
 	test("maps helper counts back in order, deterministically", () => {
 		const texts = ["abc", "あいう", ""];
-		expect(countTokens(texts, { run: fakeRunner })).toEqual([3, 3, 0]);
-		expect(countTokens(texts, { run: fakeRunner })).toEqual(
-			countTokens(texts, { run: fakeRunner }),
+		expect(countTokens(texts, { env, run: fakeRunner })).toEqual([3, 3, 0]);
+		expect(countTokens(texts, { env, run: fakeRunner })).toEqual(
+			countTokens(texts, { env, run: fakeRunner }),
 		);
-		expect(countTokens([], { run: fakeRunner })).toEqual([]);
+		expect(countTokens([], { env, run: fakeRunner })).toEqual([]);
 	});
 
 	test("a malformed helper reply counts as unavailable, never as zero", () => {
-		expect(countTokens(["x"], { run: () => "not json\n" })).toEqual([null]);
-		expect(countTokens(["x"], { run: () => "" })).toEqual([null]);
+		expect(countTokens(["x"], { env, run: () => "not json\n" })).toEqual([
+			null,
+		]);
+		expect(countTokens(["x"], { env, run: () => "" })).toEqual([null]);
 		expect(
 			countTokens(["x"], {
+				env,
 				run: () => {
 					throw new Error("boom");
 				},
@@ -56,9 +77,9 @@ describe("countTokens", () => {
 	});
 
 	test("the real spawn is blocked under the test guard, so counts stay null", () => {
-		// The tokenizer file exists in this environment, but the guard installed by the
+		// The fixture exists, but the guard installed by the
 		// test preload allows no process: counting must degrade to null, not throw.
-		expect(countTokens(["テスト"])).toEqual([null]);
+		expect(countTokens(["テスト"], { env })).toEqual([null]);
 	});
 });
 
@@ -88,14 +109,11 @@ describe("tokenizer command and provenance", () => {
 	});
 
 	test("provenance reports the recorded source of the downloaded tokenizer", () => {
-		const provenance = tokenizerProvenance({ run: fakeRunner });
-		const source = JSON.parse(
-			readFileSync(join(dirname(tokenizerFilePath()), "source.json"), "utf8"),
-		) as { repo: string; revision: string; sha256: string };
+		const provenance = tokenizerProvenance({ env, run: fakeRunner });
 		expect(provenance.available).toBe(true);
 		expect(provenance.repo).toBe(source.repo);
 		expect(provenance.revision).toBe(source.revision);
 		expect(provenance.sha256).toBe(source.sha256);
-		expect(provenance.file).toBe(tokenizerFilePath());
+		expect(provenance.file).toBe(tokenizerFilePath(env));
 	});
 });

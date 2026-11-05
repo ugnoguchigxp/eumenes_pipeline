@@ -2,6 +2,65 @@ import { describe, expect, test } from "bun:test";
 import { createCatalogView } from "./catalog.ts";
 import { checkDefinition, type IssueCode } from "./check.ts";
 import { record } from "./test-support.ts";
+import { pipelineDefinition } from "./contracts/definition.ts";
+
+test("oversized step arrays fail before per-element errors can amplify memory use", () => {
+	const parsed = pipelineDefinition.safeParse({
+		request: "r",
+		steps: Array(10_000).fill(null),
+		output: { from: ["request"], deliver: "d" },
+	});
+	expect(parsed.success).toBe(false);
+	if (!parsed.success)
+		expect(parsed.error.issues).toEqual([
+			expect.objectContaining({ code: "too_big", path: ["steps"] }),
+		]);
+});
+
+test("argument JSON rejects cycles, excessive depth, unsupported values and accessors without executing them", () => {
+	const input = (value: unknown) => ({
+		request: "r",
+		steps: [
+			{
+				id: "s",
+				bundle: "e",
+				task: "t",
+				from: [],
+				result: "x",
+				arguments: { value },
+			},
+		],
+		output: { from: ["s"], deliver: "d" },
+	});
+	const cyclic: Record<string, unknown> = {};
+	cyclic.self = cyclic;
+	let nested: unknown = null;
+	for (let i = 0; i < 65; i++) nested = { child: nested };
+	let accessed = false;
+	const accessor = Object.defineProperty({}, "value", {
+		enumerable: true,
+		get() {
+			accessed = true;
+			return 1;
+		},
+	});
+	for (const v of [
+		cyclic,
+		nested,
+		new Date(),
+		NaN,
+		undefined,
+		Array(10_001).fill(1),
+		accessor,
+	])
+		expect(pipelineDefinition.safeParse(input(v)).success).toBe(false);
+	expect(accessed).toBe(false);
+	const shared = { ok: [1, true, "x", null] };
+	const original = { a: shared, b: shared };
+	const valid = pipelineDefinition.parse(input(original));
+	expect(valid.steps[0]?.arguments?.value).toEqual({ a: shared, b: shared });
+	expect(valid.steps[0]?.arguments?.value).not.toBe(original);
+});
 
 const catalog = createCatalogView(
 	[
@@ -310,6 +369,16 @@ describe("step arguments", () => {
 				severity: "warning",
 			}),
 		]);
+		const strict = checkDefinition(input, conditional, {
+			sourceRequest: input.request,
+		});
+		expect(strict.ok).toBe(false);
+		expect(strict.issues).toContainEqual(
+			expect.objectContaining({
+				code: "arguments_unchecked",
+				severity: "error",
+			}),
+		);
 		// Without stated arguments there is nothing to leave unchecked.
 		const silent = checkDefinition(
 			definition([step("g", "gate", ["request"])], ["g"]),
@@ -318,6 +387,20 @@ describe("step arguments", () => {
 		expect(silent.ok).toBe(true);
 		expect(silent.issues).toEqual([]);
 	});
+});
+
+test("trusted host context detects model changes to the original request, preserving exact bytes", () => {
+	const input = definition([step("s", "solo", ["request"])], ["s"]);
+	expect(
+		checkDefinition(input, catalog, { sourceRequest: input.request }).ok,
+	).toBe(true);
+	const changed = checkDefinition(input, catalog, {
+		sourceRequest: input.request.trim(),
+	});
+	expect(changed.ok).toBe(false);
+	expect(changed.issues).toContainEqual(
+		expect.objectContaining({ code: "request_mismatch", path: "request" }),
+	);
 });
 
 describe("createCatalogView", () => {

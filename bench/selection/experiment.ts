@@ -1,3 +1,4 @@
+import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
 /**
  * Wave B selection experiment (plan §9, §10): five retrieval methods rank the SAME offered
  * cards for the SAME dev-split pipeline cases, and only the ranking changes.
@@ -203,6 +204,7 @@ export type CaseResult = {
 };
 
 export type SelectionExperimentReport = {
+	caseSnapshot: CaseSnapshot;
 	runId: string;
 	startedAt: string;
 	split: "dev";
@@ -307,6 +309,7 @@ export async function runSelectionExperiment(options: {
 		const flatPassages = perCard.flatMap((c) => c.passages);
 
 		const allCases = loadCases(options.casesDir);
+		const caseSnapshot = captureCases(allCases, options.casesDir);
 		const devCases = allCases.filter((c) => c.split === "dev");
 		const evaluated: EvalCase[] = [];
 		const excludedByKind = new Map<string, number>();
@@ -496,6 +499,7 @@ export async function runSelectionExperiment(options: {
 		});
 
 		return {
+			caseSnapshot,
 			runId,
 			startedAt,
 			split: "dev",

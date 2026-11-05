@@ -152,6 +152,37 @@ describe("scoreCase: passing attempts", () => {
 });
 
 describe("scoreCase: failing attempts are attributed to the right aspect", () => {
+	test("producing artifacts before research and omitting them from delivery fails", async () => {
+		const score = await scoreDefinition("edo-research-image-music", {
+			request: getCase("edo-research-image-music").request,
+			steps: [
+				{
+					id: "picture",
+					bundle: "image.create",
+					task: "町並みの画像を作る",
+					from: ["request"],
+					result: "画像",
+				},
+				{
+					id: "music",
+					bundle: "music.create",
+					task: "BGMを作る",
+					from: ["request"],
+					result: "BGM",
+				},
+				{
+					id: "research",
+					bundle: "web.search",
+					task: "町並みを調べる",
+					from: ["request"],
+					result: "調査結果",
+				},
+			],
+			output: { from: ["research"], deliver: "調査だけを伝える" },
+		});
+		expect(score.finalArtifactMatch).toBe(true);
+		expect(score.score.passed).toBe(false);
+	});
 	test("a wrong bundle is a bundle miss and an extra, though the mock completes", async () => {
 		const wrong = {
 			...primeDefinition,

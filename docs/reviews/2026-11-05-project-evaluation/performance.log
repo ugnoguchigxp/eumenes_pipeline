@@ -1,0 +1,2 @@
+{"steps":1,"catalog":24,"iterations":10000,"p50ms":0.0009580000000006805,"p95ms":0.0014170000000000016,"maxms":0.4816250000000011,"limitations":"local warm checker only; no JSON Schema arguments, inference, IO, contention, or production budget"}
+{"steps":8,"catalog":24,"iterations":10000,"p50ms":0.0036670000000071923,"p95ms":0.004624999999990109,"maxms":0.25620899999999835,"limitations":"local warm checker only; no JSON Schema arguments, inference, IO, contention, or production budget"}

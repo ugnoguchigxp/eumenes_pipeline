@@ -1,0 +1,71 @@
+{
+	"command": "bun run bench:performance",
+	"exitCode": 0,
+	"environment": "Bun1.4.4 Darwin arm64",
+	"warmups": 100,
+	"heapDeltaIsNotPeak": true,
+	"rows": [
+		{
+			"steps": 1,
+			"taskLength": 20,
+			"offeredCards": 24,
+			"samples": 1000,
+			"medianMs": 0.002375000000000682,
+			"p95Ms": 0.0051660000000026685,
+			"maxMs": 0.5563329999999951,
+			"heapDeltaBytes": 621248,
+			"actualBilledUsd": null,
+			"apiCalls": 0,
+			"passed": true
+		},
+		{
+			"steps": 1,
+			"taskLength": 2000,
+			"offeredCards": 24,
+			"samples": 1000,
+			"medianMs": 0.0014579999999995152,
+			"p95Ms": 0.004374999999996021,
+			"maxMs": 0.3582919999999987,
+			"heapDeltaBytes": 95312,
+			"actualBilledUsd": null,
+			"apiCalls": 0,
+			"passed": true
+		},
+		{
+			"steps": 8,
+			"taskLength": 20,
+			"offeredCards": 24,
+			"samples": 1000,
+			"medianMs": 0.0050829999999990605,
+			"p95Ms": 0.007334000000000174,
+			"maxMs": 0.3821669999999955,
+			"heapDeltaBytes": 57668,
+			"actualBilledUsd": null,
+			"apiCalls": 0,
+			"passed": true
+		},
+		{
+			"steps": 8,
+			"taskLength": 2000,
+			"offeredCards": 24,
+			"samples": 1000,
+			"medianMs": 0.004542000000000712,
+			"p95Ms": 0.005875000000003183,
+			"maxMs": 0.48033399999999915,
+			"heapDeltaBytes": 57214,
+			"actualBilledUsd": null,
+			"apiCalls": 0,
+			"passed": true
+		},
+		{
+			"runId": "fa481e88-ba8d-496f-b2fe-ef478bec6aac",
+			"budget": {
+				"p95Ms": 5,
+				"callsPerCell": 1000,
+				"warmups": 100,
+				"scope": "checkDefinition with the real offered catalog, 1/8 steps, short/maximum task text"
+			},
+			"passed": true
+		}
+	]
+}

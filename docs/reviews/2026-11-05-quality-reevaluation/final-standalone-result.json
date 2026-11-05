@@ -1,0 +1,13 @@
+{
+	"equal": true,
+	"ignoredFields": ["reportRun", "generations[].scoredRunId"],
+	"httpRequests": 0,
+	"cells": 48,
+	"source": "d8ac16d99861d43ae8be84f19ef82eef3d7242447b07bdba6b0eafaf9dd0ba25",
+	"structuralComparison": {
+		"equal": true,
+		"sourceRun": "e88d8508-5615-4865-8064-8f892e0b77a0",
+		"replayRun": "a71da22b-ce69-4e2d-b81d-b78e4fce4762",
+		"cells": 24
+	}
+}

@@ -1,0 +1,7 @@
+{
+	"equal": true,
+	"ignoredFields": ["reportRun", "generations[].scoredRunId"],
+	"httpRequests": 0,
+	"cells": 48,
+	"source": "74a4ba53967566892d27aa7feab6d08cf20a4ac7ae9fb2a6ff61eda9f120bdb8"
+}

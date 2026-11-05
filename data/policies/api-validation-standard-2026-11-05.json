@@ -1,0 +1,56 @@
+{
+  "id": "quality-2026-11-05-shared-10usd",
+  "ceilingUsd": 8.5,
+  "approvedCeilingUsd": 10,
+  "maxOutputTokens": 4096,
+  "timeoutMs": 90000,
+  "note": "Same shared USD10 approval and USD8.5 operational ledger. New Sonnet calls use the documented USD2/M base-input rate across 1M context and USD10/M output. This Messages adapter cannot request cache_control (system and user content are strings; settings allow only thinking), so paid prompt-cache creation is not enabled. Official caching requires opt-in cache_control: https://platform.claude.com/docs/en/build-with-claude/prompt-caching . Historical reservations/settlements at higher rates are immutable and are not recalculated. Actual billing remains null.",
+  "profiles": [
+    {
+      "provider": "openai",
+      "model": "gpt-6-luna",
+      "contextTokensCeiling": 1050000,
+      "inputUsdPerMillionCeiling": 0.5,
+      "outputUsdPerMillionCeiling": 1,
+      "pricingSource": "https://developers.openai.com/api/docs/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "reasoning": {
+          "effort": "low"
+        }
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-haiku-5-5",
+      "apiVersion": "2026-10-21",
+      "contextTokensCeiling": 1000000,
+      "inputUsdPerMillionCeiling": 1,
+      "outputUsdPerMillionCeiling": 5,
+      "pricingSource": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "thinking": {
+          "type": "adaptive",
+          "display": "omitted"
+        }
+      }
+    },
+    {
+      "provider": "anthropic",
+      "model": "claude-sonnet-5-5",
+      "apiVersion": "2026-10-21",
+      "contextTokensCeiling": 1000000,
+      "inputUsdPerMillionCeiling": 2,
+      "outputUsdPerMillionCeiling": 10,
+      "pricingSource": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "pricingCheckedAt": "2026-11-05",
+      "settings": {
+        "thinking": {
+          "type": "adaptive",
+          "display": "omitted"
+        }
+      }
+    }
+  ]
+}

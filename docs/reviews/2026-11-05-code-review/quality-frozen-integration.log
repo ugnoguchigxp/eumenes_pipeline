@@ -1,0 +1,15 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/cases/freeze-integration.test.ts:
+(pass) frozen evaluation blocks method changes and partial API batches before network access [96.76ms]
+(pass) same-size API input replacement is rejected even with a recomputed self-consistent digest [67.77ms]
+
+bench/export/quality-report.test.ts:
+(pass) blinded judgements must match the exact scored candidate, not just an authentic API output [222.61ms]
+(pass) reported API usage cannot be changed by editing an untrusted provenance sidecar [171.24ms]
+(pass) frozen judge input changes cannot spend budget even when the request digest is updated [134.59ms]
+
+ 5 pass
+ 0 fail
+ 14 expect() calls
+Ran 5 tests across 2 files. [774.00ms]

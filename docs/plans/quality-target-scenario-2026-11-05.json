@@ -1,0 +1,809 @@
+{
+	"rubric_version": "1.1.0",
+	"mode": "technical",
+	"depth": "deep",
+	"technical_profile": "library",
+	"assessment_kind": "expected",
+	"target": {
+		"locator": "/Users/y.noguchi/Code/eumenes_pipeline",
+		"snapshot": "Expected scenario after Q01 through Q17 acceptance; no implementation snapshot exists",
+		"reviewed_at": "2026-11-05",
+		"stage": "Conditional acceptance scenario",
+		"scope": "Same rubric1.1.0/library profile and all30 technical criteria as baseline; no excluded criteria or changed weights. Conditional Q01-Q17 scenario includes direct Claude API and OpenAI gpt-6-luna validation, profile environment compatibility, common evidence/replay and authorized real host verification. All target anchors and confidence refer to assumed completed acceptance evidence. Current work only creates plans and performs secret-free environment presence checks, with no API calls or implementation."
+	},
+	"evidence": [
+		{
+			"id": "E01",
+			"kind": "code",
+			"locator": "git status/log/rev-parse @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Clean main, HEAD 6640de2; exact snapshot archived for probes. No project source modifications.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E02",
+			"kind": "code",
+			"locator": "src/contracts/{definition,authoring,execution,component,record}.ts; src/{catalog,check,ports,index}.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Trace: parsed unknown -> strict Zod schema -> unique/reserved IDs -> backward-only references -> offered exact entry resolution -> argument schema check -> revision-pinned ExecutionPlan. Semantics delegated to model. Only zod dependency, no environmental IO. Max 8 serial steps; unknown schema conversion produces a warning, host must still enforce authorization and actual argument validation.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E03",
+			"kind": "execution",
+			"locator": "check-all.log; command bun run check:all",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 1 on Bun 1.4.4 Darwin arm64 in isolated snapshot, no tokenizer environment override. Typecheck (99/9 files), lint and format pass. 328 tests: 326 pass / 2 fail, both bench/tokens.test.ts external tokenizer and source.json dependency. No tests skipped or assertions weakened.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E04",
+			"kind": "code",
+			"locator": "bench/mock/driver.ts; bench/mock/driver.test.ts; src/contracts/execution.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Sequential execution passes only declared references, adopts completed results only, rejects missing/invalid output and results after cancel/deadline, returns delivered=null on partial failure. Tests cover all noncompleted states; actual queues/restart/external effects are owned by Eumenes, not verified here.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E05",
+			"kind": "execution",
+			"locator": "bench-verify.log; command bun run bench:verify --db :memory:",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0, 87/87 checks pass; no external reach attempts. Run 4470c884-8e44-40bb-9f8e-6f705362da6c. Isolated snapshot and in-memory work DB; synthetic validation, not real task success.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E06",
+			"kind": "code",
+			"locator": "bench/mock/guard.ts; bench/mock/guard.test.ts; bench/test-preload.ts; bunfig.toml @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Runtime reach guard and static source restrictions block network/process/thread/real-tool calls by default; test suite passes guard and src purity checks. Allowances explicit at first install. Guard is an in-process test control, not an OS isolation boundary for arbitrary hostile code.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E07",
+			"kind": "execution",
+			"locator": "probes.log (wrong-flow); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Ran registered edo-research-image-music case with image and music before research; neither consumes research, output.from contains research only. ScoreBreakdown has all criteria true including passed; delivered=[research]. No live model or real tools; mock only.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E08",
+			"kind": "code",
+			"locator": "bench/scoring/score.ts:158-216; bench/cases/cases.ts:10-24; data/cases/edo-research-image-music.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "requiredMaterials only checks consumption anywhere or final output, no required producer-consumer pair. finalArtifact checks any adopted output rather than delivered outputs, intentionally documented as adopted outputs. No semantic judgement is invoked by runFormat. Gold notes require research for both image and music. Thus passing is a limited structural metric.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E09",
+			"kind": "execution",
+			"locator": "probes.log (prototype-key); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. JSON text with sole __proto__ object containing status=unsupported and reasons is parsed into an object with no own keys; shared outcome discriminator reads inherited status, and authoring gate returns a valid unsupported outcome. Native JSON.parse retains own __proto__ key. This is local object-prototype mutation; global Object.prototype compromise or production RCE is not established.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E10",
+			"kind": "code",
+			"locator": "bench/formats/strict-json.ts:67-89; bench/formats/outcome.ts:52-100 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Strict JSON reader creates {} then assigns out[key]. JS __proto__ setter changes prototype, contradicting data-preserving parsing; discriminator reads ordinary properties/in operator. Parser only ships in bench, not dist.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E11",
+			"kind": "execution",
+			"locator": "probes.log (gold-drift); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Replayed prime-count run b775b63a-98b0-469f-9f04-a4db13dadea9; exported it, changed requiredBundles to web.search in a separate cases directory, exported same run again. New goldSha256 appears but passed=1 and summary cross-check differences=[] with every applicable check true. Source case files untouched.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E12",
+			"kind": "code",
+			"locator": "bench/format/run.ts:975-1014; bench/export/export.ts:388-410 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Run input pins case IDs but not case content hashes, scorer code digest or repository revision. Export hashes cases present at export time and recomputes totals from score rows, not outcomes under historic gold. Git versions could help manual recovery if separately known, but DB does not link that revision.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E13",
+			"kind": "code",
+			"locator": "bench/tokens.test.ts:30-37,90-99; bench/tokens.ts:27-50; docs/evaluation.md:25-35 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Tests inject fakeRunner but still assume an external tokenizer.json exists. Provenance test reads external source.json without a temporary fixture. Docs promise null counts when tokenizer absent, yet ordinary check:all fails without files outside repo.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E14",
+			"kind": "execution",
+			"locator": "pack-check.log, pack.log; source/artifacts/eumenes-pipeline-0.0.0-8f5388402289/manifest.json",
+			"observed_at": "2026-11-05",
+			"observation": "bun run pack:check exit 0, bun run pack exit 0. Artifact 21 files, 13,579 bytes; SHA256 25b34b23d9b7aff4fec98f7f0fc9b39398b2ee9cb3809f14c6df875fc0a9b3a1. Fresh consumer install/typecheck/runtime smoke pass. Tarball matches prior repository build byte-for-byte. Isolated archive manifest has gitSha/dirty null, source digest retained. No Eumenes changes.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E15",
+			"kind": "code",
+			"locator": "scripts/pack.ts; package.json; bun.lock; tsconfig.build.json; vendor/router/manifest.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Only ESM/types and package metadata ship. Dist excludes tests/test-support. Digests cover source and lock/config, exclusive target creation prevents same-name replacement; consumer checks before publication. Router tarball source/digest recorded; seven-day dependency minimum age and lockfile. Registry/package known versions inspected; no reachability-aware vulnerability assessment or long-term update practice independently verified.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E16",
+			"kind": "code",
+			"locator": "bench/store/work-db.ts; bench/store/work-db.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "SQLite foreign keys, recursive triggers, transactions for initial schema, immutable finished records, unique attempts, rejects REPLACE/delete, explicit parent-run retry. Relevant tests pass. Experiment replay can start new runs; no recovery/dedup of actual product side effects is implemented or claimed by this library.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E17",
+			"kind": "primary_doc",
+			"locator": "README.md:19-26; plan.md:415-435; AGENTS.md; src/index.ts:1-10; docs/handoff/2026-11-04-p1.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Entry documents describe P0/provisional and undone evaluation while source fixes p0-2 in P1 and later handoffs record P4 and follow-ups. Main plan also calls mock evaluator unimplemented. Known drift acknowledged by P1 handoff; target-model wording shifts LFM -> Luna/Haiku in later records.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E18",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-p4.md:1-137 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author-recorded agent-model holdout raw passed=27/40, repaired=35/40; catalog-only and fixture-dependent reported separately. Repair mostly ID shape; selection prefix top12=30/34 vs29/34 baseline. No target-model acceptance; not actual task outputs, latency or provider costs. Raw records absent locally, so numeric claims not independently rechecked.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E19",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-accuracy-3.md:25-51 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "After P4 freeze/holdout, union follow-up evaluates k=3..6 on dev and already seen holdout; recommends k=5 and uses holdout 32/34 as adoption condition. Dev also supports k=5; this does not erase original P4 one-pass result, but follow-up is diagnostic reused-holdout evidence, not fresh final confirmation. No union-compose measurement.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E20",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-staged.md; accuracy-1/2/4/5.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author records both successful and failed hypotheses; staged long-chain 7/8 baseline vs1/8 staged, coverage marks 100% with wrong entry choice; rejected, flags stay default off. Evidence for useful research feedback, not independent user feedback or target-model success.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E21",
+			"kind": "code",
+			"locator": "bench/format/{prompt,run,conditions,enumerate,triage}.ts; bench/infer/{recorded,muse-exec}.ts; related tests @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Prompt builder receives request/materials/cards, excludes expected; replay keyed to purpose/system/prompt digest, missing/mismatched recordings refused. Mechanical repair limited to one attempt and no gold. Inference adapter uses separate temp dir and configurable provider interface. Muse subprocess outputs and isolation tested with stubs; real target calls not run. run.ts 1803 lines, export.ts946 lines reflect increasing bench condition complexity.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E22",
+			"kind": "primary_doc",
+			"locator": "docs/handoff/2026-11-04-p2.md; docs/handoff/2026-11-04-p3.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Adapter mapping and separate consumer checks reported on another local Eumenes branch. Actual prepare/execute/adopt transactions, screen E2E and main integration explicitly unexecuted. Old Pipeline Studio structural comparison only; no same-task old-vs-new outcome benchmark. Old flow targets reusable toolchains, new one-off request-specific plans, so naive benchmark would be unfair.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E23",
+			"kind": "code",
+			"locator": "/Users/y.noguchi/Code/eumenes/package.json @ 056afd43115c0ae7df91449ad62baa0000d73c60",
+			"observed_at": "2026-11-05",
+			"observation": "Read-only local Eumenes main package contains eumenes_router but no eumenes-pipeline dependency; expected new adapter/vendor path absent in inspected locations. No source changes or tests there. Does not establish remote branches or deployments state; existing unrelated dirty files left untouched.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E24",
+			"kind": "execution",
+			"locator": "performance.log; command bun run review-performance.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit0 Bun1.4.4 Darwin arm64, warmed pure checkDefinition,24 synthetic entries,10000 iterations each:1step p50=.000958ms p95=.001417ms;8steps p50=.003667ms p95=.004625ms. No argument schema conversion, inference, IO, contention or operating-budget measurement. Establishes only local validator cost, not product latency/scale.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E25",
+			"kind": "primary_doc",
+			"locator": "https://docs.langchain.com/oss/javascript/langgraph/persistence (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official current documentation states checkpointers persist thread graph state for interruption/failure recovery, human-in-loop and continuity. Comparative source only; no performance or feature-parity benchmark executed.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E26",
+			"kind": "primary_doc",
+			"locator": "https://pydantic.dev/docs/ai/graph/graph/ (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official documentation describes typed asynchronous Python graphs/state machines with nodes and edges from type hints, explicit states, branches and resumable transitions. This demonstrates prior art for typed graph orchestration, not equivalent Eumenes integration or measured superiority.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E27",
+			"kind": "code",
+			"locator": "LICENSE; package.json; installed zod/yaml/jsonrepair/typescript/oxlint package metadata @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Project MIT, zod4.4.3 MIT, yaml2.9.1 ISC,jsonrepair3.15.0 ISC,typescript7.0.2 Apache-2.0,oxlint1.86.0 MIT. Runtime dependency only zod; project license and README in artifact. Does not constitute legal opinion or complete provenance of arbitrary future catalog content.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E28",
+			"kind": "code",
+			"locator": "git tracked files and git log; data/cases; docs/handoff; filesystem data/work and data/runs @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "116 tracked cases, dev76/holdout40; no tracked CI configuration under .github; local historical work DB and session runs absent. Short active history by named owner/Muse Agent plus detailed handoffs; no evidence of retained users, independent demand, support resources or sustained governance. Absence of historical artifacts limits independent verification, not proof of fabricated experiments.",
+			"scope": "Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "PLAN",
+			"kind": "primary_doc",
+			"locator": "docs/plans/quality-improvement-2026-11-05.md",
+			"observed_at": "2026-11-05",
+			"observation": "Implementation plan defines proposed work, acceptance gates and target anchors. This is a conditional specification, not execution evidence.",
+			"scope": "Expected scenario arithmetic only; cannot serve as observed proof in a re-evaluated ledger."
+		}
+	],
+	"claims": [
+		{
+			"id": "SC01",
+			"type": "Assumption",
+			"statement": "The target anchors describe a successful future acceptance scenario, not current quality or guaranteed score.",
+			"evidence_ids": ["PLAN"],
+			"limitations": "If any acceptance evidence is missing, keep the actual criterion at its observed anchor or unknown and recalculate; never award the planned value."
+		}
+	],
+	"findings": [],
+	"tracks": {
+		"technical": {
+			"dimensions": {
+				"architecture": {
+					"criteria": {
+						"boundaries": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q09,Q12,Q15の受入が完了し、次の証拠を確認した場合に限る: 独立consumerと実ホストの複数経路で境界を検査し、代表的な変更を局所化できたことを差分と回帰で確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 独立consumerと実ホストの複数経路で境界を検査し、代表的な変更を局所化できたことを差分と回帰で確認する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"flow": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q03,Q06,Q10,Q11,Q15の受入が完了し、次の証拠を確認した場合に限る: 版・参照・状態・権限の不変条件を正常系と異常系で確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"fit": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q09,Q13,Q15の受入が完了し、次の証拠を確認した場合に限る: 直列8手順の制約と実ホスト予算に適合し、独自実行基盤を増やさない",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"correctness": {
+					"criteria": {
+						"contracts": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q02,Q04,Q05,Q06,Q15の受入が完了し、次の証拠を確認した場合に限る: 正常・不正・代替解・誤配線・未配送を独立した評価と実ホストで確認し、隠れた例外処理がない",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 正常・不正・代替解・誤配線・未配送を独立した評価と実ホストで確認し、隠れた例外処理がない。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"edge_cases": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q02,Q04,Q10,Q11の受入が完了し、次の証拠を確認した場合に限る: JSON特殊キー・境界・schema変換不能・原文・参照・状態の不変条件を差分生成試験と負例で検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: JSON特殊キー・境界・schema変換不能・原文・参照・状態の不変条件を差分生成試験と負例で検証する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"concurrency": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q03,Q11,Q15の受入が完了し、次の証拠を確認した場合に限る: 既定の直列実行と記録の競合・取消・期限・重複を検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"security": {
+					"criteria": {
+						"access": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q10,Q15の受入が完了し、次の証拠を確認した場合に限る: ホストの認可・確認・参照解決を実経路の拒否試験で検査する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"input_secrets": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q02,Q10,Q12,Q15の受入が完了し、次の証拠を確認した場合に限る: 構文・型・入力由来と指示の境界、ログと配布物への秘密混入を負例で検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"abuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q10,Q11,Q13,Q15の受入が完了し、次の証拠を確認した場合に限る: 実際の権限範囲で過大入力・期限・依存停止・繰返しの上限と拒否後状態を検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"reliability": {
+					"criteria": {
+						"failure": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q11,Q15の受入が完了し、次の証拠を確認した場合に限る: 外部作用の前後と成否不明で失敗を注入し、後続・完了表示・記録の不変条件を実ホストで確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 外部作用の前後と成否不明で失敗を注入し、後続・完了表示・記録の不変条件を実ホストで確認する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"recovery": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q03,Q06,Q11,Q15の受入が完了し、次の証拠を確認した場合に限る: 中断後の記録・新run再開・実ホスト重複防止を検査し、未確認作用を自動再実行しない",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"resilience": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q10,Q11,Q13,Q14の受入が完了し、次の証拠を確認した場合に限る: 依存先の不達・遅延・不正応答と代表負荷で制御された停止・回復を測る",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"maintainability": {
+					"criteria": {
+						"clarity": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q08,Q09,Q16の受入が完了し、次の証拠を確認した場合に限る: 現在地・契約・入口・診断文書が一致し、初見利用者の操作と変更追跡で確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"change": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q04,Q06,Q09,Q12の受入が完了し、次の証拠を確認した場合に限る: 代表的な契約・parser・prompt変更を局所化し、意味のある回帰検出で確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"debt": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q08,Q09,Q16の受入が完了し、次の証拠を確認した場合に限る: 実測した重複や変更波及だけを整理し、複数の変更で保守負担低減を確かめる",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"common_components": {
+					"criteria": {
+						"duplication": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q04,Q05,Q06,Q09の受入が完了し、次の証拠を確認した場合に限る: 各形式と修復の共通契約・評価を同じ境界条件で確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"reuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。受入完了時に限る: 既存InferencePort、記録再生、Muse、Claude API、OpenAI API、ホスト、Zodを共通の評価契約から利用し、provider固有の接続処理をbenchに閉じる",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"abstraction": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q09,Q15の受入が完了し、次の証拠を確認した場合に限る: 実consumerと必要な接続だけに狭いinterfaceを保ち、不要な枠組みを追加しない",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"testing": {
+					"criteria": {
+						"risk_coverage": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q01,Q02,Q04,Q05,Q10,Q11,Q12,Q15の受入が完了し、次の証拠を確認した場合に限る: 主要リスクに対応する負例・相互作用試験が実際の欠陥を検出することを意図的変異と実経路で検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 主要リスクに対応する負例・相互作用試験が実際の欠陥を検出することを意図的変異と実経路で検証する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"quality": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q03,Q04,Q05,Q06,Q07の受入が完了し、次の証拠を確認した場合に限る: 正解・生成・評価を隔離し、独立した意味判定と負例で検出力を確認する。曖昧解と採点変更を明示する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 正解・生成・評価を隔離し、独立した意味判定と負例で検出力を確認する。曖昧解と採点変更を明示する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"automation": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q01,Q12,Q16の受入が完了し、次の証拠を確認した場合に限る: 秘密・tokenizerなしのクリーンCIで型・lint・全試験・配布利用側検査を継続実行し、回帰を失敗として検出する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"supply_chain": {
+					"criteria": {
+						"dependencies": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q12の受入が完了し、次の証拠を確認した場合に限る: 正確な依存版・配布対象・脆弱性到達性と更新時の実確認を保存する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"build_release": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q06,Q12,Q15の受入が完了し、次の証拠を確認した場合に限る: 独立ビルド一致・内容差替え・未完了公開・別consumer・本体vendor照合・更新戻しを実際の経路で検査する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。",
+							"anchor_support": "未実施の必要条件: 独立ビルド一致・内容差替え・未完了公開・別consumer・本体vendor照合・更新戻しを実際の経路で検査する。実測と独立照合が欠ければ4を付与しない。"
+						},
+						"license": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q12の受入が完了し、次の証拠を確認した場合に限る: 実際に配布されるファイルと依存の権利・出所・責任を照合し、変更時に漏れを検出する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"performance": {
+					"criteria": {
+						"budget": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q13,Q14,Q15の受入が完了し、次の証拠を確認した場合に限る: 事前固定した所要時間・メモリ・呼出数・取得可能な実費の予算を代表条件で満たす。取得不能値はnullで残す",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"hot_path": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q09,Q13の受入が完了し、次の証拠を確認した場合に限る: 実カタログ・最大手順・境界入力の計測でボトルネックと余裕を確認する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"measurement": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。受入完了時に限る: Claude APIとOpenAI gpt-6-lunaの条件固定の実生成時間とusage、未取得値、回帰シグナルを生成runから再生可能に保持し、再生時間と混同しない",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				},
+				"operability": {
+					"criteria": {
+						"signals": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q03,Q06,Q11,Q16の受入が完了し、次の証拠を確認した場合に限る: 失敗と中断の原因を永続記録から特定し、必要十分な情報で追跡できる",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"lifecycle": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q01,Q08,Q12,Q15,Q16の受入が完了し、次の証拠を確認した場合に限る: 初回導入・設定・更新・中断回復・戻し・除去を対象環境で検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						},
+						"interaction": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "High",
+							"evidence_ids": ["PLAN"],
+							"rationale": "条件付き目標。Q05,Q08,Q15,Q16の受入が完了し、次の証拠を確認した場合に限る: SDKと既存画面の代表作業・確認・エラー復帰を初見利用者と検証する",
+							"countercheck": "将来の再評価で代替説明・境界・失敗を別途反証する。計画書は実施証拠に使わない。"
+						}
+					}
+				}
+			}
+		}
+	},
+	"baseline_snapshot": "6640de20103626039b7f87f7a4849005657bc2aa",
+	"scenario_conditions": [
+		"Every Q01-Q16 acceptance check in docs/plans/quality-improvement-2026-11-05.md has passed on one immutable resulting snapshot; Q17 reassessment independently validates the evidence.",
+		"Current F01-F06 are resolved under the documented acceptance checks, while original current ledger remains unchanged. Findings below are empty only inside this hypothetical completed scenario.",
+		"User-requested direct Claude Messages API and OpenAI Responses API with gpt-6-luna are implemented through InferencePort and measured; shared profile variables CLAUDE_API_KEY and OPEN_AI_API_KEY are supported without project .env. Both API conditions plus the actual authorized Eumenes host path pass their acceptance gates. Mere key presence, mocks or replay never count as authenticated live outcomes.",
+		"No confirmed unresolved Critical/High finding, no hidden exclusion/weight/profile change, and all30 technical criteria directly evidenced. Actual anchor4 requires High confidence, negative controls and the listed independent/boundary acceptance evidence.",
+		"No real user data collection, external source mutation, commit or push is authorized by this scenario. Project-potential score is not forecast."
+	],
+	"assumed_fixes": [
+		{
+			"finding": "F01",
+			"condition": "Wrong-flow counterexample fails dependency/delivery or semantic evaluation while valid alternatives pass; producer prompts never receive gold. Two metrics reported separately."
+		},
+		{
+			"finding": "F02",
+			"condition": "Changing a case after run must produce explicit drift error or use original pinned snapshot; old scores cannot claim new gold."
+		},
+		{
+			"finding": "F03",
+			"condition": "__proto__, constructor/prototype and escaped-key fixtures preserve native JSON data meaning without inherited status; normal/duplicate-key/depth checks retain behavior."
+		},
+		{
+			"finding": "F04",
+			"condition": "Fresh checkout with no tokenizer env/files passes all offline tests and missing tokenizer returns null, with no skip/weakened assertion."
+		},
+		{
+			"finding": "F05",
+			"condition": "README/plan/AGENTS/index agree on p0-2, latest target model class, unfinished live integration and evidence status."
+		},
+		{
+			"finding": "F06",
+			"condition": "Predeclared immutable config/cases and new holdout hashes, no parameter choice from new final results; old/new numbers separated."
+		}
+	],
+	"target_transitions": [
+		{
+			"criterion": "architecture.boundaries",
+			"current": 3,
+			"target": 4,
+			"work_packages": ["Q09", "Q12", "Q15"],
+			"required_evidence": "独立consumerと実ホストの複数経路で境界を検査し、代表的な変更を局所化できたことを差分と回帰で確認する"
+		},
+		{
+			"criterion": "architecture.flow",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q03", "Q06", "Q10", "Q11", "Q15"],
+			"required_evidence": "版・参照・状態・権限の不変条件を正常系と異常系で確認する"
+		},
+		{
+			"criterion": "architecture.fit",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q09", "Q13", "Q15"],
+			"required_evidence": "直列8手順の制約と実ホスト予算に適合し、独自実行基盤を増やさない"
+		},
+		{
+			"criterion": "correctness.contracts",
+			"current": 2,
+			"target": 4,
+			"work_packages": ["Q02", "Q04", "Q05", "Q06", "Q15"],
+			"required_evidence": "正常・不正・代替解・誤配線・未配送を独立した評価と実ホストで確認し、隠れた例外処理がない"
+		},
+		{
+			"criterion": "correctness.edge_cases",
+			"current": 2,
+			"target": 4,
+			"work_packages": ["Q02", "Q04", "Q10", "Q11"],
+			"required_evidence": "JSON特殊キー・境界・schema変換不能・原文・参照・状態の不変条件を差分生成試験と負例で検証する"
+		},
+		{
+			"criterion": "correctness.concurrency",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q03", "Q11", "Q15"],
+			"required_evidence": "既定の直列実行と記録の競合・取消・期限・重複を検証する"
+		},
+		{
+			"criterion": "security.access",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q10", "Q15"],
+			"required_evidence": "ホストの認可・確認・参照解決を実経路の拒否試験で検査する"
+		},
+		{
+			"criterion": "security.input_secrets",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q02", "Q10", "Q12", "Q15"],
+			"required_evidence": "構文・型・入力由来と指示の境界、ログと配布物への秘密混入を負例で検証する"
+		},
+		{
+			"criterion": "security.abuse",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q10", "Q11", "Q13", "Q15"],
+			"required_evidence": "実際の権限範囲で過大入力・期限・依存停止・繰返しの上限と拒否後状態を検証する"
+		},
+		{
+			"criterion": "reliability.failure",
+			"current": 3,
+			"target": 4,
+			"work_packages": ["Q11", "Q15"],
+			"required_evidence": "外部作用の前後と成否不明で失敗を注入し、後続・完了表示・記録の不変条件を実ホストで確認する"
+		},
+		{
+			"criterion": "reliability.recovery",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q03", "Q06", "Q11", "Q15"],
+			"required_evidence": "中断後の記録・新run再開・実ホスト重複防止を検査し、未確認作用を自動再実行しない"
+		},
+		{
+			"criterion": "reliability.resilience",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q10", "Q11", "Q13", "Q14"],
+			"required_evidence": "依存先の不達・遅延・不正応答と代表負荷で制御された停止・回復を測る"
+		},
+		{
+			"criterion": "maintainability.clarity",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q08", "Q09", "Q16"],
+			"required_evidence": "現在地・契約・入口・診断文書が一致し、初見利用者の操作と変更追跡で確認する"
+		},
+		{
+			"criterion": "maintainability.change",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q04", "Q06", "Q09", "Q12"],
+			"required_evidence": "代表的な契約・parser・prompt変更を局所化し、意味のある回帰検出で確認する"
+		},
+		{
+			"criterion": "maintainability.debt",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q08", "Q09", "Q16"],
+			"required_evidence": "実測した重複や変更波及だけを整理し、複数の変更で保守負担低減を確かめる"
+		},
+		{
+			"criterion": "common_components.duplication",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q04", "Q05", "Q06", "Q09"],
+			"required_evidence": "各形式と修復の共通契約・評価を同じ境界条件で確認する"
+		},
+		{
+			"criterion": "common_components.reuse",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q05", "Q09", "Q12", "Q15"],
+			"required_evidence": "既存InferencePort、記録再生、Muse、Claude API、OpenAI API、ホスト、Zodを共通の評価契約から利用し、provider固有の接続処理をbenchに閉じる"
+		},
+		{
+			"criterion": "common_components.abstraction",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q09", "Q15"],
+			"required_evidence": "実consumerと必要な接続だけに狭いinterfaceを保ち、不要な枠組みを追加しない"
+		},
+		{
+			"criterion": "testing.risk_coverage",
+			"current": 2,
+			"target": 4,
+			"work_packages": ["Q01", "Q02", "Q04", "Q05", "Q10", "Q11", "Q12", "Q15"],
+			"required_evidence": "主要リスクに対応する負例・相互作用試験が実際の欠陥を検出することを意図的変異と実経路で検証する"
+		},
+		{
+			"criterion": "testing.quality",
+			"current": 2,
+			"target": 4,
+			"work_packages": ["Q03", "Q04", "Q05", "Q06", "Q07"],
+			"required_evidence": "正解・生成・評価を隔離し、独立した意味判定と負例で検出力を確認する。曖昧解と採点変更を明示する"
+		},
+		{
+			"criterion": "testing.automation",
+			"current": 1,
+			"target": 3,
+			"work_packages": ["Q01", "Q12", "Q16"],
+			"required_evidence": "秘密・tokenizerなしのクリーンCIで型・lint・全試験・配布利用側検査を継続実行し、回帰を失敗として検出する"
+		},
+		{
+			"criterion": "supply_chain.dependencies",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q12"],
+			"required_evidence": "正確な依存版・配布対象・脆弱性到達性と更新時の実確認を保存する"
+		},
+		{
+			"criterion": "supply_chain.build_release",
+			"current": 3,
+			"target": 4,
+			"work_packages": ["Q06", "Q12", "Q15"],
+			"required_evidence": "独立ビルド一致・内容差替え・未完了公開・別consumer・本体vendor照合・更新戻しを実際の経路で検査する"
+		},
+		{
+			"criterion": "supply_chain.license",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q12"],
+			"required_evidence": "実際に配布されるファイルと依存の権利・出所・責任を照合し、変更時に漏れを検出する"
+		},
+		{
+			"criterion": "performance.budget",
+			"current": null,
+			"target": 3,
+			"work_packages": ["Q13", "Q14", "Q15"],
+			"required_evidence": "事前固定した所要時間・メモリ・呼出数・取得可能な実費の予算を代表条件で満たす。取得不能値はnullで残す"
+		},
+		{
+			"criterion": "performance.hot_path",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q09", "Q13"],
+			"required_evidence": "実カタログ・最大手順・境界入力の計測でボトルネックと余裕を確認する"
+		},
+		{
+			"criterion": "performance.measurement",
+			"current": null,
+			"target": 3,
+			"work_packages": ["Q03", "Q06", "Q13", "Q14"],
+			"required_evidence": "Claude APIとOpenAI gpt-6-lunaの条件固定の実生成時間とusage、未取得値、回帰シグナルを生成runから再生可能に保持し、再生時間と混同しない"
+		},
+		{
+			"criterion": "operability.signals",
+			"current": 3,
+			"target": 3,
+			"work_packages": ["Q03", "Q06", "Q11", "Q16"],
+			"required_evidence": "失敗と中断の原因を永続記録から特定し、必要十分な情報で追跡できる"
+		},
+		{
+			"criterion": "operability.lifecycle",
+			"current": 1,
+			"target": 3,
+			"work_packages": ["Q01", "Q08", "Q12", "Q15", "Q16"],
+			"required_evidence": "初回導入・設定・更新・中断回復・戻し・除去を対象環境で検証する"
+		},
+		{
+			"criterion": "operability.interaction",
+			"current": 2,
+			"target": 3,
+			"work_packages": ["Q05", "Q08", "Q15", "Q16"],
+			"required_evidence": "SDKと既存画面の代表作業・確認・エラー復帰を初見利用者と検証する"
+		}
+	],
+	"api_validation_scope": {
+		"providers": ["anthropic", "openai"],
+		"openai_model": "gpt-6-luna",
+		"anthropic_model": "To be pinned to an accessible exact ID before live validation",
+		"credential_environment_precedence": {
+			"anthropic": ["CLAUDE_API_KEY", "ANTHROPIC_API_KEY"],
+			"openai": ["OPEN_AI_API_KEY", "OPENAI_API_KEY"]
+		},
+		"project_dotenv_required": false,
+		"live_calls_performed": false,
+		"credential_check": "Explicit zsh login child process observed both preferred variables present; values and authentication not inspected or tested."
+	}
+}

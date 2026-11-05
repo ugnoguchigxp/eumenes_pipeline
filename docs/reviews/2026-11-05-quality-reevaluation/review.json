@@ -1,0 +1,1115 @@
+{
+	"rubric_version": "1.1.0",
+	"mode": "full",
+	"depth": "deep",
+	"technical_profile": "library",
+	"assessment_kind": "re-evaluated",
+	"target": {
+		"locator": "/Users/y.noguchi/Code/eumenes_pipeline",
+		"snapshot": "sha256:d8ac16d99861d43ae8be84f19ef82eef3d7242447b07bdba6b0eafaf9dd0ba25; archived evidence sha256:f16c6410c3ff4c8a55fd405e37834b4fdf08fd121154d82e549815115eb82945",
+		"reviewed_at": "2026-11-05",
+		"stage": "Standalone pre-integration library p0-3",
+		"scope": "Same full/deep library rubric 1.1.0 and all 30 technical criteria, no N/A or weight changes. Baseline commit 6640de2, new explicitly identified uncommitted source snapshot: src/bench/scripts TS/Python plus package, lock, build configs, README and LICENSE; exact file inventory in freeze and independent archive. Bun 1.4.4 Darwin arm64. Local component, integration, complete gate and fresh consumer/replay executed; official Claude and OpenAI APIs measured under shared USD10 approval. User excludes CI and all main-host integration; no main-host writes, real-tool execution, server operations or user-pilot claims. Technical score evaluates this library/bench scope, not model success rate or host readiness. Project potential remains incomplete without actual-user evidence."
+	},
+	"evidence": [
+		{
+			"id": "E01",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: git status/log/rev-parse @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Clean main, HEAD 6640de2; exact snapshot archived for probes. No project source modifications.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E02",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: src/contracts/{definition,authoring,execution,component,record}.ts; src/{catalog,check,ports,index}.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Trace: parsed unknown -> strict Zod schema -> unique/reserved IDs -> backward-only references -> offered exact entry resolution -> argument schema check -> revision-pinned ExecutionPlan. Semantics delegated to model. Only zod dependency, no environmental IO. Max 8 serial steps; unknown schema conversion produces a warning, host must still enforce authorization and actual argument validation.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E03",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: check-all.log; command bun run check:all",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 1 on Bun 1.4.4 Darwin arm64 in isolated snapshot, no tokenizer environment override. Typecheck (99/9 files), lint and format pass. 328 tests: 326 pass / 2 fail, both bench/tokens.test.ts external tokenizer and source.json dependency. No tests skipped or assertions weakened.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E04",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/mock/driver.ts; bench/mock/driver.test.ts; src/contracts/execution.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Sequential execution passes only declared references, adopts completed results only, rejects missing/invalid output and results after cancel/deadline, returns delivered=null on partial failure. Tests cover all noncompleted states; actual queues/restart/external effects are owned by Eumenes, not verified here.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E05",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: bench-verify.log; command bun run bench:verify --db :memory:",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0, 87/87 checks pass; no external reach attempts. Run 4470c884-8e44-40bb-9f8e-6f705362da6c. Isolated snapshot and in-memory work DB; synthetic validation, not real task success.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E06",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/mock/guard.ts; bench/mock/guard.test.ts; bench/test-preload.ts; bunfig.toml @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Runtime reach guard and static source restrictions block network/process/thread/real-tool calls by default; test suite passes guard and src purity checks. Allowances explicit at first install. Guard is an in-process test control, not an OS isolation boundary for arbitrary hostile code.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E07",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: probes.log (wrong-flow); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Ran registered edo-research-image-music case with image and music before research; neither consumes research, output.from contains research only. ScoreBreakdown has all criteria true including passed; delivered=[research]. No live model or real tools; mock only.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E08",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/scoring/score.ts:158-216; bench/cases/cases.ts:10-24; data/cases/edo-research-image-music.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "requiredMaterials only checks consumption anywhere or final output, no required producer-consumer pair. finalArtifact checks any adopted output rather than delivered outputs, intentionally documented as adopted outputs. No semantic judgement is invoked by runFormat. Gold notes require research for both image and music. Thus passing is a limited structural metric.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E09",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: probes.log (prototype-key); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. JSON text with sole __proto__ object containing status=unsupported and reasons is parsed into an object with no own keys; shared outcome discriminator reads inherited status, and authoring gate returns a valid unsupported outcome. Native JSON.parse retains own __proto__ key. This is local object-prototype mutation; global Object.prototype compromise or production RCE is not established.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E10",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/formats/strict-json.ts:67-89; bench/formats/outcome.ts:52-100 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Strict JSON reader creates {} then assigns out[key]. JS __proto__ setter changes prototype, contradicting data-preserving parsing; discriminator reads ordinary properties/in operator. Parser only ships in bench, not dist.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E11",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: probes.log (gold-drift); source/review-probes.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit 0. Replayed prime-count run b775b63a-98b0-469f-9f04-a4db13dadea9; exported it, changed requiredBundles to web.search in a separate cases directory, exported same run again. New goldSha256 appears but passed=1 and summary cross-check differences=[] with every applicable check true. Source case files untouched.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E12",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/format/run.ts:975-1014; bench/export/export.ts:388-410 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Run input pins case IDs but not case content hashes, scorer code digest or repository revision. Export hashes cases present at export time and recomputes totals from score rows, not outcomes under historic gold. Git versions could help manual recovery if separately known, but DB does not link that revision.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E13",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/tokens.test.ts:30-37,90-99; bench/tokens.ts:27-50; docs/evaluation.md:25-35 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Tests inject fakeRunner but still assume an external tokenizer.json exists. Provenance test reads external source.json without a temporary fixture. Docs promise null counts when tokenizer absent, yet ordinary check:all fails without files outside repo.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E14",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: pack-check.log, pack.log; source/artifacts/eumenes-pipeline-0.0.0-8f5388402289/manifest.json",
+			"observed_at": "2026-11-05",
+			"observation": "bun run pack:check exit 0, bun run pack exit 0. Artifact 21 files, 13,579 bytes; SHA256 25b34b23d9b7aff4fec98f7f0fc9b39398b2ee9cb3809f14c6df875fc0a9b3a1. Fresh consumer install/typecheck/runtime smoke pass. Tarball matches prior repository build byte-for-byte. Isolated archive manifest has gitSha/dirty null, source digest retained. No Eumenes changes.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E15",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: scripts/pack.ts; package.json; bun.lock; tsconfig.build.json; vendor/router/manifest.json @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Only ESM/types and package metadata ship. Dist excludes tests/test-support. Digests cover source and lock/config, exclusive target creation prevents same-name replacement; consumer checks before publication. Router tarball source/digest recorded; seven-day dependency minimum age and lockfile. Registry/package known versions inspected; no reachability-aware vulnerability assessment or long-term update practice independently verified.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E16",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/store/work-db.ts; bench/store/work-db.test.ts @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "SQLite foreign keys, recursive triggers, transactions for initial schema, immutable finished records, unique attempts, rejects REPLACE/delete, explicit parent-run retry. Relevant tests pass. Experiment replay can start new runs; no recovery/dedup of actual product side effects is implemented or claimed by this library.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E17",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: README.md:19-26; plan.md:415-435; AGENTS.md; src/index.ts:1-10; docs/handoff/2026-11-04-p1.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Entry documents describe P0/provisional and undone evaluation while source fixes p0-2 in P1 and later handoffs record P4 and follow-ups. Main plan also calls mock evaluator unimplemented. Known drift acknowledged by P1 handoff; target-model wording shifts LFM -> Luna/Haiku in later records.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E18",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: docs/handoff/2026-11-04-p4.md:1-137 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author-recorded agent-model holdout raw passed=27/40, repaired=35/40; catalog-only and fixture-dependent reported separately. Repair mostly ID shape; selection prefix top12=30/34 vs29/34 baseline. No target-model acceptance; not actual task outputs, latency or provider costs. Raw records absent locally, so numeric claims not independently rechecked.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E19",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: docs/handoff/2026-11-04-accuracy-3.md:25-51 @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "After P4 freeze/holdout, union follow-up evaluates k=3..6 on dev and already seen holdout; recommends k=5 and uses holdout 32/34 as adoption condition. Dev also supports k=5; this does not erase original P4 one-pass result, but follow-up is diagnostic reused-holdout evidence, not fresh final confirmation. No union-compose measurement.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E20",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: docs/handoff/2026-11-04-staged.md; accuracy-1/2/4/5.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Author records both successful and failed hypotheses; staged long-chain 7/8 baseline vs1/8 staged, coverage marks 100% with wrong entry choice; rejected, flags stay default off. Evidence for useful research feedback, not independent user feedback or target-model success.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E21",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: bench/format/{prompt,run,conditions,enumerate,triage}.ts; bench/infer/{recorded,muse-exec}.ts; related tests @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Prompt builder receives request/materials/cards, excludes expected; replay keyed to purpose/system/prompt digest, missing/mismatched recordings refused. Mechanical repair limited to one attempt and no gold. Inference adapter uses separate temp dir and configurable provider interface. Muse subprocess outputs and isolation tested with stubs; real target calls not run. run.ts 1803 lines, export.ts946 lines reflect increasing bench condition complexity.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E22",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: docs/handoff/2026-11-04-p2.md; docs/handoff/2026-11-04-p3.md @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Adapter mapping and separate consumer checks reported on another local Eumenes branch. Actual prepare/execute/adopt transactions, screen E2E and main integration explicitly unexecuted. Old Pipeline Studio structural comparison only; no same-task old-vs-new outcome benchmark. Old flow targets reusable toolchains, new one-off request-specific plans, so naive benchmark would be unfair.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E23",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: /Users/y.noguchi/Code/eumenes/package.json @ 056afd43115c0ae7df91449ad62baa0000d73c60",
+			"observed_at": "2026-11-05",
+			"observation": "Read-only local Eumenes main package contains eumenes_router but no eumenes-pipeline dependency; expected new adapter/vendor path absent in inspected locations. No source changes or tests there. Does not establish remote branches or deployments state; existing unrelated dirty files left untouched.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E24",
+			"kind": "execution",
+			"locator": "../2026-11-05-project-evaluation/ :: performance.log; command bun run review-performance.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exit0 Bun1.4.4 Darwin arm64, warmed pure checkDefinition,24 synthetic entries,10000 iterations each:1step p50=.000958ms p95=.001417ms;8steps p50=.003667ms p95=.004625ms. No argument schema conversion, inference, IO, contention or operating-budget measurement. Establishes only local validator cost, not product latency/scale.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E25",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: https://docs.langchain.com/oss/javascript/langgraph/persistence (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official current documentation states checkpointers persist thread graph state for interruption/failure recovery, human-in-loop and continuity. Comparative source only; no performance or feature-parity benchmark executed.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E26",
+			"kind": "primary_doc",
+			"locator": "../2026-11-05-project-evaluation/ :: https://pydantic.dev/docs/ai/graph/graph/ (observed 2026-11-05)",
+			"observed_at": "2026-11-05",
+			"observation": "Official documentation describes typed asynchronous Python graphs/state machines with nodes and edges from type hints, explicit states, branches and resumable transitions. This demonstrates prior art for typed graph orchestration, not equivalent Eumenes integration or measured superiority.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E27",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: LICENSE; package.json; installed zod/yaml/jsonrepair/typescript/oxlint package metadata @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "Project MIT, zod4.4.3 MIT, yaml2.9.1 ISC,jsonrepair3.15.0 ISC,typescript7.0.2 Apache-2.0,oxlint1.86.0 MIT. Runtime dependency only zod; project license and README in artifact. Does not constitute legal opinion or complete provenance of arbitrary future catalog content.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "E28",
+			"kind": "code",
+			"locator": "../2026-11-05-project-evaluation/ :: git tracked files and git log; data/cases; docs/handoff; filesystem data/work and data/runs @ 6640de20103626039b7f87f7a4849005657bc2aa",
+			"observed_at": "2026-11-05",
+			"observation": "116 tracked cases, dev76/holdout40; no tracked CI configuration under .github; local historical work DB and session runs absent. Short active history by named owner/Muse Agent plus detailed handoffs; no evidence of retained users, independent demand, support resources or sustained governance. Absence of historical artifacts limits independent verification, not proof of fabricated experiments.",
+			"scope": "HISTORICAL BASELINE 6640de2; Current snapshot; limits stated in observation."
+		},
+		{
+			"id": "N01",
+			"kind": "execution",
+			"locator": "final-metadata-check.log; final-metadata-verify.log; final-clean-gate.log",
+			"observed_at": "2026-11-05",
+			"observation": "bun run check:all exit0: 378 pass,0 fail plus both type configs/lint/format; bun run bench:verify --db :memory: exit0 87/87 zero reaches. Fresh directory installs frozen dependencies and independently repeats check:all, bench:verify, pack:check and pack, all exit0. Generated replay-root formatting check failed on its two generated JSON files, so source-only full gate was performed without editing published evidence or weakening checks.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N02",
+			"kind": "code",
+			"locator": "src/{check,ports,catalog,index}.ts; src/contracts/{schema,limits,definition,authoring}.ts; src/internal/{schemas,json}.ts; src/check.test.ts; bench/mock/guard.test.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Source trust context detects request mismatch and refuses unchecked arguments. Bounded JSON validation rejects circular/nonfinite/accessor inputs before cloning. Existing exact-name contracts, max8 and backward refs retained. Public Schema parse/safeParse hides internal Zod DOM type leak. Purity and independent ES2022-only consumer checks pass. Source has no semantic keyword or scenario dispatch.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N03",
+			"kind": "execution",
+			"locator": "regression-before.log; q04-regression-before.log; bench/formats/{strict-json,outcome}.ts; bench/scoring/{wiring,score}.ts and tests",
+			"observed_at": "2026-11-05",
+			"observation": "Actual pre-fix negative controls failed for wrong flow/delivery and prototype handling. New own-property parser tested against JSON.parse and inherited discriminator denied. Shared injective role mapping checks directed edges, delivery and alternatives/repeated entries. After fix targeted and full gate pass. Reference constraints stay evaluator-only, never producer or MockHost.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N04",
+			"kind": "execution",
+			"locator": "final-standalone-result.json; final-standalone-replay.log; bench/cases/{provenance,freeze}.ts and tests; bench/export/{export,bundle}.ts and tests",
+			"observed_at": "2026-11-05",
+			"observation": "Frozen raw cases/hash, source identity and protocol bound before calls. Export rejects drift. VACUUM INTO independently opens old SQLite snapshot. Fresh directory installs lock and regenerates 48 cells plus semantic matrix: exact reports equal excluding newly allocated report/scored run IDs only, HTTP0. Base replay also equal24/24. Old records remain distinct; schema-aware migration checks immutable original API request hashes and completed trial output, no new generation.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N05",
+			"kind": "execution",
+			"locator": "../../evaluation.md; ../../../data/evaluation/quality-finalized-2026-11-05/{freeze,result,protocol}.json; recording-migration.json",
+			"observed_at": "2026-11-05",
+			"observation": "Actual study 24cases x2 producer models; all48 API generations and96 v3 cross-judge calls complete. Audited reference Luna17/24, Sonnet23/24; primary semantic19/24 and23/24; strict reference AND primary17/24 and22/24. V3 Sonnet calibration7/7, Luna6/7 diagnostic only. Four reference corrections audited independently of producer output. Cases now dev/exposed, regrade is not second unseen acceptance; old initial results retained. All providers actual usage/latency retained, calls/actual invoice null when unreported.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N06",
+			"kind": "execution",
+			"locator": "budget-audit.json; bench/store/api-budget.ts and tests; bench/infer/{api,api-config,run-api}.ts and tests",
+			"observed_at": "2026-11-05",
+			"observation": "319 completed live HTTP requests across compose66, judge251,repair2. One shared append-only ledger USD8.5 operational below USD10 approval, conservative committed ceiling USD5.204023, no active reservations. Actual billed USD unknown/null. Pre-reservation full-context upper bounds, transactional multi-handle ceiling, unknown outcome retaining reservation, no retries, exact endpoints/no redirects, bounded deadline/response/body and redaction tested. No cache-control or external tools configurable.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N07",
+			"kind": "execution",
+			"locator": "repair-verified-luna.log; repair-verified-sonnet.log; bench/infer/recorded.test.ts; ../../../data/runs/format/quality-repair-verified-{luna,sonnet}/fault-injection.json",
+			"observed_at": "2026-11-05",
+			"observation": "Controlled corruption of prior real API output, not natural generation failure: one unknown reference. Both real APIs repaired once, replay passed0->1; original composing bytes unchanged, API usage retains actual model. Mixed legacy compose/API repair regression and missing sidecar fail-closed tests pass. outputSchema now participates in request identity; legacy unknown schema refused until verified metadata derivation into fresh session.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N08",
+			"kind": "execution",
+			"locator": "dependency-audit.json; dependency-audit-after.json; ../../dependencies.md; bun.lock; src/internal/schemas.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Exact dependency inventory and licenses. bun audit --json found Zod4.4.3 collection over-allocation advisory GHSA-mrhx-c7xc-m3w5; local public schema/list path traced and updated4.6.7 (published >7days), auditafter empty. Public type leak from update reproduced then isolated internally while consumer types[] and ES2022 constraints unchanged. jsonrepair3.15.0 exact. Known advisory review is current snapshot, not permanent absence of vulnerabilities.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N09",
+			"kind": "execution",
+			"locator": "release-pack-check.log; release-pack.log; final-clean-gate.log; ../../../artifacts/eumenes-pipeline-0.0.0-32f778cb14b4/manifest.json; scripts/pack.ts",
+			"observed_at": "2026-11-05",
+			"observation": "pack:check and pack exit0 with fresh consumer install/types/runtime. Actual29-file tarball SHA2569ba750c488610ad39d280931e861e6d8fb6a6e44f118ce5900cb80ce8fcc62c9; independent final clean copy produces same SHA. Allowlist/exclusive target/hash/source checks tested. Same-name outputs not overwritten. SourceDigest includes pack script, README, LICENSE. No publication or Eumenes copy. Artifact dirty:true honestly names source identity, not a new commit.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N10",
+			"kind": "execution",
+			"locator": "performance.json; ../../../bench/cli/performance.ts; ../../../data/evaluation/quality-finalized-2026-11-05/result.json",
+			"observed_at": "2026-11-05",
+			"observation": "Actual24entry catalog,1/8steps,short/max2000 task,1000 samples each after100 warmups. Maximum structural p95 about0.0074ms <5ms budget. Producer API p95 Luna6396.36ms /Sonnet8670.77ms <90000ms; calls sequential/no retries; resources bounded by source limits and API caps. Heap delta is not peak memory; no real-tool or large-catalog benchmark claimed.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N11",
+			"kind": "primary_doc",
+			"locator": "../../../README.md; ../../../plan.md; ../../plans/quality-improvement-2026-11-05.md; ../../handoff/2026-11-05-quality-improvement.md; ../../evaluation.md; ../../dependencies.md",
+			"observed_at": "2026-11-05",
+			"observation": "Current p0-3 public contract, API aliases in login shell without .env, evaluator versions, known model failures, scope exclusions, lifecycle/pack, API-null billing, fixed archive replay and prior exposed holdout explicitly documented. Historical plans kept historical. CI excluded by explicit user instruction; not credited as executed. Main-host proposal is future work only.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N12",
+			"kind": "execution",
+			"locator": "../../../bench/store/{work-db,api-budget}.test.ts; ../../../bench/selection/live.test.ts; ../../../bench/mock/driver.test.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Version1->2 preserves completed runs; append-only triggers reject update/delete/replace. Shared budget handles no overspend; failed/unknown usage retains cost bound. Embed stalled fetch aborts and redirects refused; expired request makes zero host dispatch; driver cancellation/deadline/state adoption negative controls pass. Not OS/crash fault-injection of real tool effects.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		},
+		{
+			"id": "N13",
+			"kind": "code",
+			"locator": "../../../bench/format/run.ts; ../../../bench/infer/{recorded,api,muse}.ts; ../../../src/ports.ts; ../../../src/internal/schemas.ts",
+			"observed_at": "2026-11-05",
+			"observation": "Formats and providers use same authoring/check/scorer and InferencePort. Three concrete inference consumers (API/replay/Muse), mock host and consumer smoke demonstrate shared ports without provider-dependent semantic judgment. Source boundary/API-contract/Zod migration changes stayed in respective modules. Large experiment runner/export remain known maintenance debt; no sustained low-maintenance claim.",
+			"scope": "Current standalone snapshot; no host or real-tool success claimed."
+		}
+	],
+	"claims": [
+		{
+			"id": "RC01",
+			"type": "Fact",
+			"statement": "Both local gates, clean consumer and API0 independent48cell reports passed at the named source snapshot.",
+			"evidence_ids": ["N01", "N04", "N09"],
+			"limitations": "No CI, host or real tool verification."
+		},
+		{
+			"id": "RC02",
+			"type": "Inference",
+			"statement": "Measured producer quality supports Sonnet as the current standard and Luna as lower-cost diagnostic/comparison, without claiming reliable completion of all user tasks.",
+			"evidence_ids": ["N05", "N06"],
+			"limitations": "One sample per synthetic case; primary judge is also Sonnet; calibration small and reused cases exposed."
+		},
+		{
+			"id": "RC03",
+			"type": "Unknown",
+			"statement": "Actual user value, real-host safety and actual API invoice amount remain unconfirmed.",
+			"limitations": "No user pilot or main-host execution; provider invoice unavailable."
+		}
+	],
+	"findings": [
+		{
+			"id": "F01",
+			"status": "withdrawn",
+			"severity": "Medium",
+			"priority": "P0",
+			"priority_reason": "Before benchmark pass is used as product acceptance.",
+			"confidence": "High",
+			"title": "Aggregate structural pass can accept wrong order and undelivered required artifacts",
+			"evidence_ids": ["E07", "E08", "N03", "N05"],
+			"root_cause": "Gold represents producer membership/use-anywhere, not required source->consumer edges or final delivery; no separate semantic gate.",
+			"condition": "A plan contains required entries but creates artifacts before research and delivers research only.",
+			"consequence": "Benchmark pass is not evidence of request fulfilment; optimizing it can select semantically wrong plans.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Directed wiring/delivery tests reject original wrong graph, and semantic validation separate.",
+			"fix": "Keep structural checks; add evaluator-only permitted dependency/delivery constraints where explicit, plus separate blind LLM or human semantic review. Never add scenario-keyword judgement to product code.",
+			"verification": "Verified: N03, N05. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "contracts",
+					"reason": "Primary evaluation verdict does not cover required fulfilment contract."
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "risk_coverage",
+					"reason": "Missing negative controls for required relation and delivery."
+				}
+			]
+		},
+		{
+			"id": "F02",
+			"status": "withdrawn",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Export attributes current gold to an old run without detecting drift",
+			"evidence_ids": ["E11", "E12", "N04", "N07"],
+			"root_cause": "Case content/scorer revision not pinned at run creation; export reads current cases.",
+			"condition": "Cases change after run, same run exported again.",
+			"consequence": "Unchanged historical scores can be accompanied by a new gold hash and clean cross-check, weakening reproducibility and audit.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Pinned exact case/source and export drift rejection; independent current replay equal.",
+			"fix": "Record evaluator-only case hashes and code/scorer revision at run start; compare at export, retain snapshot/reference or flag old runs unknown.",
+			"verification": "Verified: N04, N07. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "reliability",
+					"criterion": "recovery",
+					"reason": "Replay/audit depends on original inputs."
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "quality",
+					"reason": "Cross-check cannot detect changed test expectations."
+				}
+			]
+		},
+		{
+			"id": "F03",
+			"status": "withdrawn",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Strict JSON __proto__ property changes local object prototype and outcome",
+			"evidence_ids": ["E09", "E10", "N03"],
+			"root_cause": "Object constructed as {} with out[key] assignment and inherited status read.",
+			"condition": "Input contains __proto__ object.",
+			"consequence": "Key lost as own data, inherited authoring status accepted; JSON/YAML outcome comparison and validation can be distorted.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Own-property parser and own discriminator with independent comparisons reject original counterexample.",
+			"fix": "Construct safe own-property data (Object.create(null) or defineProperty/standard parse plus duplicate-key detection), and discriminate outcomes on own fields.",
+			"verification": "Verified: N03. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "edge_cases",
+					"reason": "Valid JSON property semantics broken."
+				},
+				{
+					"track": "technical",
+					"dimension": "security",
+					"criterion": "input_secrets",
+					"reason": "Input controls allow inherited discriminator values."
+				}
+			]
+		},
+		{
+			"id": "F04",
+			"status": "withdrawn",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Default offline test gate relies on untracked external tokenizer files",
+			"evidence_ids": ["E03", "E13", "N01"],
+			"root_cause": "Fake runner tests do not supply their own tokenizer/source fixtures.",
+			"condition": "Fresh clone/Mac environment lacks ~/workspace/tools/lfm-tokenizer.",
+			"consequence": "Required check:all exits1 even without optional model measurements, preventing portable regression gate.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Temporary explicit tokenizer fixtures; two clean full gates pass with no external tokenizer.",
+			"fix": "Use temporary fixtures and explicit env for unit tests; keep absent-file tests; make real-tokenizer integration separate.",
+			"verification": "Verified: N01. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "automation",
+					"reason": "Ordinary documented gate not reproducible."
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "lifecycle",
+					"reason": "Install/check lifecycle requires hidden external fixture."
+				},
+				{
+					"track": "project",
+					"dimension": "adoption",
+					"criterion": "entry",
+					"reason": "Concrete internal adoption friction."
+				}
+			]
+		},
+		{
+			"id": "F05",
+			"status": "withdrawn",
+			"severity": "Low",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Canonical current-stage documents contradict implementation and handoffs",
+			"evidence_ids": ["E17", "E22", "N11"],
+			"root_cause": "Entry docs/plan not reconciled with p0-2/P1-P4 work and changed target-model acceptance.",
+			"condition": "Maintainer follows README or plan current-state sections.",
+			"consequence": "Wrong assumptions about fixed contracts, remaining work and measurement target cause avoidable investigation/rework.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Current entry and implementation status docs synchronized; old records explicitly historical.",
+			"fix": "Update canonical current-state/decision index, distinguish library completion from model/dispatch acceptance, point to final decisions and experimental conditions.",
+			"verification": "Verified: N11. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "maintainability",
+					"criterion": "clarity",
+					"reason": "Main entry documents misstate current contracts."
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "lifecycle",
+					"reason": "New integrators cannot determine accurate prerequisites and stage."
+				}
+			]
+		},
+		{
+			"id": "F06",
+			"status": "withdrawn",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "Before the next evaluation or integration handoff relies on this behavior.",
+			"confidence": "High",
+			"title": "Later selection recommendation reuses exposed holdout for tuning/acceptance",
+			"evidence_ids": ["E18", "E19", "N04", "N05", "N11"],
+			"root_cause": "Post-P4 follow-up sweeps k on an already viewed holdout and uses its result as adoption condition.",
+			"condition": "Union k3..6 evaluated against same holdout after original freeze.",
+			"consequence": "94.1% is valid posthoc inclusion observation but cannot serve as independent fresh final estimate of selected improvement.",
+			"counterevidence": "CURRENT SCOPE RESOLUTION: Historical exposed holdout was not made unseen retroactively. New final producer protocol frozen before calls; posthoc evaluator changes reported as exposed dev regrade. Original numbers and uncertainties retained.",
+			"fix": "Label reused holdout diagnostic; freeze final configuration and assess once on new sealed group-separated cases and exact target model, including compose outcomes.",
+			"verification": "Verified: N04, N05, N11. Historical condition retained in baseline ledger.",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "quality",
+					"reason": "Final-generalization evidence requires independent held-out evaluation."
+				},
+				{
+					"track": "project",
+					"dimension": "execution",
+					"criterion": "focus",
+					"reason": "Posthoc proxy gains should not replace target-model validation."
+				}
+			]
+		}
+	],
+	"tracks": {
+		"technical": {
+			"dimensions": {
+				"architecture": {
+					"criteria": {
+						"boundaries": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N01", "N02", "N09"],
+							"rationale": "Representative parser, provenance, provider and public-validator changes remain local; purity and consumer check independent boundaries.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  purity and consumer check independent boundaries.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N01, N02, N09. Representative parser, provenance, provider and public-validator changes remain local; purity and consumer check independent boundaries."
+						},
+						"flow": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N04", "N06", "N12"],
+							"rationale": "Sequential reference/revision flow, append-only runs, shared budget and publication checks hold; real effect crash windows remain host-owned.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  real effect crash windows remain host-owned."
+						},
+						"fit": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N02", "N09", "N10", "N13"],
+							"rationale": "Measured max8/24card checker stays tiny relative to inference. Source-only ES2022 consumer and actual Zod migration validate portable simplicity; no duplicated runtime or new service.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no duplicated runtime or new service.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N02, N09, N10, N13. Measured max8/24card checker stays tiny relative to inference. Source-only ES2022 consumer and actual Zod migration validate portable simplicity; no duplicated runtime or new service."
+						}
+					}
+				},
+				"correctness": {
+					"criteria": {
+						"contracts": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N01", "N02", "N03", "N05"],
+							"rationale": "Schema, references, sourceRequest, argument and score contracts validated on valid, invalid, transition and two-provider paths. Model reference conformity and semantics remain distinct; no hidden special-case acceptance.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no hidden special-case acceptance.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N01, N02, N03, N05. Schema, references, sourceRequest, argument and score contracts validated on valid, invalid, transition and two-provider paths. Model reference conformity and semantics remain distinct; no hidden special-case acceptance."
+						},
+						"edge_cases": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N02", "N03", "N07"],
+							"rationale": "Independent JSON parser comparisons, real pre-fix failures, wrong graph delivery, cycles/accessors and schema identity test representative invariant violations.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Independent JSON parser comparisons, real pre-fix failures, wrong graph delivery, cycles/accessors and schema identity test representative invariant violations.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N02, N03, N07. Independent JSON parser comparisons, real pre-fix failures, wrong graph delivery, cycles/accessors and schema identity test representative invariant violations."
+						},
+						"concurrency": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N06", "N12"],
+							"rationale": "Declared serial order and cancellation stop semantics plus shared ledger transactions tested. Multi-process stress and real-host effects unmeasured.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Declared serial order and cancellation stop semantics plus shared ledger transactions tested. Multi-process stress and real-host effects unmeasured."
+						}
+					}
+				},
+				"security": {
+					"criteria": {
+						"access": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N06"],
+							"rationale": "Offered entries and exact endpoints form checked library/bench trust boundaries. Real action authorization still belongs to untested host."
+						},
+						"input_secrets": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N03", "N06", "N07"],
+							"rationale": "Prototype keys fixed, request identity and source preserved; exact credential redaction, redirect rejection, no tools and strict bounds tested. No OS isolation or end-user privilege escalation validation.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  exact credential redaction, redirect rejection, no tools and strict bounds tested. No OS isolation or end-user privilege escalation validation."
+						},
+						"abuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N06", "N12"],
+							"rationale": "Depth/nodes/chars, response/time/output ceilings and uncertain-budget reservation resist representative resource failures. Not hostile OS or sustained attack testing.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Depth/nodes/chars, response/time/output ceilings and uncertain-budget reservation resist representative resource failures. Not hostile OS or sustained attack testing."
+						}
+					}
+				},
+				"reliability": {
+					"criteria": {
+						"failure": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N06", "N07", "N12"],
+							"rationale": "Timeout/cancel/refusal/invalid/partial outputs fail observably; no retries or falsely adopted result; unknown HTTP keeps reserved budget. No proof after real external effects.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  unknown HTTP keeps reserved budget. No proof after real external effects."
+						},
+						"recovery": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N04", "N07", "N12"],
+							"rationale": "Independent SQLite snapshot replay, append-only parent runs and actual one-shot API repair preserve evidence; real crash-window effects/dedup not certified.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  real crash-window effects/dedup not certified."
+						},
+						"resilience": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N01", "N06", "N12"],
+							"rationale": "Missing optional tokenizer degrades to null; stalled embed abort and API limits/control responses tested; no provider-scale outage or saturation claim.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no provider-scale outage or saturation claim."
+						}
+					}
+				},
+				"maintainability": {
+					"criteria": {
+						"clarity": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N11", "N13"],
+							"rationale": "Current contracts/migration/scope/replay docs match implementation; multiple representative paths traceable. Large experimental runner still costs maintenance.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  multiple representative paths traceable. Large experimental runner still costs maintenance."
+						},
+						"change": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N01", "N03", "N07", "N08", "N13"],
+							"rationale": "Actual parser/scorer/metadata/dependency regressions were reproduced and detected; fixes and public type isolation stayed at owned boundaries and fresh consumer catches contract leaks.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  fixes and public type isolation stayed at owned boundaries and fresh consumer catches contract leaks.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N01, N03, N07, N08, N13. Actual parser/scorer/metadata/dependency regressions were reproduced and detected; fixes and public type isolation stayed at owned boundaries and fresh consumer catches contract leaks."
+						},
+						"debt": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["N13"],
+							"rationale": "No unnecessary runtime framework added; experiment runner/export complexity remains and short history cannot demonstrate sustained low maintenance cost."
+						}
+					}
+				},
+				"common_components": {
+					"criteria": {
+						"duplication": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N03", "N07", "N13"],
+							"rationale": "Shared authoring/check/scorer used across phases and formats; API repair/legacy compose divergence found and fixed. Not every historical experiment re-run.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  API repair/legacy compose divergence found and fixed. Not every historical experiment re-run."
+						},
+						"reuse": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N01", "N08", "N09", "N13"],
+							"rationale": "Zod validation reused through pure Schema interface; upgrade type failure resolved without weakening actual consumers. Same port supports three inference implementations and independent library consumer.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  upgrade type failure resolved without weakening actual consumers. Same port supports three inference implementations and independent library consumer.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N01, N08, N09, N13. Zod validation reused through pure Schema interface; upgrade type failure resolved without weakening actual consumers. Same port supports three inference implementations and independent library consumer."
+						},
+						"abstraction": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N02", "N07", "N09", "N13"],
+							"rationale": "Concrete provider addition, mixed replay repair and Zod migration show useful narrow ports with independent pure consumer, no new service/provider semantics in source.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Concrete provider addition, mixed replay repair and Zod migration show useful narrow ports with independent pure consumer, no new service/provider semantics in source.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N02, N07, N09, N13. Concrete provider addition, mixed replay repair and Zod migration show useful narrow ports with independent pure consumer, no new service/provider semantics in source."
+						}
+					}
+				},
+				"testing": {
+					"criteria": {
+						"risk_coverage": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N01", "N03", "N06", "N07"],
+							"rationale": "Primary contracts plus representative input/state/API/budget/provenance interactions covered and defect detecting. No real host/tool test or repeatability estimate.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Primary contracts plus representative input/state/API/budget/provenance interactions covered and defect detecting. No real host/tool test or repeatability estimate."
+						},
+						"quality": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N01", "N03", "N04", "N07"],
+							"rationale": "Actual before-fail negative controls and independent48cell replay establish assertions beyond implementation mirroring; limited human calibration and posthoc gold audit explicitly constrain model acceptance.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  limited human calibration and posthoc gold audit explicitly constrain model acceptance."
+						},
+						"automation": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N01", "N09"],
+							"rationale": "Documented reproducible local full gate and release consumer run in two directories. CI explicitly excluded; no CI history or platform matrix credited.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no CI history or platform matrix credited."
+						}
+					}
+				},
+				"supply_chain": {
+					"criteria": {
+						"dependencies": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["N08", "N09"],
+							"rationale": "Exact locks/vendor sources/licenses plus actual reachability-aware Zod advisory investigation, eligible update and regression/consumer repair demonstrate dependency risk handling.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant. Exact locks/vendor sources/licenses plus actual reachability-aware Zod advisory investigation, eligible update and regression/consumer repair demonstrate dependency risk handling.",
+							"anchor_support": "Direct current code plus executed regression/independent consumer evidence: N08, N09. Exact locks/vendor sources/licenses plus actual reachability-aware Zod advisory investigation, eligible update and regression/consumer repair demonstrate dependency risk handling."
+						},
+						"build_release": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N04", "N09"],
+							"rationale": "Source-bound artifacts, fresh consumer, same-source independent digest, allowlist/tamper and no-overwrite controls exercised; mainline distribution/update rollback not exercised.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  mainline distribution/update rollback not exercised."
+						},
+						"license": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N08", "N09", "N11"],
+							"rationale": "All direct/vendor/runtime distribution rights and inclusion matrix recorded, MIT license shipped; no long-lived ownership/license review program verified.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no long-lived ownership/license review program verified."
+						}
+					}
+				},
+				"performance": {
+					"criteria": {
+						"budget": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N06", "N10"],
+							"rationale": "Representative max8 structural and both real-API latency measurements meet frozen ceilings; conservative reservation proves spend bound below10, invoice unknown. Peak resources and actual tools unmeasured.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  conservative reservation proves spend bound below10, invoice unknown. Peak resources and actual tools unmeasured."
+						},
+						"hot_path": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N10"],
+							"rationale": "Fixed8-step checks measured at short/max tasks on actual catalog with ample headroom; no unsupported optimization or large-catalog scalability claim.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no unsupported optimization or large-catalog scalability claim."
+						},
+						"measurement": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N04", "N05", "N10"],
+							"rationale": "Reproducible pinned workload, sample counts/tails, separate replay/API timings and explicit budgets; no long-term regression history or real-tool envelope.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  no long-term regression history or real-tool envelope."
+						}
+					}
+				},
+				"operability": {
+					"criteria": {
+						"signals": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N04", "N05", "N06", "N07"],
+							"rationale": "Missing/mismatch/unknown/reservation/model disagreement/repair failures diagnosable with immutable IDs and actual latency, no keys in artifacts; not user-operated host incidents.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  not user-operated host incidents."
+						},
+						"lifecycle": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N01", "N04", "N07", "N09", "N11"],
+							"rationale": "Clean install, env-alias live calls, dependency update, package consumer and standalone recovery actually executed; removal/host vendor update not exercised.",
+							"countercheck": "Compared normal and representative negative paths plus independent source/consumer/replay where relevant.  removal/host vendor update not exercised."
+						},
+						"interaction": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["N09", "N11"],
+							"rationale": "Documented SDK parse/safeParse and source context, CLI config/recovery usable by developer; no independent target-user/accessibility task study."
+						}
+					}
+				}
+			}
+		},
+		"project": {
+			"dimensions": {
+				"problem": {
+					"criteria": {
+						"need": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22"],
+							"rationale": "Concrete Eumenes integrator task: turn one user request into registered-component steps and host references, distinct from reusable toolchain Studio."
+						},
+						"impact": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No measured current user loss, time saving or same-job old/new outcome baseline."
+						},
+						"validation": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Author-defined problem/cases only; no independent user or actual operational demand observations."
+						}
+					}
+				},
+				"solution": {
+					"criteria": {
+						"mechanism": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["N02", "N04", "N05", "N09"],
+							"rationale": "Two actual API providers plus shared evaluator and pure consumer demonstrate plan-production mechanism across conditions; no real-host completion.",
+							"countercheck": "All48 outputs include remaining failures, gold audit and judge disagreements; synthetic plan quality does not prove actual user outcomes."
+						},
+						"experience": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "High",
+							"evidence_ids": ["N01", "N09", "N11"],
+							"rationale": "Clean standalone install/configure/check/consumer succeeds; actual end-user host route is future scope, so no user-experience uplift beyond basic integrator setup claimed."
+						},
+						"outcomes": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Synthetic and agent-model proxy outcomes only; no attributable real-user results."
+						}
+					}
+				},
+				"differentiation": {
+					"criteria": {
+						"alternatives": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22", "E25", "E26"],
+							"rationale": "Credible narrow TS contract layer compared with existing Eumenes Studio and graph frameworks; no head-to-head result claim."
+						},
+						"advantage": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E14", "E22"],
+							"rationale": "Concrete narrow advantage: single-request <=8-step shape avoids reusable-toolchain metadata/expressions and adds no new product runtime; artifact is13.6KB with one runtime dependency. Quality superiority unknown."
+						},
+						"tradeoffs": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E22", "E25", "E26"],
+							"rationale": "Worth considering when Eumenes is already the runtime and serial plans suffice; native Studio wins reusable publication, graph frameworks offer general branches/persistence at broader integration cost."
+						}
+					}
+				},
+				"novelty": {
+					"criteria": {
+						"prior_art": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E25", "E26"],
+							"rationale": "Typed graph orchestration and model-plus-validation are established; local simplification/integration is incremental, no substantive new algorithm demonstrated."
+						},
+						"substance": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No attribution experiment isolates a novel contribution from standard typed orchestration."
+						},
+						"verification": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No reproducible independent prior-art comparison for a substantive novel claim."
+						}
+					}
+				},
+				"adoption": {
+					"criteria": {
+						"entry": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E03", "E13", "E17", "E22"],
+							"rationale": "Hidden tokenizer fixture dependency and unconnected dispatch create concrete adoption friction even for expected internal integrator."
+						},
+						"reach": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E22", "E23", "E27"],
+							"rationale": "Existing same-owner Eumenes host gives concrete internal integration channel; no external uptake inferred."
+						},
+						"retention": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No continued user use/outcome evidence."
+						}
+					}
+				},
+				"defensibility": {
+					"criteria": {
+						"assets": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E16", "E20", "E28"],
+							"rationale": "Versioned cases/contracts and documented failed experiments accumulate reusable integration/evaluation knowledge; durability depends on maintaining raw evidence and cases."
+						},
+						"substitution": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No sustained deployment or switching evidence establishes resistance to platform-native substitution."
+						},
+						"incentives": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Ongoing resourcing/contribution incentives unverified."
+						}
+					}
+				},
+				"execution": {
+					"criteria": {
+						"delivery": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E14", "E22", "E23"],
+							"rationale": "Library and bench delivered, but important promised request-to-real-outcome path not wired into inspected Eumenes main."
+						},
+						"focus": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E19", "E20", "E22"],
+							"rationale": "Scope is bounded and rejected hypotheses retained off by default; continued bench variants before target-model gate and reused holdout weaken prioritization."
+						},
+						"feedback": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E18", "E20", "E21"],
+							"rationale": "Research experiments explicitly drive adoption/rejection and separate mechanical vs semantic error. This is experiment feedback, not field-user feedback."
+						}
+					}
+				},
+				"timing": {
+					"criteria": {
+						"drivers": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E22", "E23", "E25", "E26"],
+							"rationale": "Own host has existing pipeline capability, current typed-agent ecosystem makes implementation feasible; no market-size assertion."
+						},
+						"readiness": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "High",
+							"evidence_ids": ["E18", "E22", "E23"],
+							"rationale": "Target model route, production dispatch and user-screen verification not ready in observed environment."
+						},
+						"window": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No resourced delivery window established."
+						}
+					}
+				},
+				"health": {
+					"criteria": {
+						"ownership": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E17", "E27", "E28"],
+							"rationale": "Named owner, license, constraints and handoffs identify responsibility and knowledge; no backup maintainer or continuity track record established."
+						},
+						"activity": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E20", "E28"],
+							"rationale": "Current short research phase has actual delivered artifacts and documented experiments; frequency not used as a popularity/quality proxy."
+						},
+						"governance": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "Authority documented but long-term essential support/resources unverified."
+						}
+					}
+				},
+				"expansion": {
+					"criteria": {
+						"adjacency": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E05", "E14", "E28"],
+							"rationale": "Same checked plan core handles multiple catalog domains via host interfaces; credible internal cross-domain reuse, no external demand evidence."
+						},
+						"scalability": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "No representative rollout costs, quality preservation or large-catalog/real-model measurements."
+						},
+						"path": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E17", "E22", "E28"],
+							"rationale": "Stages and exit ideas exist but canonical roadmap/status stale and model/resource acceptance unclosed; broader resourced expansion sequence not established."
+						}
+					}
+				}
+			}
+		}
+	},
+	"improvement_backlog": [
+		{
+			"reference": "N05",
+			"priority": "P1",
+			"action": "Before mainline integration, validate same criteria on actual host/tool permissions, receipts vs completion, and native composition.",
+			"dependencies": "Separate mainline implementation authorization",
+			"acceptance": "Real dispatch and failure boundaries recorded; do not substitute mock success.",
+			"affected_criteria": [
+				"security.access",
+				"reliability.failure",
+				"operability.interaction"
+			],
+			"effort_basis": "Cross-repository host path not in current scope."
+		},
+		{
+			"reference": "N13",
+			"priority": "P2",
+			"action": "Reduce accumulated experiment runner/export maintenance cost only when concrete change evidence identifies a separable boundary.",
+			"dependencies": "Measured repeated maintenance task",
+			"acceptance": "No semantic heuristic, frozen score compatibility and independent replay preserved.",
+			"affected_criteria": ["maintainability.debt"],
+			"effort_basis": "Large modules and short history, no speculative framework."
+		},
+		{
+			"reference": "N05",
+			"priority": "P1",
+			"action": "Use fresh independent cases and a qualified independent judge/human sample for future generation acceptance.",
+			"dependencies": "New frozen sample and separate API budget",
+			"acceptance": "Report reference/semantic conjunction, disagreements, repeated sampling and actual-user outcomes separately.",
+			"affected_criteria": [
+				"testing.quality",
+				"problem.validation",
+				"solution.outcomes"
+			],
+			"effort_basis": "Current exposed synthetic set cannot establish general precision or adoption."
+		}
+	]
+}

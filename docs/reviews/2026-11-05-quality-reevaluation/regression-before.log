@@ -1,0 +1,125 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/tokens.test.ts:
+(pass) countTokens > maps helper counts back in order, deterministically [0.18ms]
+(pass) countTokens > a malformed helper reply counts as unavailable, never as zero [0.05ms]
+(pass) countTokens > a missing tokenizer file yields nulls without running anything [0.01ms]
+(pass) countTokens > the real spawn is blocked under the test guard, so counts stay null [0.06ms]
+(pass) tokenizer command and provenance > the command is exactly [python, helper, tokenizer file] [0.04ms]
+(pass) tokenizer command and provenance > provenance is all-null when the tokenizer file is absent [0.03ms]
+(pass) tokenizer command and provenance > provenance reports the recorded source of the downloaded tokenizer [2.03ms]
+
+bench/formats/strict-json.test.ts:
+ 9 | 		'{"a":{"__proto__":null},"prototype":[1,true]}',
+10 | 	])("retains own JSON properties: %s", (text) => {
+11 | 		const result = parseJsonStrict(text);
+12 | 		expect(result.ok).toBe(true);
+13 | 		if (!result.ok) return;
+14 | 		expect(JSON.stringify(result.value)).toBe(JSON.stringify(JSON.parse(text)));
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "{"__proto__":{"status":"unsupported","reasons":["x"]}}"
+Received: "{}"
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/formats/strict-json.test.ts:14:40)
+(fail) parseJsonStrict > retains own JSON properties: {"__proto__":{"status":"unsupported","reasons":["x"]}} [0.35ms]
+ 9 | 		'{"a":{"__proto__":null},"prototype":[1,true]}',
+10 | 	])("retains own JSON properties: %s", (text) => {
+11 | 		const result = parseJsonStrict(text);
+12 | 		expect(result.ok).toBe(true);
+13 | 		if (!result.ok) return;
+14 | 		expect(JSON.stringify(result.value)).toBe(JSON.stringify(JSON.parse(text)));
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "{"__proto__":{"nested":true},"constructor":{"prototype":1}}"
+Received: "{"constructor":{"prototype":1}}"
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/formats/strict-json.test.ts:14:40)
+(fail) parseJsonStrict > retains own JSON properties: {"\u005f_proto__":{"nested":true},"constructor":{"prototype":1}} [0.21ms]
+ 9 | 		'{"a":{"__proto__":null},"prototype":[1,true]}',
+10 | 	])("retains own JSON properties: %s", (text) => {
+11 | 		const result = parseJsonStrict(text);
+12 | 		expect(result.ok).toBe(true);
+13 | 		if (!result.ok) return;
+14 | 		expect(JSON.stringify(result.value)).toBe(JSON.stringify(JSON.parse(text)));
+                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "{"a":{"__proto__":null},"prototype":[1,true]}"
+Received: "{"a":{},"prototype":[1,true]}"
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/formats/strict-json.test.ts:14:40)
+(fail) parseJsonStrict > retains own JSON properties: {"a":{"__proto__":null},"prototype":[1,true]} [0.13ms]
+16 | 	});
+17 | 
+18 | 	test("an inherited discriminator cannot change the authored outcome", () => {
+19 | 		const value = Object.create({ status: "unsupported", reasons: ["x"] });
+20 | 		const parsed = outcomeFromValue(value);
+21 | 		expect(parsed).toEqual({ ok: true, outcome: { kind: "ready", definition: value } });
+                      ^
+error: expect(received).toEqual(expected)
+
+  {
+    "ok": true,
+    "outcome": {
+-     "definition": {},
+-     "kind": "ready",
++     "kind": "unsupported",
++     "reasons": [
++       "x",
++     ],
+    },
+  }
+
+- Expected  - 2
++ Received  + 4
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/formats/strict-json.test.ts:21:18)
+(fail) parseJsonStrict > an inherited discriminator cannot change the authored outcome [0.16ms]
+26 | 		for (let n = 0; n < 100; n++) {
+27 | 			const value = JSON.parse(`{"__proto__":${n},"array":[null,true,"x\\n",${n}],"nested":{"constructor":"${n}"}}`);
+28 | 			const text = JSON.stringify(value);
+29 | 			const parsed = parseJsonStrict(text);
+30 | 			expect(parsed.ok).toBe(true);
+31 | 			if (parsed.ok) expect(JSON.stringify(parsed.value)).toBe(text);
+                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: "{"__proto__":0,"array":[null,true,"x\n",0],"nested":{"constructor":"0"}}"
+Received: "{"array":[null,true,"x\n",0],"nested":{"constructor":"0"}}"
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/formats/strict-json.test.ts:31:56)
+(fail) parseJsonStrict > generated JSON data agrees with the standard parser [0.12ms]
+(pass) parseJsonStrict > reads the full JSON value grammar [0.03ms]
+(pass) parseJsonStrict > a surrogate pair written as two escapes recombines
+(pass) parseJsonStrict > rejects {"a":1,"a":2} [0.02ms]
+(pass) parseJsonStrict > rejects {"a":{"b":1,"b":2}}
+(pass) parseJsonStrict > rejects {"a":1} {"b":2}
+(pass) parseJsonStrict > rejects {"a":1,}
+(pass) parseJsonStrict > rejects [1,]
+(pass) parseJsonStrict > rejects {"a":}
+(pass) parseJsonStrict > rejects "unterminated
+(pass) parseJsonStrict > rejects "bad \x"
+(pass) parseJsonStrict > rejects 01
+(pass) parseJsonStrict > rejects 1.
+(pass) parseJsonStrict > rejects 1e
+(pass) parseJsonStrict > rejects 1e999
+(pass) parseJsonStrict > rejects nul
+(pass) parseJsonStrict > rejects 
+(pass) parseJsonStrict > rejects a literal control character inside a string
+(pass) parseJsonStrict > rejects nesting beyond the fixed depth [0.03ms]
+(pass) parseJsonStrict > reports the offset just past a duplicate key [0.01ms]
+
+5 tests failed:
+(fail) parseJsonStrict > retains own JSON properties: {"__proto__":{"status":"unsupported","reasons":["x"]}} [0.35ms]
+(fail) parseJsonStrict > retains own JSON properties: {"\u005f_proto__":{"nested":true},"constructor":{"prototype":1}} [0.21ms]
+(fail) parseJsonStrict > retains own JSON properties: {"a":{"__proto__":null},"prototype":[1,true]} [0.13ms]
+(fail) parseJsonStrict > an inherited discriminator cannot change the authored outcome [0.16ms]
+(fail) parseJsonStrict > generated JSON data agrees with the standard parser [0.12ms]
+
+ 26 pass
+ 5 fail
+ 65 expect() calls
+Ran 31 tests across 2 files. [28.00ms]

@@ -1,0 +1,61 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/export/quality-report.test.ts:
+34 |  const f=await fixture();try{
+35 |   expect(runQualityReport(f.options).generations[0]?.qualifiedJudgeAppropriate).toBe(1);
+36 |   f.prepare("unrelated",JSON.stringify({status:"unsupported",reasons:["different candidate"]}));await f.api("unrelated","judge",approved);
+37 |   for(const dir of ["judge-recordings","api-provenance/judge-recordings"])copyFileSync(join(f.runsRoot,"unrelated",dir,"prime-count--json.json"),join(f.runsRoot,"judge",dir,"prime-count--json.json"));
+38 |   const result=runQualityReport({...f.options,out:join(f.root,"swapped.json")});
+39 |   expect(result.completed).toBe(false);
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: true
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/export/quality-report.test.ts:39:28)
+(fail) blinded judgements must match the exact scored candidate, not just an authentic API output [211.61ms]
+44 | });
+45 | 
+46 | test("reported API usage cannot be changed by editing an untrusted provenance sidecar",async()=>{
+47 |  const f=await fixture();try{
+48 |   const p=join(f.runsRoot,"judge","api-provenance/judge-recordings/prime-count--json.json"),s=JSON.parse(readFileSync(p,"utf8"));s.usage.inputTokens=0;s.durationMs=0;writeFileSync(p,JSON.stringify(s));
+49 |   expect(()=>runQualityReport(f.options)).toThrow("usage or duration");
+                                               ^
+error: expect(received).toThrow(expected)
+
+Expected substring: "usage or duration"
+
+Received function did not throw
+Received value: {
+  reportRun: "1b2b410f-ec54-452a-a8fa-1031d0058138",
+  completed: true,
+  budget: {
+    budgetId: "fixture",
+    ceilingUsd: 1,
+    committedCostCeilingUsd: 0.00006,
+    actualBilledUsd: null,
+  },
+  generations: [
+    {
+      session: "source",
+      model: "fixture",
+      count: 1,
+      mechanicallyValid: 1,
+      mechanicalAndQualifiedSemantic: 1,
+      referencePassed: 1,
+      qualifiedJudgeAppropriate: 1,
+      qualifiedAndReference: 1,
+      allJudgesAppropriate: 1,
+      disagreements: 0,
+    }
+  ],
+}
+
+      at <anonymous> (/Users/y.noguchi/Code/eumenes_pipeline/bench/export/quality-report.test.ts:49:43)
+(fail) reported API usage cannot be changed by editing an untrusted provenance sidecar [122.75ms]
+
+ 0 pass
+ 2 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [414.00ms]

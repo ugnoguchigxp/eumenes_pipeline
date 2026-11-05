@@ -1,0 +1,3 @@
+$ bun scripts/pack.ts
+pack contents ok (21 files): package.json, LICENSE, README.md, dist/catalog.d.ts, dist/catalog.js, dist/check.d.ts, dist/check.js, dist/contracts/authoring.d.ts, dist/contracts/authoring.js, dist/contracts/component.d.ts, dist/contracts/component.js, dist/contracts/definition.d.ts, dist/contracts/definition.js, dist/contracts/execution.d.ts, dist/contracts/execution.js, dist/contracts/record.d.ts, dist/contracts/record.js, dist/index.d.ts, dist/index.js, dist/ports.d.ts, dist/ports.js
+artifacts/eumenes-pipeline-0.0.0-8f5388402289/eumenes-pipeline-0.0.0-8f5388402289.tgz sha256 25b34b23d9b7aff4fec98f7f0fc9b39398b2ee9cb3809f14c6df875fc0a9b3a1

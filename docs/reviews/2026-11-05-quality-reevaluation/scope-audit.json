@@ -1,0 +1,10 @@
+{
+	"trackedChangedFiles": 41,
+	"untrackedFiles": 155,
+	"protectedChanges": [],
+	"adjacentEumenesClean": true,
+	"newCiWorkflowFiles": [],
+	"semanticProductBranchAudit": "src changes reviewed: schema/arguments/source equality only; gold role mappings stay in evaluator; no utterance/scenario heuristics added.",
+	"newCommits": 0,
+	"newPushes": 0
+}
