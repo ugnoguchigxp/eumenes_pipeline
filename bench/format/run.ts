@@ -152,6 +152,12 @@ import {
 	PROMPT_TEMPLATE_VERSION,
 } from "./prompt.ts";
 import {
+	buildHostPrompt,
+	loadHostPrompt,
+	parseHostOutput,
+} from "./host-prompt.ts";
+import { bindSourceRequest } from "../../src/source-request.ts";
+import {
 	buildEnumPrompt,
 	computeCoverage,
 	coverageErrorLine,
@@ -726,10 +732,42 @@ export async function runFormat(
 		throw new Error(
 			`condition/candidates name entries that are not offered: ${[...unknownEntries].sort().join(", ")}`,
 		);
-	const conditionInfo = summarizeCondition(
-		condition,
-		options.candidates !== undefined,
-	);
+	// The host-prompt condition sends Eumenes' own composing prompt: JSON only, no other
+	// prompt option, and the snapshot it came from is part of the recorded condition.
+	const hostPrompt =
+		condition.promptStyle === "eumenes-p0-3" ? loadHostPrompt() : undefined;
+	if (hostPrompt) {
+		if (formats.some((f) => f !== "json"))
+			throw new Error(
+				"the eumenes prompt style is defined for the json format only",
+			);
+		if (
+			condition.shots !== 0 ||
+			condition.guidance ||
+			condition.cardStyle !== "full" ||
+			condition.outputStyle !== "default" ||
+			options.triage ||
+			options.staged ||
+			options.repair ||
+			options.coverageRepair ||
+			options.restoreSyntax ||
+			options.normalizeIds
+		)
+			throw new Error(
+				"the eumenes prompt style takes no other option (shots, guidance, card style, output style, triage, staged, repair, restore, normalize): the host has its own repair message, unmeasured here",
+			);
+	}
+	const conditionInfo = {
+		...summarizeCondition(condition, options.candidates !== undefined),
+		...(hostPrompt
+			? {
+					hostPrompt: {
+						instructionsSha256: hostPrompt.instructionsSha256,
+						gitCommit: hostPrompt.gitCommit,
+					},
+				}
+			: {}),
+	};
 	const provenance = tokenizerProvenance();
 
 	// Triage resolution (triage runs only): one recorded call per case, resolved
@@ -939,30 +977,33 @@ export async function runFormat(
 		for (const format of formats) {
 			const triage = triageResolutions.get(evalCase.id);
 			const enumeration = enumResolutions.get(evalCase.id);
-			const built = buildFormatPrompt({
+			const cards = selectCards(
+				condition,
+				options.candidates,
 				evalCase,
-				format,
-				cards: selectCards(
-					condition,
-					options.candidates,
-					evalCase,
-					catalog.cards,
-				),
-				cardStyle: condition.cardStyle,
-				outputStyle: condition.outputStyle,
-				...(condition.shots === 1
-					? { workedExample: WORKED_EXAMPLES[format] }
-					: {}),
-				...(condition.guidance
-					? { guidanceText: GUIDANCE_TEXTS[condition.guidance] }
-					: {}),
-				...(triage?.conclusion
-					? { triageNote: triageNoteText(triage.conclusion) }
-					: {}),
-				...(enumeration?.conclusion
-					? { enumNote: enumNoteText(enumeration.conclusion) }
-					: {}),
-			});
+				catalog.cards,
+			);
+			const built = hostPrompt
+				? buildHostPrompt({ evalCase, cards, host: hostPrompt })
+				: buildFormatPrompt({
+						evalCase,
+						format,
+						cards,
+						cardStyle: condition.cardStyle,
+						outputStyle: condition.outputStyle,
+						...(condition.shots === 1
+							? { workedExample: WORKED_EXAMPLES[format] }
+							: {}),
+						...(condition.guidance
+							? { guidanceText: GUIDANCE_TEXTS[condition.guidance] }
+							: {}),
+						...(triage?.conclusion
+							? { triageNote: triageNoteText(triage.conclusion) }
+							: {}),
+						...(enumeration?.conclusion
+							? { enumNote: enumNoteText(enumeration.conclusion) }
+							: {}),
+					});
 			const blockedOf = (
 				resolution:
 					{ state: string; error?: string; conclusion?: unknown } | undefined,
@@ -1200,6 +1241,7 @@ export async function runFormat(
 				evaluations,
 				restoreSyntax: options.restoreSyntax === true,
 				normalizeIds: options.normalizeIds === true,
+				hostReading: hostPrompt !== undefined,
 				...(cell.enumConclusion
 					? { enumItems: cell.enumConclusion.items }
 					: {}),
@@ -1486,6 +1528,8 @@ type CellContext = {
 	restoreSyntax: boolean;
 	/** Offer the step-id normalization stage to id-only authoring failures (normalization runs only). */
 	normalizeIds: boolean;
+	/** Read the output as the host does (host-prompt condition): see `evaluateAttempt`. */
+	hostReading: boolean;
 	/** The case's stage-A items (staged runs, concluded cases). */
 	enumItems?: readonly WorkItem[];
 };
@@ -1511,6 +1555,12 @@ async function evaluateAttempt(ctx: {
 	/** Offer the deterministic step-id normalization stage to an id-only authoring failure. */
 	normalizeIds: boolean;
 	/**
+	 * Read the output as Eumenes does (host-prompt condition): the strict reader on the raw text
+	 * (no trimming), an explicit `status` required, and the original request bound before the
+	 * check, a differing copy recorded as a non-blocking `request_mismatch` warning.
+	 */
+	hostReading?: boolean;
+	/**
 	 * The case's stage-A items (staged runs). When present and the parse is a
 	 * ready outcome, coverage is computed from the raw parse and the markers are
 	 * stripped from the definition every later stage sees.
@@ -1526,6 +1576,8 @@ async function evaluateAttempt(ctx: {
 		parse = composed.result;
 		restoreAttempted = composed.attempted;
 		syntaxRestored = composed.restored;
+	} else if (ctx.hostReading) {
+		parse = parseHostOutput(ctx.text);
 	} else {
 		parse = FORMAT_PARSERS[format](ctx.text);
 	}
@@ -1552,9 +1604,28 @@ async function evaluateAttempt(ctx: {
 	const attempt: AttemptResults = { parse };
 	let check: CheckResult | undefined;
 	if (authored?.status === "ready") {
-		check = checkDefinition(authored.definition, ctx.catalog.view, {
-			sourceRequest: evalCase.request,
-		});
+		const bound = ctx.hostReading
+			? bindSourceRequest(authored.definition, evalCase.request)
+			: undefined;
+		check = checkDefinition(
+			bound?.definition ?? authored.definition,
+			ctx.catalog.view,
+			{ sourceRequest: evalCase.request },
+		);
+		if (bound && !bound.matched)
+			check = {
+				...check,
+				issues: [
+					{
+						code: "request_mismatch",
+						path: "request",
+						message:
+							"the model's request differed from the original; bound to the original as the host does",
+						severity: "warning",
+					},
+					...check.issues,
+				],
+			};
 		attempt.check = check;
 		ctx.work.recordChecks(ctx.trialId, check.issues);
 		if (check.ok) {
@@ -1696,6 +1767,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		text: result.text,
 		restoreSyntax: ctx.restoreSyntax,
 		normalizeIds: ctx.normalizeIds,
+		hostReading: ctx.hostReading,
 		...(ctx.enumItems ? { enumItems: ctx.enumItems } : {}),
 	});
 	ctx.evaluations.set(`${evalCase.id}\0${format}`, evaluated);

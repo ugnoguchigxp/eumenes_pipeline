@@ -7,17 +7,16 @@
  * A definition carries no `status`, so its absence means `ready` and the whole value is the
  * definition; `"ready"` instead names the definition under `definition`.
  */
+import { MAX_JSON_DEPTH } from "../../src/contracts/limits.ts";
+import type { JsonParseFailure } from "../../src/internal/strict-json.ts";
+
 export type ParsedOutcome =
 	| { kind: "ready"; definition: unknown }
 	| { kind: "needs_input"; questions: string[]; note?: string }
 	| { kind: "unsupported"; reasons: string[] };
 
-export type ParseFailure = {
-	code: string;
-	message: string;
-	/** Character offset into the input, when the parser can point at one. */
-	position?: number;
-};
+/** The library's failure shape, so the strict reader's errors pass through unchanged. */
+export type ParseFailure = JsonParseFailure;
 
 export type ParseResult =
 	{ ok: true; outcome: ParsedOutcome } | { ok: false; errors: ParseFailure[] };
@@ -26,7 +25,7 @@ export type FormatParser = (text: string) => ParseResult;
 
 /** Fixed before comparison (plan §10): inputs and nesting deeper than this are parse failures. */
 export const MAX_INPUT_CHARS = 100_000;
-export const MAX_DEPTH = 64;
+export const MAX_DEPTH = MAX_JSON_DEPTH;
 
 export const fail = (
 	code: string,

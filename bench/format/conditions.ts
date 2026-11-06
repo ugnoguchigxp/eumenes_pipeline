@@ -36,6 +36,14 @@ export type GuidanceId = "threshold-v1";
  */
 export type OutputStyle = "default" | "minified";
 
+/**
+ * Whose composing prompt a condition sends. `bench` is this repository's template (`prompt.ts`).
+ * `eumenes-p0-3` is the prompt Eumenes ships: its pipeline bundle instructions as the system
+ * message and its JSON user message with the cards mapped as the host maps them (see
+ * `host-prompt.ts`). JSON only; it takes no other prompt option.
+ */
+export type PromptStyle = "bench" | "eumenes-p0-3";
+
 /** Which cards a condition offers: every offered card, or one fixed entry subset. */
 export type ConditionCardSet = "all" | { entries: readonly string[] };
 
@@ -49,6 +57,8 @@ export type FormatCondition = {
 	outputStyle: OutputStyle;
 	/** Guidance block appended to the shared instructions; absent on most conditions. */
 	guidance?: GuidanceId;
+	/** Absent means `bench`, so existing conditions and frozen protocols keep their shape. */
+	promptStyle?: PromptStyle;
 };
 
 export const BASELINE_CONDITION: FormatCondition = {
@@ -66,6 +76,7 @@ export const CONDITIONS: Readonly<{
 	oneshot: FormatCondition;
 	minjson: FormatCondition;
 	threshold: FormatCondition;
+	eumenes: FormatCondition;
 }> = {
 	baseline: BASELINE_CONDITION,
 	compact: {
@@ -97,6 +108,14 @@ export const CONDITIONS: Readonly<{
 		outputStyle: "default",
 		guidance: "threshold-v1",
 	},
+	eumenes: {
+		id: "eumenes",
+		cardSet: "all",
+		cardStyle: "full",
+		shots: 0,
+		outputStyle: "default",
+		promptStyle: "eumenes-p0-3",
+	},
 };
 
 /** Look a condition up by id; an unknown id is a bench error, never a silent default. */
@@ -122,6 +141,9 @@ export type ConditionSummary = {
 	outputStyle: OutputStyle;
 	/** Present only on guidance conditions, so other summaries keep their shape. */
 	guidance?: GuidanceId;
+	/** Present only on host-prompt conditions, with the snapshot the prompt came from. */
+	promptStyle?: PromptStyle;
+	hostPrompt?: { instructionsSha256: string; gitCommit: string | null };
 };
 
 export function summarizeCondition(
@@ -135,6 +157,7 @@ export function summarizeCondition(
 		shots: condition.shots,
 		outputStyle: condition.outputStyle,
 		...(condition.guidance ? { guidance: condition.guidance } : {}),
+		...(condition.promptStyle ? { promptStyle: condition.promptStyle } : {}),
 	};
 }
 

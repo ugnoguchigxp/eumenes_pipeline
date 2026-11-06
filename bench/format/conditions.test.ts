@@ -54,6 +54,7 @@ describe("condition registry", () => {
 		expect(Object.keys(CONDITIONS).sort()).toEqual([
 			"baseline",
 			"compact",
+			"eumenes",
 			"minjson",
 			"oneshot",
 			"threshold",

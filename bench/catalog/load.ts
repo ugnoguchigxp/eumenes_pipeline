@@ -6,6 +6,7 @@ import { createHash } from "node:crypto";
 import {
 	byCodeUnit,
 	createCatalogView,
+	isRunnable,
 	type CatalogView,
 } from "../../src/catalog.ts";
 import type {
@@ -61,9 +62,11 @@ export function loadBenchCatalog(
 	});
 	const records = buildInventory(snapshot, contracts);
 	const policy = options.policy ?? "ready+partial";
+	// The same rule as the library view, so the cards (and the version) are what it offers.
 	const offer = (record: ComponentRecord) =>
-		record.support === "ready" ||
-		(policy === "ready+partial" && record.support === "partial");
+		isRunnable(record) &&
+		(record.support === "ready" ||
+			(policy === "ready+partial" && record.support === "partial"));
 	const offeredCards = records
 		.filter(offer)
 		.map((r) => r.card)

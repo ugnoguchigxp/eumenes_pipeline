@@ -67,6 +67,14 @@ p0-3では、公開validatorの型を `Schema<T>`（`parse` と `safeParse`）�
 
 ホストは入口の権限、参照の所有とdigest、版、取消、期限、作用の重複を既存の実行基盤で検査する必要があります。ライブラリとbenchのガードは、権限管理やOSの隔離の代わりにはなりません。
 
+### 0.1.0 の追加（契約p0-3のまま）
+
+定義・制作結果・記録のJSON形は変えていないため、契約版はp0-3のままです。
+
+- `parseJsonStrict(text)`: モデル出力を読む厳格なJSON読取り。重複キー・末尾の余分な内容・深さ64超（`MAX_JSON_DEPTH`）を拒否し、`__proto__` なども自身のプロパティとして保ちます。`JSON.parse` は重複キーの最後を黙って採用するため、制作結果の解析には使わないでください。benchと同じ実装です。
+- `bindSourceRequest(definition, sourceRequest)`: ホストが保持する原文を定義の `request` へ結び付け、モデルが書いた文（`written`）と一致したか（`matched`）を返します。モデルの書写しの誤りで計画を落とさず、記録には残すための構造的な置換で、意味は判定しません。
+- `isRunnable(record)` と実行可否の多層検査: `createCatalogView` は、無効・`excluded`・初版で扱わない実行種別（`session`、`task`、`pipeline` など）を、ホストの `offer` に関わらず提示しません。自作の `CatalogView` が解決した場合も、`checkDefinition` が `component_not_runnable` で止めます。`IssueCode` に値が1つ増えたため、網羅的にswitchしている利用側は対応が必要です。
+
 ## 構成
 
 | パス | 内容 |

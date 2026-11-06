@@ -1,6 +1,48 @@
 # 改善設計書
 
-2026-11-06。2026-11-06のプロジェクト評価（`check:all`、`bench:verify`、カバレッジ、境界probe、作業DBの読み取り）で見つかった改善点を、実装できる単位に分けて設計する。計画の正本は [plan.md](../../plan.md)。この文書は提案であり、§7の判断事項は利用者の回答を待つ。
+2026-11-06。2026-11-06のプロジェクト評価（`check:all`、`bench:verify`、カバレッジ、境界probe、作業DBの読み取り）で見つかった改善点を、実装できる単位に分けて設計する。計画の正本は [plan.md](../../plan.md)。§0に、利用者の決定と実施した内容を記録した。§1以降は当初の提案で、§0と食い違う箇所は§0を優先する。
+
+## 0. 2026-11-06 の決定と実施
+
+**前提の訂正**: 設計時は「本体は未接続」としていたが、本体は既に p0-3 を取り込んでいた（本体 commit `bc916e27`、[本体の取込み記録](../../../eumenes/spec/pipeline-p0-3-integration-2026-11-05.md)）。本体の組み立てはbenchとは別物で、次の構成だった。
+
+- 指示文: bundle `pipeline-execution` の profile と skill の本文
+- 入力: JSON の利用者メッセージ（原文、資料、回答、カードJSON）
+- 解析: `JSON.parse`
+
+**利用者の決定**
+
+| 項目 | 決定 |
+| --- | --- |
+| 本体の変更（§7-1） | 許可。本流へ反映して使えるようにしてよい |
+| 測る物と使う物の揃え方 | 本体の指示文を維持する。ライブラリは厳格な解析・原文の結び付け・実行可否の検査を提供し、benchが本体の指示文を測る。§4のI1（プロンプトを `src/` へ移す案）は採らない |
+| 本体の未commit差分 | 重ねて作業し、本体のcommitは保留する |
+| CI（§7-5） | 行わない。作成もしない |
+
+**実施した内容**
+
+- **契約版**: p0-3 のままとし、配布版を 0.1.0 にした。本体のbinding契約（`../eumenes/api/domains/capabilities/contracts/bindings.ts:225`）が p0-3 を固定しており、定義のJSON形も変えていないため。§4のp0-4案は採らない。
+- **I2（ライブラリ）**: `isRunnable`、`createCatalogView` での絞込み、`checkDefinition` の `component_not_runnable` を実装した。`withheld` は追加していない（不要と判断）。benchの提示24入口とカタログ版 `3be9a125394c` は不変。
+- **I3（ライブラリ）**: `bindSourceRequest` を実装した。
+- **解析（ライブラリ）**: benchの厳格なJSON読取りを `src/internal/strict-json.ts` へ移し、`parseJsonStrict`・`MAX_JSON_DEPTH` として公開した。
+- **I1の代替（bench）**: 条件 `eumenes`（`promptStyle: "eumenes-p0-3"`）を追加した。
+  - 本体の指示文は `scripts/extract-eumenes-prompt.ts` で読み取り専用に抽出し、`data/contracts/eumenes-compose-prompt.json` に置く。本体commit `ed0b602e`、指示文のSHA-256は `ab45970740fa…`。
+  - カードの写像、JSONメッセージ、出力の読み方（未trim、`status` 必須、原文の結び付け）は本体に合わせた。
+  - 本体の修復メッセージは再現していないため、この条件では修復を使えない。
+  - 資料の参照と内容は近似である（`bench/format/host-prompt.ts` の冒頭に記載）。
+  - 測定（API呼出し）はまだ行っていない。
+- **配布物**: `eumenes-pipeline-0.1.0-a859fd16ce46.tgz`。SHA-256は `4c60c46ab77040b3ff4ed23433ca0ae9bd2e689efb8ea1db67da9234d8570f4f`、33ファイル。空の利用側での導入と型検査に成功した。manifestは未commit差分から作ったので `dirty: true` になっている。
+- **本体（I4の更新）**: vendorを0.1.0にした。計画出力は `parseJsonStrict` で読み、`ready` 定義は原文に結び付けてから検査する。置換前の文は `pipeline.requestEcho` に残す（先頭500文字と長さ。忘却で消える）。協調作業の下書きは従来どおり、原文が違えば拒否する。詳細は [本体の設計と結果](../../../eumenes/spec/pipeline-0.1.0-hardening-2026-11-06.md)。
+- **回帰**: 記録済みのAPI出力（`quality-review-final-{luna,sonnet}`、各24セル）を、変更後のコードで別DBへ再生した。promptDigestの不一致は0件、セルの判定とtotalsは元の記録と完全に一致した（API 0件）。
+- **独立レビュー**: 1回実施した。重大な指摘は0件。中〜低の4件を1回で修正した（記録する文の上限、benchの読み方を本体と同じにする、試験の追加、写した本体ファイルのdigest記録）。
+
+**残り**
+
+- `eumenes` 条件での実測（予算判断）。
+- I3段階1のbench再採点（`--bind-request`）。
+- I5〜I8。
+- 本体のcommit・push（利用者の許可待ち）。
+- 本体を再起動して0.1.0を読み込ませること（利用者が行う）。
 
 ## 1. 目的と範囲
 
@@ -220,11 +262,11 @@ export function composeDefinition(
 
 ## 7. 利用者の判断事項
 
-1. **I4**: 本体（`../eumenes`）の変更を許可するか。許可する範囲（vendor、`api/application/pipelines/`、agent-runtimeとの接続、試験）。
+1. **I4**: 本体（`../eumenes`）の変更を許可するか。許可する範囲（vendor、`api/application/pipelines/`、agent-runtimeとの接続、試験）。→ 2026-11-06に許可された（§0）。
 2. **目標モデル**: `src/index.ts` は「弱い目標モデルでの最終確認が未了」としている。実運用で使うモデルはどれか。I5の比較対象になる。
 3. **I5の作成と人手判定**: 評価ケースを誰が作るか。20%の人手ラベルを付けられるか。
 4. **予算**: I3段階1の追加judge（数件）と、I5（概算35〜40 USD、試行後に再見積り）。
-5. **CI**: 2026-11-05の指定で除外した。再開する場合は、秘密を使わない `check:all`・`bench:verify`・`pack:check` だけの最小構成を提案する。
+5. **CI**: 2026-11-06に「行わない」と決定した。作成もしない。
 6. **I6の撤去範囲**: 旧条件を現行コードで再生できなくなることを受け入れるか（旧runは当時のcommitとbundleで再現する）。
 7. **I8**: 証拠tarballを今後も追跡するか。
 

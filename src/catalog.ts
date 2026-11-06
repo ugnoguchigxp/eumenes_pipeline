@@ -1,4 +1,18 @@
-import type { ComponentRecord } from "./contracts/component.ts";
+import {
+	STEP_EXECUTION_KINDS,
+	type ComponentRecord,
+} from "./contracts/component.ts";
+
+/**
+ * Whether a record can run as a step at all (plan §4, §12): enabled, not excluded, and of an
+ * execution kind the first version runs. Checked here as well as by the host's `offer`, so a
+ * permissive or hand-built host view cannot plan a session, a recursive pipeline or a disabled
+ * entry. Contract facts only; never a judgement of fit.
+ */
+export const isRunnable = (record: ComponentRecord): boolean =>
+	record.enabled &&
+	record.support !== "excluded" &&
+	STEP_EXECUTION_KINDS.includes(record.execution);
 
 /** Locale-independent order: the same catalog gives the same order (and digest) everywhere. */
 export const byCodeUnit = (a: string, b: string): number =>
@@ -44,8 +58,9 @@ export function createCatalogView(
 			throw new Error(`duplicate entry in catalog: ${record.card.entry}`);
 		all.set(record.card.entry, record);
 	}
+	// The host's `offer` can only narrow what is runnable, never widen it.
 	const offered = [...all.values()]
-		.filter(options.offer)
+		.filter((record) => options.offer(record) && isRunnable(record))
 		.sort((a, b) => byCodeUnit(a.card.entry, b.card.entry));
 	const isOffered = new Set(offered.map((r) => r.card.entry));
 	const fail = (code: ResolveFailure, candidates: string[] = []): Resolved => ({

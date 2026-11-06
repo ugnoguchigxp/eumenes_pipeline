@@ -4,7 +4,7 @@
  * never judges whether a step fits the request (that is the LLM's and the evaluator's job).
  */
 import { z } from "zod";
-import type { CatalogView } from "./catalog.ts";
+import { isRunnable, type CatalogView } from "./catalog.ts";
 import type { ContractOrigin, ExecutionKind } from "./contracts/component.ts";
 import {
 	pipelineDefinition,
@@ -25,6 +25,7 @@ export type IssueCode =
 	| "ambiguous_entry"
 	| "entry_not_in_bundle"
 	| "component_not_offered"
+	| "component_not_runnable"
 	| "unexpected_arguments"
 	| "invalid_arguments"
 	| "arguments_unchecked"
@@ -189,16 +190,26 @@ export function checkDefinition(
 	definition.steps.forEach((step, index) => {
 		checkRefs(step.from, `steps.${index}.from`, index);
 		const resolved = catalog.resolve(step.bundle, step.entry);
+		const componentPath = `steps.${index}.${step.entry === undefined ? "bundle" : "entry"}`;
 		if (!resolved.ok) {
 			error(
 				resolved.code,
-				`steps.${index}.${step.entry === undefined ? "bundle" : "entry"}`,
+				componentPath,
 				`cannot use ${step.entry ?? step.bundle}: ${resolved.code}`,
 				resolved.candidates,
 			);
 			return;
 		}
 		const { record } = resolved;
+		// A view the host built by hand may resolve what `createCatalogView` would withhold.
+		if (!isRunnable(record)) {
+			error(
+				"component_not_runnable",
+				componentPath,
+				`${record.card.entry} cannot run as a step (execution ${record.execution}, support ${record.support}${record.enabled ? "" : ", disabled"})`,
+			);
+			return;
+		}
 		if (step.arguments !== undefined) {
 			const argsSchema = record.card.arguments;
 			if (!argsSchema)

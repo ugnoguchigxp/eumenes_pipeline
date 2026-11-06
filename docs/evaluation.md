@@ -147,3 +147,22 @@ bun run bench:judge:prepare --source SOURCE_SESSION --session JUDGE_SESSION --ca
 `--native-schema`の有無もfreezeと一致させる。`bench:infer`は送信直前に、件数だけでなく準備記録の各request digestを照合する。準備後の差し替えや、別条件・別DBの要求を同じ試行へ混ぜない。旧API sessionは記録を保持し、新しいsessionを使う。
 
 現在のquality reportは、不変DBの元API呼出し、元requestの原文hash、phase・ファイル名・usage・保存精度の時間まで照合する。候補に対するjudge入力も再構成する。同じtrialの重複計上は拒否する。元requestのあるsessionも保存し、独立bundleへ必要な原文を含める。
+
+## 本体の指示文を測る条件（2026-11-06）
+
+`--condition eumenes` は、Eumenesが実際に送る組み立てプロンプトを送る。中身は次のとおり。
+
+- 指示文: bundle `pipeline-execution` の profile と skill
+- メッセージ: JSON の利用者メッセージ
+- カード: 本体の写像
+
+読み方も本体に合わせる（未trim、`status` 必須、原文の結び付け）。結び付けた不一致は、止めない警告 `request_mismatch` として記録する。
+
+- **形式**: json だけ。修復・構文復元・ID正規化・triage・段階生成とは併用できない（本体の修復メッセージを再現していないため）。
+- **指示文の抽出**: `bun scripts/extract-eumenes-prompt.ts` で `../eumenes` から読み取り専用で抽出する。
+  - 出力の `data/contracts/eumenes-compose-prompt.json` は手で編集しない。
+  - bundleが未commitなら読込みを拒否する。
+  - 写した本体ファイル（カード写像、メッセージ組立）のcommit時digestと未commitの有無も記録する。
+  - 抽出し直したら、理由と新しいdigestを記録する。
+- **近似**: bench のケースには資料の内容と本体の参照が無いので、資料は名前と種別だけになる。`answers` は空。カードは本体の現行登録ではなく、benchカタログの提示カードを写像した物。
+- **実測**: まだ行っていない。新しいsessionとrunで、予算台帳を使って行う。

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createCatalogView } from "./catalog.ts";
+import { createCatalogView, isRunnable, type CatalogView } from "./catalog.ts";
 import { checkDefinition, type IssueCode } from "./check.ts";
 import { record } from "./test-support.ts";
 import { pipelineDefinition } from "./contracts/definition.ts";
@@ -495,5 +495,57 @@ describe("createCatalogView", () => {
 				severity: "error",
 			}),
 		]);
+	});
+});
+
+describe("runnable components", () => {
+	const unrunnable = [
+		record("chat.live", { execution: "session" }),
+		record("plan.nested", { execution: "pipeline" }),
+		record("old.tool", { support: "excluded" }),
+		{ ...record("off.tool"), enabled: false },
+	];
+	const single = (entry: string) => ({
+		request: "依頼",
+		steps: [step("a", entry, ["request"])],
+		output: { from: ["a"], deliver: "提示する" },
+	});
+
+	test("a permissive host offer cannot widen the view past runnable records", () => {
+		const view = createCatalogView([...unrunnable, record("ok.tool")], {
+			version: "v",
+			offer: () => true,
+		});
+		expect(view.offered.map((r) => r.card.entry)).toEqual(["ok.tool"]);
+		for (const r of unrunnable) {
+			expect(isRunnable(r)).toBe(false);
+			const result = checkDefinition(single(r.card.entry), view);
+			expect(result.ok).toBe(false);
+			expect(result.issues).toContainEqual(
+				expect.objectContaining({ code: "component_not_offered" }),
+			);
+		}
+	});
+
+	test("a hand-built view that resolves an unrunnable record is still rejected", () => {
+		for (const r of unrunnable) {
+			const view: CatalogView = {
+				version: "v",
+				offered: [r],
+				all: new Map([[r.card.entry, r]]),
+				resolve: () => ({ ok: true, record: r }),
+			};
+			const result = checkDefinition(single(r.card.entry), view, {
+				sourceRequest: "依頼",
+			});
+			expect(result.ok).toBe(false);
+			expect(result.issues).toEqual([
+				expect.objectContaining({
+					code: "component_not_runnable",
+					path: "steps.0.bundle",
+					severity: "error",
+				}),
+			]);
+		}
 	});
 });

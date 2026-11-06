@@ -19,6 +19,7 @@ import {
 import { CONDITIONS } from "./conditions.ts";
 import { buildEnumPrompt, enumNoteText, parseEnumOutput } from "./enumerate.ts";
 import { buildFormatPrompt } from "./prompt.ts";
+import { buildHostPrompt, loadHostPrompt } from "./host-prompt.ts";
 import { runFormat } from "./run.ts";
 import { SYNTHETIC_OUTPUTS } from "./synthetic.ts";
 import { buildTriagePrompt, triageNoteText } from "./triage.ts";
@@ -180,6 +181,7 @@ describe("bench:format conditions (synthetic recordings)", () => {
 			system: string;
 			prompt: string;
 		},
+		output: string = primeOutput,
 	) => {
 		const runsRoot = mkdtempSync(join(tmpdir(), "format-condition-"));
 		const session = "cond";
@@ -197,7 +199,7 @@ describe("bench:format conditions (synthetic recordings)", () => {
 					system,
 					prompt,
 				}),
-				output: primeOutput,
+				output,
 			}),
 		);
 		return { runsRoot, session };
@@ -266,6 +268,68 @@ describe("bench:format conditions (synthetic recordings)", () => {
 		const cell = report.cells[0];
 		expect(cell?.status).toBe("scored");
 		expect(cell?.passed).toBe(true);
+	});
+
+	test("eumenes condition: the host's own prompt is sent, read and bound as the host does", async () => {
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const host = loadHostPrompt();
+		// The host requires an explicit status and binds the original request: a paraphrased
+		// copy passes, recorded as a warning, where the bench's own reading would fail it.
+		const paraphrased = JSON.stringify({
+			status: "ready",
+			definition: { ...JSON.parse(primeOutput), request: "素数を数えて" },
+		});
+		const { runsRoot, session } = setup(
+			(evalCase) => buildHostPrompt({ evalCase, cards: catalog.cards, host }),
+			paraphrased,
+		);
+		catalog.close();
+		const report = await runFormat({
+			session,
+			runsRoot,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			condition: CONDITIONS.eumenes,
+		});
+		expect(report.condition).toEqual({
+			id: "eumenes",
+			cardSet: "all",
+			cardStyle: "full",
+			shots: 0,
+			outputStyle: "default",
+			promptStyle: "eumenes-p0-3",
+			hostPrompt: {
+				instructionsSha256: host.instructionsSha256,
+				gitCommit: host.gitCommit,
+			},
+		});
+		expect(report.cells[0]?.status).toBe("scored");
+		expect(report.cells[0]?.passed).toBe(true);
+		const again = loadBenchCatalog({ policy: "ready+partial" });
+		const bare = setup(
+			(evalCase) => buildHostPrompt({ evalCase, cards: again.cards, host }),
+			primeOutput,
+		);
+		again.close();
+		const bareReport = await runFormat({
+			...bare,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["json"],
+			condition: CONDITIONS.eumenes,
+		});
+		expect(bareReport.cells[0]?.passed).toBe(false);
+		await expect(
+			runFormat({
+				session: "cond-host",
+				runsRoot: mkdtempSync(join(tmpdir(), "format-condition-")),
+				dbPath: ":memory:",
+				caseIds: ["prime-count"],
+				formats: ["json", "md-yaml"],
+				condition: CONDITIONS.eumenes,
+			}),
+		).rejects.toThrow("json format only");
 	});
 
 	test("candidates: a listed case is offered the subset, others keep all cards", async () => {

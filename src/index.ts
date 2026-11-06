@@ -2,10 +2,11 @@
  * eumenes-pipeline public entry. Host-agnostic: no Bun, browser or Eumenes imports, so Eumenes can
  * install the tarball and connect it through a thin adapter (plan §7).
  *
- * Status: P1 — the internal data contract (definition schema, check, catalog resolution,
- * execution plan) is fixed at contract version p0-3. The composing AI's primary description
- * format (JSON) is a separate, still provisional choice: its final confirmation on the weak
- * target model is outstanding and does not change this package's data contract.
+ * Status: the internal data contract (definition schema, check, catalog resolution, execution
+ * plan) is fixed at contract version p0-3. Package 0.1.0 adds host-side hardening without changing
+ * that data shape: the strict JSON reader, request binding, and the runnable check that a host
+ * view cannot widen. The composing prompt stays the host's (Eumenes keeps it as bundle data); its
+ * confirmation on the weak target model is outstanding and does not change this data contract.
  */
 export {
 	ENTRY_PATTERN,
@@ -45,6 +46,7 @@ export {
 export {
 	byCodeUnit,
 	createCatalogView,
+	isRunnable,
 	type CatalogView,
 	type ResolveFailure,
 	type Resolved,
@@ -58,6 +60,13 @@ export {
 	type IssueCode,
 	type PlannedStep,
 } from "./check.ts";
+export { bindSourceRequest, type BoundRequest } from "./source-request.ts";
+export {
+	parseJsonStrict,
+	type JsonParseFailure,
+	type StrictJsonResult,
+} from "./internal/strict-json.ts";
+export { MAX_JSON_DEPTH } from "./contracts/limits.ts";
 export type {
 	CancelSignal,
 	InferencePort,
