@@ -177,6 +177,11 @@ import {
 	type TriageConclusion,
 	type TriageVerdict,
 } from "./triage.ts";
+import {
+	resolvePrePass,
+	resolveRecordedCall,
+	type PrePassResolution,
+} from "./recorded-call.ts";
 
 export const DEFAULT_RUNS_ROOT = "data/runs/format";
 export const FORMAT_SCORER = "bench-format-v3";
@@ -367,7 +372,7 @@ export type FormatRunReport = {
 	staged?: FormatEnumSummary;
 };
 
-const emptyGroup = (): FormatGroupSummary => ({
+export const emptyGroup = (): FormatGroupSummary => ({
 	cells: 0,
 	scored: 0,
 	missing: 0,
@@ -384,7 +389,15 @@ const emptyGroup = (): FormatGroupSummary => ({
 	passed: 0,
 });
 
-function addCell(group: FormatGroupSummary, cell: FormatCellReport): void {
+export function addCell(
+	group: FormatGroupSummary,
+	cell: {
+		status: string;
+		authoringOk?: boolean | null;
+		passed?: boolean | null;
+		score?: CaseScore | null;
+	},
+): void {
 	group.cells += 1;
 	if (cell.status === "missing") group.missing += 1;
 	if (cell.status === "digest-mismatch") group.digestMismatch += 1;
@@ -636,6 +649,49 @@ function selectCards(
 	return all.filter((card) => wanted.has(card.entry));
 }
 
+function recordPrePassTrials(
+	work: ReturnType<typeof openWorkDb>,
+	runId: string,
+	resolutions: Iterable<{
+		evalCase: { id: string };
+		state:
+			| "concluded"
+			| "missing"
+			| "digest-mismatch"
+			| "invalid"
+			| "inference-error";
+		result?: InferenceResult;
+		error?: string;
+	}>,
+	spec: { condition: string; phase: string; purpose: string },
+): void {
+	for (const resolution of resolutions) {
+		const trialId = work.startTrial({
+			runId,
+			caseId: resolution.evalCase.id,
+			condition: spec.condition,
+			attempt: 1,
+			phase: spec.phase,
+		});
+		if (resolution.result)
+			work.recordModelCall(trialId, spec.purpose, resolution.result);
+		if (resolution.state === "concluded")
+			work.finishTrial(trialId, {
+				status: "completed",
+				outputText: resolution.result?.ok ? resolution.result.text : undefined,
+			});
+		else if (resolution.state === "missing")
+			work.finishTrial(trialId, {
+				status: "interrupted",
+				error: resolution.error,
+			});
+		else
+			work.finishTrial(trialId, {
+				status: "failed",
+				error: resolution.error,
+			});
+	}
+}
 export async function runFormat(
 	options: FormatRunOptions,
 ): Promise<FormatRunReport> {
@@ -774,184 +830,71 @@ export async function runFormat(
 	// BEFORE the composing prompts are built, because a concluded case's prompt
 	// carries the conclusion. The calls are recorded as work-db trials once the
 	// run exists (below); here only files and recordings are touched.
-	type TriageResolution = {
-		evalCase: EvalCase;
-		system: string;
-		prompt: string;
-		state:
-			| "concluded"
-			| "missing"
-			| "digest-mismatch"
-			| "invalid"
-			| "inference-error";
-		conclusion?: TriageConclusion;
-		/** The served inference result, when a recording answered the call. */
-		result?: InferenceResult;
-		error?: string;
-	};
-	const triageResolutions = new Map<string, TriageResolution>();
+	const triageResolutions = new Map<
+		string,
+		PrePassResolution<EvalCase, TriageConclusion>
+	>();
 	if (options.triage) {
 		const triageRecordings =
 			RecordedInference.fromDirectory(triageRecordingsDir);
 		for (const evalCase of cases) {
 			const built = buildTriagePrompt(evalCase);
-			const request = {
-				purpose: TRIAGE_PURPOSE,
-				system: built.system,
-				prompt: built.prompt,
-			};
-			const digest = inferenceDigest(request);
-			const fileName = `${evalCase.id}.json`;
-			const base = { evalCase, system: built.system, prompt: built.prompt };
-			const recording = triageRecordings.files.get(fileName);
-			if (!recording) {
-				writeFileSync(
-					join(triageRequestsDir, fileName),
-					`${JSON.stringify(
-						{
-							caseId: evalCase.id,
-							purpose: TRIAGE_PURPOSE,
-							system: built.system,
-							prompt: built.prompt,
-							promptDigest: digest,
-						},
-						null,
-						"\t",
-					)}\n`,
-				);
-				triageResolutions.set(evalCase.id, {
-					...base,
-					state: "missing",
-					error: `missing triage recording; request written to triage-requests/${fileName}`,
-				});
-				continue;
-			}
-			if (recording.promptDigest !== digest) {
-				triageResolutions.set(evalCase.id, {
-					...base,
-					state: "digest-mismatch",
-					error: `triage recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
-				});
-				continue;
-			}
-			const result = await triageRecordings.inference.complete(request);
-			if (!result.ok) {
-				triageResolutions.set(evalCase.id, {
-					...base,
-					state: "inference-error",
-					result,
-					error: result.error,
-				});
-				continue;
-			}
-			const conclusion = parseTriageOutput(result.text);
-			if (conclusion)
-				triageResolutions.set(evalCase.id, {
-					...base,
-					state: "concluded",
-					conclusion,
-					result,
-				});
-			else
-				triageResolutions.set(evalCase.id, {
-					...base,
-					state: "invalid",
-					result,
-					error:
+			triageResolutions.set(
+				evalCase.id,
+				await resolvePrePass({
+					evalCase,
+					files: triageRecordings.files,
+					complete: (request) => triageRecordings.inference.complete(request),
+					request: {
+						purpose: TRIAGE_PURPOSE,
+						system: built.system,
+						prompt: built.prompt,
+					},
+					requestsDir: triageRequestsDir,
+					missingError: (fileName) =>
+						`missing triage recording; request written to triage-requests/${fileName}`,
+					mismatchPrefix: "triage recording",
+					invalidError:
 						'triage output is not a verdict document (expected {"verdict": "proceed"} or {"verdict": "needs_input", "questions": [...]})',
-				});
+					parse: parseTriageOutput,
+				}),
+			);
 		}
 	}
 
 	// Enumeration resolution (staged runs only): one recorded call per case,
 	// resolved BEFORE the composing prompts are built, because a concluded
-	// case's prompt carries the item list. Same shape as the triage resolution;
-	// the calls are recorded as work-db trials once the run exists (below).
-	type EnumResolution = {
-		evalCase: EvalCase;
-		system: string;
-		prompt: string;
-		state:
-			| "concluded"
-			| "missing"
-			| "digest-mismatch"
-			| "invalid"
-			| "inference-error";
-		conclusion?: EnumConclusion;
-		/** The served inference result, when a recording answered the call. */
-		result?: InferenceResult;
-		error?: string;
-	};
-	const enumResolutions = new Map<string, EnumResolution>();
+	// case's prompt carries the item list. Resolved by the same recorded-call
+	// rules as triage; the calls are recorded as work-db trials once the run
+	// exists (below).
+	const enumResolutions = new Map<
+		string,
+		PrePassResolution<EvalCase, EnumConclusion>
+	>();
 	if (options.staged) {
 		const enumRecordings = RecordedInference.fromDirectory(enumRecordingsDir);
 		for (const evalCase of cases) {
 			const built = buildEnumPrompt(evalCase);
-			const request = {
-				purpose: ENUM_PURPOSE,
-				system: built.system,
-				prompt: built.prompt,
-			};
-			const digest = inferenceDigest(request);
-			const fileName = `${evalCase.id}.json`;
-			const base = { evalCase, system: built.system, prompt: built.prompt };
-			const recording = enumRecordings.files.get(fileName);
-			if (!recording) {
-				writeFileSync(
-					join(enumRequestsDir, fileName),
-					`${JSON.stringify(
-						{
-							caseId: evalCase.id,
-							purpose: ENUM_PURPOSE,
-							system: built.system,
-							prompt: built.prompt,
-							promptDigest: digest,
-						},
-						null,
-						"\t",
-					)}\n`,
-				);
-				enumResolutions.set(evalCase.id, {
-					...base,
-					state: "missing",
-					error: `missing enumeration recording; request written to enum-requests/${fileName}`,
-				});
-				continue;
-			}
-			if (recording.promptDigest !== digest) {
-				enumResolutions.set(evalCase.id, {
-					...base,
-					state: "digest-mismatch",
-					error: `enumeration recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
-				});
-				continue;
-			}
-			const result = await enumRecordings.inference.complete(request);
-			if (!result.ok) {
-				enumResolutions.set(evalCase.id, {
-					...base,
-					state: "inference-error",
-					result,
-					error: result.error,
-				});
-				continue;
-			}
-			const conclusion = parseEnumOutput(result.text);
-			if (conclusion)
-				enumResolutions.set(evalCase.id, {
-					...base,
-					state: "concluded",
-					conclusion,
-					result,
-				});
-			else
-				enumResolutions.set(evalCase.id, {
-					...base,
-					state: "invalid",
-					result,
-					error:
+			enumResolutions.set(
+				evalCase.id,
+				await resolvePrePass({
+					evalCase,
+					files: enumRecordings.files,
+					complete: (request) => enumRecordings.inference.complete(request),
+					request: {
+						purpose: ENUM_PURPOSE,
+						system: built.system,
+						prompt: built.prompt,
+					},
+					requestsDir: enumRequestsDir,
+					missingError: (fileName) =>
+						`missing enumeration recording; request written to enum-requests/${fileName}`,
+					mismatchPrefix: "enumeration recording",
+					invalidError:
 						'enumeration output is not an item list (expected {"items": ["...", ...]})',
-				});
+					parse: parseEnumOutput,
+				}),
+			);
 		}
 	}
 
@@ -1140,67 +1083,19 @@ export async function runFormat(
 	let sweepDone = false;
 	try {
 		// Record the triage calls as this run's trials (phase `triage`, one per case).
-		if (options.triage) {
-			for (const resolution of triageResolutions.values()) {
-				const trialId = work.startTrial({
-					runId,
-					caseId: resolution.evalCase.id,
-					condition: "triage",
-					attempt: 1,
-					phase: "triage",
-				});
-				if (resolution.result)
-					work.recordModelCall(trialId, TRIAGE_PURPOSE, resolution.result);
-				if (resolution.state === "concluded")
-					work.finishTrial(trialId, {
-						status: "completed",
-						outputText: resolution.result?.ok
-							? resolution.result.text
-							: undefined,
-					});
-				else if (resolution.state === "missing")
-					work.finishTrial(trialId, {
-						status: "interrupted",
-						error: resolution.error,
-					});
-				else
-					work.finishTrial(trialId, {
-						status: "failed",
-						error: resolution.error,
-					});
-			}
-		}
+		if (options.triage)
+			recordPrePassTrials(work, runId, triageResolutions.values(), {
+				condition: "triage",
+				phase: "triage",
+				purpose: TRIAGE_PURPOSE,
+			});
 		// Record the enumeration calls as this run's trials (phase `enum`, one per case).
-		if (options.staged) {
-			for (const resolution of enumResolutions.values()) {
-				const trialId = work.startTrial({
-					runId,
-					caseId: resolution.evalCase.id,
-					condition: "enum",
-					attempt: 1,
-					phase: "enum",
-				});
-				if (resolution.result)
-					work.recordModelCall(trialId, ENUM_PURPOSE, resolution.result);
-				if (resolution.state === "concluded")
-					work.finishTrial(trialId, {
-						status: "completed",
-						outputText: resolution.result?.ok
-							? resolution.result.text
-							: undefined,
-					});
-				else if (resolution.state === "missing")
-					work.finishTrial(trialId, {
-						status: "interrupted",
-						error: resolution.error,
-					});
-				else
-					work.finishTrial(trialId, {
-						status: "failed",
-						error: resolution.error,
-					});
-			}
-		}
+		if (options.staged)
+			recordPrePassTrials(work, runId, enumResolutions.values(), {
+				condition: "enum",
+				phase: "enum",
+				purpose: ENUM_PURPOSE,
+			});
 		const { inference, files } = composeRecordings;
 		for (const cell of prepared) {
 			const blocked = cell.triageBlocked ?? cell.enumBlocked;
@@ -1535,6 +1430,53 @@ type CellContext = {
 };
 
 /**
+ * Read one model output with the format parser, or with json restore when
+ * `restore` is set. Callers that already know a trial was recovered pass true;
+ * the runner passes true only when the restore stage is offered to json.
+ */
+export function readFormatOutput(
+	text: string,
+	format: FormatId,
+	restore: boolean,
+): {
+	parse: ParseResult;
+	restoreAttempted: boolean;
+	syntaxRestored: boolean;
+} {
+	if (restore && format === "json") {
+		const composed = parseJsonWithRestore(text);
+		return {
+			parse: composed.result,
+			restoreAttempted: composed.attempted,
+			syntaxRestored: composed.restored,
+		};
+	}
+	return {
+		parse: FORMAT_PARSERS[format](text),
+		restoreAttempted: false,
+		syntaxRestored: false,
+	};
+}
+
+/**
+ * Re-read a recorded output the way export reconstructs it. `restored` means
+ * this trial's parse was recovered, so json goes through that restore.
+ * `normalizeIds` is passed to the authoring gate as the caller sets it.
+ */
+export function rederiveAuthoring(
+	format: string,
+	outputText: string | null,
+	flags: { restored: boolean; normalizeIds: boolean },
+): ReturnType<typeof validateAuthoring> | null {
+	if (!outputText || !(format in FORMAT_PARSERS)) return null;
+	const { parse } = readFormatOutput(
+		outputText,
+		format as FormatId,
+		flags.restored,
+	);
+	return validateAuthoring(parse, { normalizeIds: flags.normalizeIds });
+}
+/**
  * The evaluator path of one output text — parse → authoring → check → mock → score —
  * shared by the composing attempt and its repair. Checks, mock calls and score rows are
  * recorded under the given trial; the caller owns the trial's lifecycle.
@@ -1572,14 +1514,14 @@ async function evaluateAttempt(ctx: {
 	let restoreAttempted = false;
 	let syntaxRestored = false;
 	if (ctx.restoreSyntax && format === "json") {
-		const composed = parseJsonWithRestore(ctx.text);
-		parse = composed.result;
-		restoreAttempted = composed.attempted;
-		syntaxRestored = composed.restored;
+		const read = readFormatOutput(ctx.text, format, true);
+		parse = read.parse;
+		restoreAttempted = read.restoreAttempted;
+		syntaxRestored = read.syntaxRestored;
 	} else if (ctx.hostReading) {
 		parse = parseHostOutput(ctx.text);
 	} else {
-		parse = FORMAT_PARSERS[format](ctx.text);
+		parse = readFormatOutput(ctx.text, format, false).parse;
 	}
 	// Stage C's deterministic half: coverage is read off the RAW parse (markers
 	// intact), then the markers are stripped — authoring, checking, mock and
@@ -1716,44 +1658,43 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		phase: "compose",
 	});
 
-	const recording = ctx.files.get(fileName);
-	if (!recording) {
-		writeFileSync(
-			join(ctx.requestsDir, fileName),
-			`${JSON.stringify(
-				{
-					caseId: evalCase.id,
-					format,
-					purpose: COMPOSE_PURPOSE,
-					system,
-					prompt,
-					promptDigest: digest,
-				},
-				null,
-				"\t",
-			)}\n`,
-		);
+	const call = await resolveRecordedCall({
+		files: ctx.files,
+		complete: (request) => ctx.inference.complete(request),
+		request,
+		digest,
+		fileName,
+		requestsDir: ctx.requestsDir,
+		missingBody: {
+			caseId: evalCase.id,
+			format,
+			purpose: COMPOSE_PURPOSE,
+			system,
+			prompt,
+			promptDigest: digest,
+		},
+		missingError: `missing recording; request written to requests/${fileName}`,
+		mismatchError: (claimed) =>
+			`recording digest mismatch: prompt digest is ${digest}, recording claims ${claimed}; recording refused`,
+	});
+	if (call.state === "missing") {
 		ctx.work.finishTrial(trialId, {
 			status: "interrupted",
-			error: `missing recording; request written to requests/${fileName}`,
+			error: call.error,
 		});
 		return base;
 	}
-	if (recording.promptDigest !== digest) {
-		ctx.work.finishTrial(trialId, {
-			status: "failed",
-			error: `recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
-		});
+	if (call.state === "digest-mismatch") {
+		ctx.work.finishTrial(trialId, { status: "failed", error: call.error });
 		return { ...base, status: "digest-mismatch" };
 	}
-
-	const result = await ctx.inference.complete(request);
-	ctx.work.recordModelCall(trialId, COMPOSE_PURPOSE, result);
-	if (!result.ok) {
-		ctx.work.finishTrial(trialId, { status: "failed", error: result.error });
+	if (call.state === "inference-error") {
+		ctx.work.recordModelCall(trialId, COMPOSE_PURPOSE, call.result);
+		ctx.work.finishTrial(trialId, { status: "failed", error: call.error });
 		return { ...base, status: "inference-error" };
 	}
-	ctx.outputs.set(`${evalCase.id}\0${format}`, result.text);
+	ctx.work.recordModelCall(trialId, COMPOSE_PURPOSE, call.result);
+	ctx.outputs.set(`${evalCase.id}\0${format}`, call.result.text);
 
 	const evaluated = await evaluateAttempt({
 		evalCase,
@@ -1764,7 +1705,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 		seed: ctx.seed,
 		trialId,
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}`,
-		text: result.text,
+		text: call.result.text,
 		restoreSyntax: ctx.restoreSyntax,
 		normalizeIds: ctx.normalizeIds,
 		hostReading: ctx.hostReading,
@@ -1773,7 +1714,7 @@ async function runCell(ctx: CellContext): Promise<FormatCellReport> {
 	ctx.evaluations.set(`${evalCase.id}\0${format}`, evaluated);
 	ctx.work.finishTrial(trialId, {
 		status: "completed",
-		outputText: result.text,
+		outputText: call.result.text,
 	});
 	return {
 		...base,
@@ -1898,46 +1839,45 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		phase: "repair",
 	});
 
-	const recording = ctx.files.get(fileName);
-	if (!recording) {
-		writeFileSync(
-			join(ctx.requestsDir, fileName),
-			`${JSON.stringify(
-				{
-					caseId: evalCase.id,
-					format,
-					purpose: REPAIR_PURPOSE,
-					system: built.system,
-					prompt: built.prompt,
-					promptDigest: digest,
-				},
-				null,
-				"\t",
-			)}\n`,
-		);
+	const call = await resolveRecordedCall({
+		files: ctx.files,
+		complete: (request) => ctx.inference.complete(request),
+		request,
+		digest,
+		fileName,
+		requestsDir: ctx.requestsDir,
+		missingBody: {
+			caseId: evalCase.id,
+			format,
+			purpose: REPAIR_PURPOSE,
+			system: built.system,
+			prompt: built.prompt,
+			promptDigest: digest,
+		},
+		missingError: `missing repair recording; request written to repair-requests/${fileName}`,
+		mismatchError: (claimed) =>
+			`repair recording digest mismatch: prompt digest is ${digest}, recording claims ${claimed}; recording refused`,
+	});
+	if (call.state === "missing") {
 		ctx.work.finishTrial(trialId, {
 			status: "interrupted",
-			error: `missing repair recording; request written to repair-requests/${fileName}`,
+			error: call.error,
 		});
 		return;
 	}
-	if (recording.promptDigest !== digest) {
-		ctx.work.finishTrial(trialId, {
-			status: "failed",
-			error: `repair recording digest mismatch: prompt digest is ${digest}, recording claims ${recording.promptDigest}; recording refused`,
-		});
+	if (call.state === "digest-mismatch") {
+		ctx.work.finishTrial(trialId, { status: "failed", error: call.error });
 		repair.status = "digest-mismatch";
 		return;
 	}
-
-	const result = await ctx.inference.complete(request);
-	ctx.work.recordModelCall(trialId, REPAIR_PURPOSE, result);
-	if (!result.ok) {
-		ctx.work.finishTrial(trialId, { status: "failed", error: result.error });
+	if (call.state === "inference-error") {
+		ctx.work.recordModelCall(trialId, REPAIR_PURPOSE, call.result);
+		ctx.work.finishTrial(trialId, { status: "failed", error: call.error });
 		repair.status = "inference-error";
 		return;
 	}
-	ctx.repairOutputTexts.set(ctx.cellKey, result.text);
+	ctx.work.recordModelCall(trialId, REPAIR_PURPOSE, call.result);
+	ctx.repairOutputTexts.set(ctx.cellKey, call.result.text);
 	const after = await evaluateAttempt({
 		evalCase,
 		format,
@@ -1947,7 +1887,7 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		seed: ctx.seed,
 		trialId,
 		mockRunId: `${ctx.runId}:${evalCase.id}:${format}:repair`,
-		text: result.text,
+		text: call.result.text,
 		restoreSyntax: ctx.restoreSyntax,
 		normalizeIds: ctx.normalizeIds,
 		...(ctx.cell.enumConclusion
@@ -1963,7 +1903,7 @@ async function runRepair(ctx: RepairContext): Promise<void> {
 		};
 	ctx.work.finishTrial(trialId, {
 		status: "completed",
-		outputText: result.text,
+		outputText: call.result.text,
 	});
 	repair.status = "scored";
 	repair.after = verdictOf(after, after.authored !== null);

@@ -56,13 +56,12 @@ import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson, sha256 } from "../catalog/load.ts";
 import { DEFAULT_CASES_DIR, loadCases } from "../cases/cases.ts";
 import type { ConditionSummary } from "../format/conditions.ts";
-import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
-import { validateAuthoring } from "../formats/normalize-ids.ts";
 import { captureCases, readCaseSnapshot } from "../cases/provenance.ts";
-import type { ParseResult } from "../formats/outcome.ts";
-import { parseJsonWithRestore } from "../formats/restore.ts";
 import {
+	addCell,
 	DEFAULT_RUNS_ROOT,
+	emptyGroup,
+	rederiveAuthoring,
 	type FormatGroupSummary,
 	type FormatNormalizeSummary,
 	type FormatRepairSummary,
@@ -222,22 +221,6 @@ type TrialRow = {
 };
 
 /**
- * The parse of a trial's recorded output, re-derived the way the runner derived it.
- * When the trial's parse was recovered by syntax restore (`restored`), the derivation
- * goes through the same restore, mirroring the runner; the raw text is never altered.
- */
-function deriveParse(
-	format: string,
-	outputText: string | null,
-	restored = false,
-): ParseResult | null {
-	if (!outputText || !(format in FORMAT_PARSERS)) return null;
-	return restored && format === "json"
-		? parseJsonWithRestore(outputText).result
-		: FORMAT_PARSERS[format as FormatId](outputText);
-}
-
-/**
  * The definition a trial authored, in its saved form: re-derive it exactly the way the
  * runner did (format parser → `AuthoringOutcome` contract) and keep it only when the
  * outcome is a valid `ready`. Anything else — unparseable, needs_input, unsupported,
@@ -252,51 +235,12 @@ function savedDefinition(
 	restored = false,
 	idsNormalized = false,
 ): PipelineDefinition | null {
-	const parse = deriveParse(format, outputText, restored);
-	if (!parse) return null;
-	const gate = validateAuthoring(parse, { normalizeIds: idsNormalized });
-	return gate.outcome?.status === "ready" ? gate.outcome.definition : null;
-}
-
-const emptyGroup = (): FormatGroupSummary => ({
-	cells: 0,
-	scored: 0,
-	missing: 0,
-	digestMismatch: 0,
-	inferenceErrors: 0,
-	parseOk: 0,
-	authoringOk: 0,
-	checkAttempts: 0,
-	checkOk: 0,
-	stateMatch: 0,
-	bundlesOk: 0,
-	mockAttempts: 0,
-	mockCompleted: 0,
-	passed: 0,
-});
-
-/** The same accumulation as the format runner's summary, fed from db-recovered cells. */
-function addCell(group: FormatGroupSummary, cell: ExportCell): void {
-	group.cells += 1;
-	if (cell.status === "missing") group.missing += 1;
-	if (cell.status === "digest-mismatch") group.digestMismatch += 1;
-	if (cell.status === "inference-error") group.inferenceErrors += 1;
-	if (cell.status !== "scored" || !cell.score) return;
-	group.scored += 1;
-	const score = cell.score;
-	if (score.parseOk) group.parseOk += 1;
-	if (cell.authoringOk) group.authoringOk += 1;
-	if (score.checkOk !== null) {
-		group.checkAttempts += 1;
-		if (score.checkOk) group.checkOk += 1;
-	}
-	if (score.stateMatch) group.stateMatch += 1;
-	if (score.score.bundles) group.bundlesOk += 1;
-	if (score.mockCompleted !== null) {
-		group.mockAttempts += 1;
-		if (score.mockCompleted) group.mockCompleted += 1;
-	}
-	if (cell.passed) group.passed += 1;
+	const gate = rederiveAuthoring(format, outputText, {
+		restored,
+		normalizeIds: idsNormalized,
+	});
+	if (!gate || !gate.outcome || gate.outcome.status !== "ready") return null;
+	return gate.outcome.definition;
 }
 
 /** A trial's cell status, derived the way the runner assigned it. */
@@ -617,13 +561,11 @@ export function buildRunExport(options: {
 			for (const trial of composeTrials) {
 				if (cellStatus(trial) !== "scored") continue;
 				const { criteria } = detailOf(trial);
-				const parse = deriveParse(
-					trial.condition,
-					trial.output_text,
-					restoredOf(criteria) === true,
-				);
-				if (!parse) continue;
-				const gate = validateAuthoring(parse, { normalizeIds: true });
+				const gate = rederiveAuthoring(trial.condition, trial.output_text, {
+					restored: restoredOf(criteria) === true,
+					normalizeIds: true,
+				});
+				if (!gate) continue;
 				if (gate.normalizeAttempted) attempted += 1;
 				if (gate.idsNormalized) recovered += 1;
 			}

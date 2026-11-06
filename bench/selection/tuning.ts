@@ -25,19 +25,25 @@ import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
  * ranking. needs_input / unsupported cases of the split have no definable
  * retrieval gold and are excluded from the denominator, counted in the report.
  */
-import { cardPassages, closestSimilarities, rankBy } from "eumenes_router";
-import type { ComponentCard } from "../../src/contracts/component.ts";
+import { rankBy } from "eumenes_router";
 import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import {
 	aggregateMethodMetrics,
 	createBm25Index,
+	E5_PASSAGE_PREFIX,
+	E5_QUERY_PREFIX,
+	passageSimilarities,
+	passagesOf,
 	rankFromScores,
+	reciprocalRankFusionK,
 	scoreCase,
 	type CaseScore,
 	type EntryRanking,
 	type MethodMetrics,
 } from "./experiment.ts";
+
+export { reciprocalRankFusionK };
 import type { EmbedTransport } from "./port.ts";
 
 export const TUNING_CONFIG_IDS = [
@@ -106,20 +112,6 @@ export const FREEZE_SIMPLICITY: readonly TuningConfigId[] = [
 	"wfp-50",
 	"wfp-75",
 ];
-
-/** Reciprocal Rank Fusion with an explicit k; ties by entry id (as in Wave B). */
-export function reciprocalRankFusionK(
-	rankings: readonly (readonly string[])[],
-	entries: readonly string[],
-	k: number,
-): EntryRanking {
-	const fused = new Map<string, number>(entries.map((entry) => [entry, 0]));
-	for (const ranking of rankings)
-		ranking.forEach((entry, index) => {
-			fused.set(entry, (fused.get(entry) ?? 0) + 1 / (k + index + 1));
-		});
-	return rankFromScores(entries, fused);
-}
 
 /**
  * Per-case min-max normalization of a score map over the offered entries.
@@ -352,37 +344,6 @@ export type SelectionTuningReport = {
 	perCase: TuningCaseResult[];
 };
 
-const E5_QUERY_PREFIX = "query: ";
-const E5_PASSAGE_PREFIX = "passage: ";
-
-function passagesOf(card: ComponentCard): string[] {
-	return cardPassages({
-		title: card.title,
-		summary: card.summary,
-		useWhen: card.useWhen,
-		examples: [],
-	});
-}
-
-/** Per-entry best-passage cosine similarities (the vendor Router's score map). */
-function embeddingScores(
-	perCard: readonly { entry: string; passages: readonly string[] }[],
-	passageVectors: readonly number[][],
-	queryVector: readonly number[],
-	entries: readonly string[],
-): Map<string, number> {
-	const rows: Array<{ id: string; values: ArrayLike<number> }> = [];
-	let offset = 0;
-	for (const card of perCard) {
-		for (const _passage of card.passages) {
-			const values = passageVectors[offset];
-			if (values) rows.push({ id: card.entry, values });
-			offset += 1;
-		}
-	}
-	return closestSimilarities(rows, queryVector, new Set(entries));
-}
-
 export async function runSelectionTuning(options: {
 	transport: EmbedTransport;
 	split: "dev" | "holdout";
@@ -471,13 +432,13 @@ export async function runSelectionTuning(options: {
 				throw new Error(
 					`embed transport returned no query vector for ${evalCase.id}`,
 				);
-			const embScores = embeddingScores(
+			const embScores = passageSimilarities(
 				perCard,
 				rawPassageVectors,
 				rawQuery,
 				entries,
 			);
-			const embPrefixScores = embeddingScores(
+			const embPrefixScores = passageSimilarities(
 				perCard,
 				prefixedPassageVectors,
 				prefixedQuery,

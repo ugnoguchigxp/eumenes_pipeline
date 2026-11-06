@@ -46,8 +46,8 @@ export const METHOD_DESCRIPTIONS: Record<MethodId, string> = {
 export const CONTAINMENT_KS = [3, 5, 8, 12] as const;
 export const RRF_K = 60;
 export const RERANK_TOP_N = 20;
-const E5_QUERY_PREFIX = "query: ";
-const E5_PASSAGE_PREFIX = "passage: ";
+export const E5_QUERY_PREFIX = "query: ";
+export const E5_PASSAGE_PREFIX = "passage: ";
 
 /** Full ranking of the offered entries, best first. */
 export type EntryRanking = string[];
@@ -124,17 +124,26 @@ export function createBm25Index(
 	};
 }
 
+/** Reciprocal Rank Fusion with an explicit k; ties by entry id. */
+export function reciprocalRankFusionK(
+	rankings: readonly (readonly string[])[],
+	entries: readonly string[],
+	k: number,
+): EntryRanking {
+	const fused = new Map<string, number>(entries.map((entry) => [entry, 0]));
+	for (const ranking of rankings)
+		ranking.forEach((entry, index) => {
+			fused.set(entry, (fused.get(entry) ?? 0) + 1 / (k + index + 1));
+		});
+	return rankFromScores(entries, fused);
+}
+
 /** Reciprocal Rank Fusion (k = RRF_K) over full rankings; ties by entry id. */
 export function reciprocalRankFusion(
 	rankings: readonly (readonly string[])[],
 	entries: readonly string[],
 ): EntryRanking {
-	const fused = new Map<string, number>(entries.map((entry) => [entry, 0]));
-	for (const ranking of rankings)
-		ranking.forEach((entry, index) => {
-			fused.set(entry, (fused.get(entry) ?? 0) + 1 / (RRF_K + index + 1));
-		});
-	return rankFromScores(entries, fused);
+	return reciprocalRankFusionK(rankings, entries, RRF_K);
 }
 
 export type CaseScore = {
@@ -253,7 +262,7 @@ export type SelectionExperimentReport = {
 const RERANKER_NOTE =
 	"公開版 cl-nagoya/ruri-reranker-small（ベースモデル）。利用者が配備した再学習版ではなく、その成績とは混ぜない。";
 
-function passagesOf(card: ComponentCard): string[] {
+export function passagesOf(card: ComponentCard): string[] {
 	return cardPassages({
 		title: card.title,
 		summary: card.summary,
@@ -262,13 +271,13 @@ function passagesOf(card: ComponentCard): string[] {
 	});
 }
 
-/** The vendor Router's ranking path over precomputed vectors (as in RouterSelection). */
-function embeddingRanking(
-	cards: readonly ComponentCard[],
+/** Per-entry best-passage cosine similarities (the vendor Router's score map). */
+export function passageSimilarities(
 	perCard: readonly { entry: string; passages: readonly string[] }[],
 	passageVectors: readonly number[][],
 	queryVector: readonly number[],
-): EntryRanking {
+	entries: readonly string[],
+): Map<string, number> {
 	const rows: Array<{ id: string; values: ArrayLike<number> }> = [];
 	let offset = 0;
 	for (const card of perCard) {
@@ -278,10 +287,21 @@ function embeddingRanking(
 			offset += 1;
 		}
 	}
-	const similarity = closestSimilarities(
-		rows,
+	return closestSimilarities(rows, queryVector, new Set(entries));
+}
+
+/** The vendor Router's ranking path over precomputed vectors (as in RouterSelection). */
+function embeddingRanking(
+	cards: readonly ComponentCard[],
+	perCard: readonly { entry: string; passages: readonly string[] }[],
+	passageVectors: readonly number[][],
+	queryVector: readonly number[],
+): EntryRanking {
+	const similarity = passageSimilarities(
+		perCard,
+		passageVectors,
 		queryVector,
-		new Set(cards.map((c) => c.entry)),
+		cards.map((c) => c.entry),
 	);
 	return rankBy(
 		cards.map((c) => ({ id: c.entry })),

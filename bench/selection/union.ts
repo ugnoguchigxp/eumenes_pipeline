@@ -22,12 +22,11 @@ import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
  * holdout split and how many extra cards the prompt has to carry.
  */
 import { readFileSync } from "node:fs";
-import { cardPassages } from "eumenes_router";
-import type { ComponentCard } from "../../src/contracts/component.ts";
 import { loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import {
 	createBm25Index,
+	passagesOf,
 	rankFromScores,
 	type EntryRanking,
 } from "./experiment.ts";
@@ -115,15 +114,6 @@ export type UnionReport = {
 	depths: UnionDepthMetrics[];
 	perCase: UnionCaseResult[];
 };
-
-function passagesOf(card: ComponentCard): string[] {
-	return cardPassages({
-		title: card.title,
-		summary: card.summary,
-		useWhen: card.useWhen,
-		examples: [],
-	});
-}
 
 const sameSet = (a: readonly string[], b: readonly string[]) =>
 	a.length === b.length &&
