@@ -1,0 +1,613 @@
+$ bun run typecheck && bun run lint && bun run format:check && bun test
+$ bun check && bun check -p tsconfig.build.json
+✓ No type errors in 146 files [101.52ms]
+✓ No type errors in 15 files [12.66ms]
+$ oxlint --deny-warnings
+$ bun fmt --check
+All 194 files are formatted.
+bun test v1.4.4 (38afee6c8)
+
+bench/verify.test.ts:
+(pass) bench:verify passes offline with zero reach attempts [45.22ms]
+
+bench/tokens.test.ts:
+(pass) countTokens > maps helper counts back in order, deterministically [0.14ms]
+(pass) countTokens > a malformed helper reply counts as unavailable, never as zero [0.05ms]
+(pass) countTokens > a missing tokenizer file yields nulls without running anything [0.02ms]
+(pass) countTokens > the real spawn is blocked under the test guard, so counts stay null [0.05ms]
+(pass) tokenizer command and provenance > the command is exactly [python, helper, tokenizer file] [0.04ms]
+(pass) tokenizer command and provenance > provenance is all-null when the tokenizer file is absent [0.03ms]
+(pass) tokenizer command and provenance > provenance reports the recorded source of the downloaded tokenizer [1.14ms]
+
+scripts/eumenes-prompt.test.ts:
+(pass) a single revision preserves legacy extraction and instruction bytes [0.13ms]
+(pass) an explicit revision 1 is invariant under definition order [0.04ms]
+(pass) an explicit revision 2 is invariant under definition order [0.04ms]
+(pass) multiple or missing revisions cannot silently choose an entry [0.04ms]
+(pass) expected adopted instructions must match the selected revision [0.03ms]
+(pass) duplicate revisions and broken references are refused [0.03ms]
+(pass) the committed single-revision prompt is reproduced without changing its snapshot [0.24ms]
+
+src/check.test.ts:
+(pass) argument copying never invokes hidden JSON serialization hooks [0.31ms]
+(pass) oversized step arrays fail before per-element errors can amplify memory use [0.08ms]
+(pass) argument JSON rejects cycles, excessive depth, unsupported values and accessors without executing them [1.08ms]
+(pass) checkDefinition > accepts a serial plan and resolves entries, revisions and output contracts [0.06ms]
+(pass) checkDefinition > rejects reserved id [0.03ms]
+(pass) checkDefinition > rejects duplicate id [0.02ms]
+(pass) checkDefinition > rejects forward reference [0.02ms]
+(pass) checkDefinition > rejects reference cycle [0.02ms]
+(pass) checkDefinition > rejects self reference
+(pass) checkDefinition > rejects unknown reference
+(pass) checkDefinition > rejects duplicate reference
+(pass) checkDefinition > rejects unknown output reference
+(pass) checkDefinition > rejects unknown component [0.02ms]
+(pass) checkDefinition > rejects ambiguous bundle [0.01ms]
+(pass) checkDefinition > rejects entry from another bundle [0.01ms]
+(pass) checkDefinition > rejects excluded entry
+(pass) checkDefinition > rejects excluded bundle
+(pass) checkDefinition > rejects expression field [0.03ms]
+(pass) checkDefinition > rejects no steps [0.02ms]
+(pass) checkDefinition > rejects blank task [0.02ms]
+(pass) checkDefinition > a single-entry bundle and an entry id both resolve without `entry` [0.06ms]
+(pass) checkDefinition > an unused result is a warning, not a rejection [0.03ms]
+(pass) checkDefinition > ambiguity reports the candidate entries [0.02ms]
+(pass) step arguments > valid arguments pass and are carried into the plan verbatim [0.24ms]
+(pass) step arguments > arguments for an entry that declares no schema are rejected [0.05ms]
+(pass) step arguments > an enum violation is invalid_arguments [0.11ms]
+(pass) step arguments > a missing required argument is invalid_arguments [0.10ms]
+(pass) step arguments > omitted arguments pass: the entry structures them itself [0.02ms]
+(pass) step arguments > a schema the converter cannot handle is reported unchecked, never silently passed [0.09ms]
+(pass) trusted host context detects model changes to the original request, preserving exact bytes [0.03ms]
+(pass) createCatalogView > refuses duplicate entries [0.01ms]
+(pass) createCatalogView > an exact entry name wins over a bundle of the same name [0.04ms]
+(pass) createCatalogView > a multi-entry bundle named without `entry` is ambiguous [0.02ms]
+(pass) createCatalogView > an unknown name does not resolve [0.01ms]
+(pass) createCatalogView > a near-miss name is not resolved by similarity or prefix [0.02ms]
+(pass) createCatalogView > a catalogued entry that is not offered does not resolve [0.03ms]
+(pass) runnable components > a permissive host offer cannot widen the view past runnable records [0.06ms]
+(pass) runnable components > a hand-built view that resolves an unrunnable record is still rejected [0.06ms]
+
+src/source-request.test.ts:
+(pass) binding replaces a paraphrased request and keeps what the model wrote [0.04ms]
+(pass) an exact copy is reported as matched and left unchanged
+
+bench/formats/formats.test.ts:
+(pass) the §5 representative example, in every format > json, md-yaml and free-md extract the identical definition [5.25ms]
+
+bench/formats/md-yaml.test.ts:
+(pass) parseMdYaml > extracts the single yaml fence out of surrounding prose [0.23ms]
+(pass) parseMdYaml > dates and times stay strings; numbers, booleans and null keep their types [0.35ms]
+(pass) parseMdYaml > rejects 本文だけ with no_yaml_fence [0.03ms]
+(pass) parseMdYaml > rejects ```json
+{}
+``` with no_yaml_fence
+(pass) parseMdYaml > rejects ```yaml
+a: 1
+```
+```yaml
+b: 2
+``` with multiple_yaml_fences
+(pass) parseMdYaml > rejects ```yaml
+a: 1
+ with unclosed_fence
+(pass) parseMdYaml > rejects ```yaml
+a: &x 1
+b: 2
+``` with anchor [0.11ms]
+(pass) parseMdYaml > rejects ```yaml
+b: *x
+a: &x 1
+``` with alias [0.09ms]
+(pass) parseMdYaml > rejects ```yaml
+base: &b
+  x: 1
+derived:
+  <<: *b
+``` with anchor [0.07ms]
+(pass) parseMdYaml > rejects ```yaml
+a: !!str 5
+``` with tag [0.16ms]
+(pass) parseMdYaml > rejects ```yaml
+a: !custom 5
+``` with tag [0.14ms]
+(pass) parseMdYaml > rejects ```yaml
+a: 1
+a: 2
+``` with duplicate_key [0.06ms]
+(pass) parseMdYaml > rejects ```yaml
+a: 1
+---
+b: 2
+``` with invalid_yaml [0.09ms]
+(pass) parseMdYaml > rejects ```yaml
+1: x
+``` with non_string_key [0.03ms]
+(pass) parseMdYaml > rejects ```yaml
+a: .inf
+``` with non_finite [0.03ms]
+(pass) parseMdYaml > rejects ```yaml
+a: [1,
+``` with invalid_yaml [0.12ms]
+(pass) parseMdYaml > a merge key without an alias is still a merge key [0.08ms]
+
+bench/formats/json.test.ts:
+(pass) parseJsonFormat > a bare definition (no status) is a ready outcome, values untouched [0.05ms]
+(pass) parseJsonFormat > status "ready" takes the definition from the "definition" field [0.03ms]
+(pass) parseJsonFormat > needs_input and unsupported outcomes carry their lines [0.03ms]
+(pass) parseJsonFormat > rejects {"request":"a","request":"b"} with duplicate_key [0.01ms]
+(pass) parseJsonFormat > rejects {"status":"ready"} with missing_definition
+(pass) parseJsonFormat > rejects {"status":"later","definition":{}} with unknown_status
+(pass) parseJsonFormat > rejects {"status":"needs_input","questions":"どれですか"} with invalid_questions
+(pass) parseJsonFormat > rejects [1,2] with not_an_object [0.04ms]
+(pass) parseJsonFormat > rejects ただの文章 with syntax
+(pass) parseJsonFormat > rejects  with empty
+(pass) parseJsonFormat > rejects ```json
+{}
+``` with syntax
+
+bench/formats/restore.test.ts:
+(pass) syntax restore (corruption suite) > the material itself parses strictly, untouched (i) [0.07ms]
+(pass) syntax restore (corruption suite) > (a) trailing comma in an array: recovered, definition deep-equal [0.64ms]
+(pass) syntax restore (corruption suite) > (a) trailing comma in an object: recovered, definition deep-equal [0.14ms]
+(pass) syntax restore (corruption suite) > (b) markdown fence (json): recovered, definition deep-equal [0.12ms]
+(pass) syntax restore (corruption suite) > (b) markdown fence (bare): recovered, definition deep-equal [0.06ms]
+(pass) syntax restore (corruption suite) > (c) single quotes: recovered, definition deep-equal [0.06ms]
+(pass) syntax restore (corruption suite) > (d) unquoted keys: recovered, definition deep-equal [0.06ms]
+(pass) syntax restore (corruption suite) > (e) comments: recovered, definition deep-equal [0.06ms]
+(pass) syntax restore (corruption suite) > (f) missing closing brackets: parse recovers, equality not claimed [0.09ms]
+(pass) syntax restore (corruption suite) > (g) string truncated mid-way: parse recovers, content is the survivor [0.06ms]
+(pass) syntax restore (corruption suite) > (h) duplicate keys: still rejected after restore [0.05ms]
+(pass) syntax restore (corruption suite) > (h) duplicate keys mixed with a trailing comma: still rejected [0.05ms]
+
+bench/formats/free-md.test.ts:
+(pass) parseFreeMd > reads steps, labels, inputs, arguments and the output [1.45ms]
+(pass) parseFreeMd > output.from defaults to every step; arguments read JSON literals [0.09ms]
+(pass) parseFreeMd > 確認 and 対応不可 sections decide the state; list markers are stripped [0.05ms]
+(pass) parseFreeMd > rejects a broken document with ## 手順
+1. 計算 `compute.python`: 数える
+ [0.03ms]
+(pass) parseFreeMd > rejects a broken document with ## 成果物
+結果を伝える
+
+(pass) parseFreeMd > rejects a broken document with ## 手順
+1. 計算する（入力: 依頼）
+
+## 成果物
+伝える
+
+(pass) parseFreeMd > rejects a broken document with ## 手順
+1. 計算 `compute.python`: 数える（入力: 謎の資料）
+
+## 成果物
+伝える
+ [0.02ms]
+(pass) parseFreeMd > rejects a broken document with ## 手順
+1. 計算 `compute.python`: 数える（入力: 後続）
+2. 後続 `cli.run`: 実行する
+
+## 成果物
+伝える
+ [0.01ms]
+(pass) parseFreeMd > rejects a broken document with ## 確認
+- どれですか
+
+## 対応不可
+・できません
+ [0.01ms]
+(pass) parseFreeMd > rejects a broken document with ## 手順
+1. 同じ `compute.python`: 数える
+2. 同じ `cli.run`: 実行する
+
+## 成果物
+伝える
+
+(pass) parseFreeMd > a ready document without # 依頼 fails [0.02ms]
+
+bench/formats/cards.test.ts:
+(pass) renderCardsText > pins the concise text form [0.16ms]
+(pass) renderCardsText > never leaks contract origins or readiness [0.03ms]
+(pass) renderCardsTextCompact > pins the compact form: entry, title, one-line purpose, arguments, output [0.05ms]
+(pass) renderCardsTextCompact > drops the full rendering's lists and facts, and leaks nothing else [0.02ms]
+(pass) renderCardsTextCompact > is deterministic on the real catalog and keeps catalog order [4.72ms]
+(pass) renderCardsJson > carries the card facts and nothing else [0.09ms]
+(pass) summarizeArguments > keeps property order, types, required flags and descriptions [0.02ms]
+(pass) rendering the real catalog > is deterministic and covers every offered entry in catalog order [0.37ms]
+
+bench/formats/normalize-ids.test.ts:
+(pass) normalizeStepId > snake_case, case and separators collapse to the contract shape [0.06ms]
+(pass) normalizeStepId > a leading non-letter and an overlong id are brought into shape [0.02ms]
+(pass) normalizeDefinitionIds > rewrites offending ids and every reference to them; content otherwise identical [0.16ms]
+(pass) normalizeDefinitionIds > already-valid ids return null (nothing to rewrite) [0.01ms]
+(pass) normalizeDefinitionIds > a collision after normalization is refused [0.01ms]
+(pass) normalizeDefinitionIds > a rewrite landing on the reserved request reference is refused
+(pass) normalizeDefinitionIds > non-definition shapes return null
+(pass) validateAuthoring with normalization > an id-only failure is recovered, and the recovered definition is the normalized one [0.46ms]
+(pass) validateAuthoring with normalization > without the flag the same failure stands (pre-normalization gate) [0.04ms]
+(pass) validateAuthoring with normalization > a failure that is not id-only is never offered normalization [0.03ms]
+(pass) validateAuthoring with normalization > a collision keeps the original failure and its issues [0.03ms]
+(pass) validateAuthoring with normalization > non-ready outcomes and parse failures pass through untouched [0.15ms]
+
+bench/formats/strict-json.test.ts:
+(pass) parseJsonStrict > retains own JSON properties: {"__proto__":{"status":"unsupported","reasons":["x"]}} [0.04ms]
+(pass) parseJsonStrict > retains own JSON properties: {"\u005f_proto__":{"nested":true},"constructor":{"prototype":1}} [0.04ms]
+(pass) parseJsonStrict > retains own JSON properties: {"a":{"__proto__":null},"prototype":[1,true]}
+(pass) parseJsonStrict > an inherited discriminator cannot change the authored outcome [0.02ms]
+(pass) parseJsonStrict > generated JSON data agrees with the standard parser [0.49ms]
+(pass) parseJsonStrict > reads the full JSON value grammar [0.02ms]
+(pass) parseJsonStrict > a surrogate pair written as two escapes recombines
+(pass) parseJsonStrict > rejects {"a":1,"a":2} [0.02ms]
+(pass) parseJsonStrict > rejects {"a":{"b":1,"b":2}}
+(pass) parseJsonStrict > rejects {"a":1} {"b":2}
+(pass) parseJsonStrict > rejects {"a":1,}
+(pass) parseJsonStrict > rejects [1,]
+(pass) parseJsonStrict > rejects {"a":}
+(pass) parseJsonStrict > rejects "unterminated
+(pass) parseJsonStrict > rejects "bad \x"
+(pass) parseJsonStrict > rejects 01
+(pass) parseJsonStrict > rejects 1.
+(pass) parseJsonStrict > rejects 1e
+(pass) parseJsonStrict > rejects 1e999
+(pass) parseJsonStrict > rejects nul
+(pass) parseJsonStrict > rejects 
+(pass) parseJsonStrict > rejects a literal control character inside a string
+(pass) parseJsonStrict > rejects nesting beyond the fixed depth [0.02ms]
+(pass) parseJsonStrict > reports the offset just past a duplicate key
+
+bench/mock/host.test.ts:
+(pass) MockHost > answers with the chosen entry's own contract, valid and recorded [0.34ms]
+(pass) MockHost > a wrong choice gets the wrong entry's result, not the expected one [1.74ms]
+(pass) MockHost > fixture artifacts are also handed on as artifact references [0.09ms]
+(pass) MockHost > summary-only entries return no output [0.03ms]
+(pass) MockHost > is deterministic for the same seed, entry, step and request [0.21ms]
+(pass) MockHost > fails on unknown entry [0.03ms]
+(pass) MockHost > fails on excluded entry
+(pass) MockHost > fails on stale revision
+(pass) MockHost > fails on arguments on a command entry
+(pass) MockHost > fails on invalid instant arguments [0.12ms]
+(pass) MockHost > instant arguments: synthesized by default, required under the strict policy [0.05ms]
+(pass) MockHost > valid instant arguments from the step are accepted [0.03ms]
+(pass) MockHost > expired before start and aborted before start [0.04ms]
+(pass) MockHost > host defect scenarios [0.05ms]
+(pass) MockHost > a question stops with waiting_input [0.02ms]
+(pass) MockHost argument checks without an extracted input contract > validates against the card's own schema, for step and synthesized arguments [0.22ms]
+
+bench/mock/guard.test.ts:
+(pass) reach guard (runtime) > is installed for every test process [0.01ms]
+(pass) reach guard (runtime) > blocks network, processes, threads and services, and counts the attempts [0.90ms]
+(pass) reach guard (static) > no source imports or requires network, process or thread modules [14.75ms]
+(pass) reach guard (static) > no source uses what the runtime guard cannot patch [34.20ms]
+(pass) reach guard (static) > only the Muse adapter starts processes [5.09ms]
+(pass) library purity (Eumenes integration, plan §6-§7) > src/ imports only zod and its own modules: no Bun, node, bench or Eumenes [1.04ms]
+(pass) library purity (Eumenes integration, plan §6-§7) > src/ does not use Bun or DOM globals [0.75ms]
+(pass) allowMuseExec > allows only `muse exec` [0.04ms]
+
+bench/mock/driver.test.ts:
+(pass) runPlan > does not dispatch even the first step after an already expired deadline [0.12ms]
+(pass) runPlan > hands each step only the request and the earlier results it names [0.12ms]
+(pass) runPlan > stops at a failed step and runs nothing after it [0.05ms]
+(pass) runPlan > stops at a cancelled step and runs nothing after it
+(pass) runPlan > stops at a expired step and runs nothing after it
+(pass) runPlan > stops at a waiting_input step and runs nothing after it
+(pass) runPlan > stops at a indeterminate step and runs nothing after it
+(pass) runPlan > stops at a running step and runs nothing after it
+(pass) runPlan > stops at a handoff step and runs nothing after it
+(pass) runPlan > partial success is not reported as completion [0.04ms]
+(pass) runPlan > a completed step without its declared output is not handed on [0.03ms]
+(pass) runPlan > a completed output that breaks its contract is not handed on [0.04ms]
+(pass) runPlan > a result arriving after cancellation is not adopted [0.05ms]
+(pass) runPlan > a result arriving after the deadline is not adopted [0.04ms]
+(pass) runPlan > nothing runs when already cancelled [0.03ms]
+
+bench/mock/synth.test.ts:
+(pass) synthesize > is deterministic per seed [0.06ms]
+(pass) synthesize > uuid validates against its own schema [0.17ms]
+(pass) synthesize > date-time validates against its own schema [0.07ms]
+(pass) synthesize > const validates against its own schema [0.05ms]
+(pass) synthesize > enum validates against its own schema [0.07ms]
+(pass) synthesize > bounded integer validates against its own schema [0.12ms]
+(pass) synthesize > exclusive minimum validates against its own schema [0.09ms]
+(pass) synthesize > safe-integer range validates against its own schema [0.06ms]
+(pass) synthesize > pattern validates against its own schema [0.06ms]
+(pass) synthesize > length validates against its own schema [0.07ms]
+(pass) synthesize > tuple validates against its own schema [0.16ms]
+(pass) synthesize > min items validates against its own schema [0.11ms]
+(pass) synthesize > nullable union validates against its own schema [0.07ms]
+(pass) synthesize > discriminated oneOf validates against its own schema [0.50ms]
+(pass) synthesize > $ref validates against its own schema [0.50ms]
+(pass) synthesize > only required properties are produced [0.05ms]
+(pass) synthesize > an unsatisfiable pattern is a synthesis error, not a value [0.06ms]
+
+bench/catalog/inventory.test.ts:
+(pass) inventory of the 2026-11-03 snapshot > matches the counts in plan §4 [0.06ms]
+(pass) inventory of the 2026-11-03 snapshot > excludes exactly the disabled, session and pipeline entries, each with a reason [0.02ms]
+(pass) inventory of the 2026-11-03 snapshot > never guesses a bundle: legacy entries have none, bound ones cite their binding document [0.03ms]
+(pass) inventory of the 2026-11-03 snapshot > fixture contracts are marked as such and never count as ready [0.01ms]
+(pass) inventory of the 2026-11-03 snapshot > cards carry no internal tools, profiles, adapters or revisions [0.03ms]
+(pass) inventory of the 2026-11-03 snapshot > coverage is reported against all enabled toolchains [0.05ms]
+(pass) inventory of the 2026-11-03 snapshot > the catalog version is stable for the same inputs [6.17ms]
+(pass) inventory of the 2026-11-03 snapshot > the snapshot is read-only [0.03ms]
+
+bench/cases/freeze-integration.test.ts:
+(pass) frozen host evaluation rejects snapshot drift even outside the source tree [151.41ms]
+(pass) frozen evaluation blocks method changes and partial API batches before network access [110.46ms]
+(pass) same-size API input replacement is rejected even with a recomputed self-consistent digest [92.80ms]
+
+bench/cases/freeze.test.ts:
+(pass) final protocol refuses group leakage, case/policy drift and unplanned sessions [100.64ms]
+(pass) exposed recording regrades are explicit diagnostic data, never silently a new holdout [50.64ms]
+
+bench/cases/cases.test.ts:
+(pass) cases in data/cases/ > loads the full set with unique ids [0.04ms]
+(pass) cases in data/cases/ > split is explicit on every case; seeds are all dev, holdout is protected [0.07ms]
+(pass) cases in data/cases/ > a group never spans the dev/holdout boundary (plan §9) [0.03ms]
+(pass) cases in data/cases/ > every offered entry is gold in at least two cases [0.08ms]
+(pass) cases in data/cases/ > covers the P0c categories [0.04ms]
+(pass) cases in data/cases/ > gold references name only offered entries and known materials [0.14ms]
+(pass) cases in data/cases/ > usesFixtureContracts matches the catalog facts it claims to summarize [0.12ms]
+(pass) loadCases failure modes > rejects a file that is not JSON [1.67ms]
+(pass) loadCases failure modes > rejects a case that breaks the schema (unknown field, bad entry id) [1.98ms]
+(pass) loadCases failure modes > rejects a case without an explicit split (no silent default) [1.51ms]
+(pass) loadCases failure modes > rejects duplicate case ids across files [2.04ms]
+(pass) loadCases failure modes > the schema itself rejects a pipeline case whose gold is empty prose [0.07ms]
+
+bench/cases/provenance.test.ts:
+(pass) run provenance > retains original case bytes, independently of later files [10.27ms]
+(pass) run provenance > detects a case changing after loading [13.23ms]
+(pass) run provenance > source identity is stable and contains no environment files [25.99ms]
+
+bench/scoring/wiring.test.ts:
+(pass) evaluator role graph matching > accepts different step names and alternate entries [0.18ms]
+(pass) evaluator role graph matching > rejects missing edges and undelivered results [0.10ms]
+(pass) evaluator role graph matching > binds repeated entries to distinct matching roles [0.13ms]
+(pass) evaluator role graph matching > invalid role references are rejected before evaluation [0.14ms]
+
+bench/scoring/score.test.ts:
+(pass) scoreCase: passing attempts > a correct ready-only pipeline passes every aspect [1.58ms]
+(pass) scoreCase: passing attempts > an acceptable entry may join, but never substitutes for a required one [0.85ms]
+(pass) scoreCase: passing attempts > the §3 example passes on fixture contracts, artifact included [1.57ms]
+(pass) scoreCase: passing attempts > an instant step with stated arguments passes and wires its material [2.67ms]
+(pass) scoreCase: passing attempts > a correct unsupported answer passes without any execution [0.15ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > producing artifacts before research and omitting them from delivery fails [0.29ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > a wrong bundle is a bundle miss and an extra, though the mock completes [0.61ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > an unwired material fails only the materials aspect [0.30ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > state mismatches fail in both directions [0.16ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > a parse failure is recorded, never scored as a state [0.05ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > an unresolvable bundle fails the check and is reported unresolved [0.17ms]
+(pass) scoreCase: failing attempts are attributed to the right aspect > scoring is deterministic for the same attempt [0.16ms]
+
+bench/scoring/judge.test.ts:
+(pass) judge input has public task information but no producer, score, gold or cost fields [1.18ms]
+(pass) judge receives the checker's resolved public entry even when its bundle name differs [0.26ms]
+(pass) unparseable, inconsistent and uncertain verdicts never become a successful judgement [0.53ms]
+
+bench/format/conditions.test.ts:
+(pass) condition registry > pins the five fixed conditions [0.06ms]
+(pass) condition registry > the summary records guidance only on guidance conditions [0.02ms]
+(pass) condition registry > resolves by id and refuses unknown ids loudly [0.04ms]
+(pass) condition registry > subset condition ids carry the candidate file's digest prefix [0.02ms]
+(pass) worked examples (oneshot) > one per format, all different, all naming the same example request [0.03ms]
+(pass) worked examples (oneshot) > the example request is identical to no case request in the whole set [9.45ms]
+(pass) worked examples (oneshot) > each example parses to a ready definition that passes checkDefinition [1.55ms]
+
+bench/format/triage.test.ts:
+(pass) parseTriageOutput > accepts exactly the two verdict shapes [0.08ms]
+(pass) parseTriageOutput > refuses anything else, including near-misses [0.05ms]
+(pass) buildTriagePrompt / triageNoteText > the prompt carries the request and the materials, and no cards section [7.96ms]
+(pass) buildTriagePrompt / triageNoteText > the note reports the verdict and, for needs_input, its questions [0.05ms]
+(pass) threshold guidance (condition A) > the guidance text is registered and names no case and no entry [8.01ms]
+(pass) threshold guidance (condition A) > a guidance prompt appends the block to the system; baseline stays without it [9.76ms]
+
+bench/format/prompt.test.ts:
+(pass) buildFormatPrompt > is deterministic and carries the request, the materials and every offered card [2.12ms]
+(pass) buildFormatPrompt > each format's instructions differ, the shared part and the prompt do not [0.42ms]
+(pass) buildFormatPrompt > gold never reaches the prompt: no expected bundles, notes or case flags [20.77ms]
+(pass) buildFormatPrompt > compact style renders the compact cards and drops the full lists [0.24ms]
+(pass) buildFormatPrompt > oneshot appends the format's worked example to the prompt, not the system [0.31ms]
+(pass) buildFormatPrompt > minified output style appends one line to the json system and nothing else [0.09ms]
+(pass) buildFormatPrompt > minified output style leaves the other formats byte-identical [0.13ms]
+(pass) buildFormatPrompt > provided materials are listed by name and kind [0.08ms]
+
+bench/format/run.test.ts:
+(pass) bench:format wiring (synthetic recordings) > the whole path runs and counts every cell, split by fixture dependence [63.06ms]
+(pass) bench:format conditions (synthetic recordings) > compact condition: recordings bind to the compact prompt's digest [48.44ms]
+(pass) bench:format conditions (synthetic recordings) > minjson condition: recordings bind to the minified-style prompt's digest [46.66ms]
+(pass) bench:format conditions (synthetic recordings) > eumenes condition: the host's own prompt is sent, read and bound as the host does [96.69ms]
+(pass) bench:format conditions (synthetic recordings) > an explicit historical host revision replays without switching to the current prompt [67.85ms]
+(pass) bench:format conditions (synthetic recordings) > candidates: a listed case is offered the subset, others keep all cards [42.00ms]
+(pass) bench:format conditions (synthetic recordings) > repair: a mechanically failed cell gets one repair round, scored apart [102.81ms]
+(pass) bench:format conditions (synthetic recordings) > repair: a digest-mismatched repair recording is refused, not used [43.23ms]
+(pass) bench:format conditions (synthetic recordings) > repair: a semantic failure (wrong bundle) is never repair material [42.24ms]
+(pass) bench:format conditions (synthetic recordings) > restore-syntax: a syntactically broken output is recovered only with the flag [102.44ms]
+(pass) bench:format conditions (synthetic recordings) > normalize-ids: an id-shape failure is recovered only with the flag [90.28ms]
+(pass) bench:format conditions (synthetic recordings) > triage: a case composes only with a usable pre-pass conclusion [93.61ms]
+(pass) bench:format conditions (synthetic recordings) > staged: enumeration gates composing, coverage is reported, and the coverage round repairs gaps [146.60ms]
+(pass) bench:format conditions (synthetic recordings) > candidates naming an unoffered entry fail before the run starts [26.64ms]
+
+bench/format/enumerate.test.ts:
+(pass) parseEnumOutput > accepts the item-list shape and assigns ids by position [0.04ms]
+(pass) parseEnumOutput > refuses anything else, including near-misses [0.11ms]
+(pass) buildEnumPrompt > carries the request and the materials, no cards, no entry names [9.87ms]
+(pass) enumNoteText > lists the items with their ids and states the marker convention [0.06ms]
+(pass) enumNoteText > the composing prompt appends the note as its final section [7.73ms]
+(pass) coverage over task markers > cited ids come from the steps' task markers only [0.08ms]
+(pass) coverage over task markers > coverage is the set difference, in enumeration order [0.06ms]
+(pass) coverage over task markers > stripping removes markers from task texts and nothing else [0.05ms]
+
+bench/format/host-prompt.test.ts:
+(pass) the host prompt sends Eumenes' instructions and JSON message, never the gold [12.54ms]
+(pass) cards follow the host's mapping: entry as bundle, no completed-output schema [4.82ms]
+(pass) a changed or dirty snapshot is refused [3.21ms]
+(pass) the host reading needs an explicit status and does not trim [0.12ms]
+
+bench/infer/api-config.test.ts:
+(pass) profile aliases take priority without changing the environment [0.04ms]
+(pass) API allowances reject suffix hosts, alternate paths, credentials and queries [0.08ms]
+
+bench/infer/run-api.test.ts:
+(pass) API repair preserves legacy composition provenance and requires its own manifest [211.25ms]
+(pass) API calls and offline replay retain their separate provenance and never overwrite a recording [311.28ms]
+
+bench/infer/recorded.test.ts:
+(pass) RecordedInference > legacy API records with unknown schema identity cannot silently qualify as current input [0.35ms]
+(pass) RecordedInference > request identity includes the forced output schema [0.14ms]
+(pass) RecordedInference > an API marker without provenance cannot become an agent-model record [0.03ms]
+(pass) RecordedInference > replays the recording whose digest matches the request; usage stays null [0.06ms]
+(pass) RecordedInference > a recording made for a different prompt is a digest mismatch, never replayed [0.05ms]
+(pass) RecordedInference > no recording at all is an explicit error, not a guess [0.03ms]
+(pass) RecordedInference > fromDirectory loads recordings and rejects malformed or duplicate files [1.24ms]
+(pass) RecordedInference > duplicate digests across files fail loudly [1.38ms]
+
+bench/infer/muse-exec.test.ts:
+(pass) parseMuseJsonl > reads the final text and usage [0.27ms]
+(pass) parseMuseJsonl > sums models, keeps unreported counts null, counts junk lines [0.08ms]
+(pass) parseMuseJsonl > no usage event means unknown counts, not zeros [0.02ms]
+(pass) MuseExecInference > runs isolated outside the repository with the prompt and schema files [2.74ms]
+(pass) MuseExecInference > reports failure, timeout and missing terminal as errors with usage kept [2.61ms]
+(pass) Muse adapter hardening > non-object JSON lines are malformed, not a crash [0.13ms]
+(pass) Muse adapter hardening > a usage event without calls or model names stays unknown [0.03ms]
+(pass) Muse adapter hardening > refuses a temp directory inside the repository [1.00ms]
+
+bench/infer/api.test.ts:
+(pass) direct API inference > Anthropic cache opt-in cannot be enabled through request overrides [1.37ms]
+(pass) direct API inference > maps the request without tools and records raw evidence with unknown costs/calls preserved [1.99ms]
+(pass) direct API inference > HTTP 401 is one recorded failed call without hidden retry [1.57ms]
+(pass) direct API inference > HTTP 403 is one recorded failed call without hidden retry [1.52ms]
+(pass) direct API inference > HTTP 429 is one recorded failed call without hidden retry [1.73ms]
+(pass) direct API inference > HTTP 500 is one recorded failed call without hidden retry [1.63ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [1.97ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [1.07ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [1.24ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [1.28ms]
+(pass) direct API inference > non-completion, changed model, tools, empty output and refusals do not become success [2.63ms]
+(pass) direct API inference > Anthropic text/usage mapping is separate from provider completion status [1.55ms]
+(pass) direct API inference > missing credentials, cancellation and exhausted budget cannot send a request [0.99ms]
+(pass) direct API inference > timeout and cancellation retain unknown reservations [6.56ms]
+(pass) oversized response streams are cancelled before their entire body is read [1.53ms]
+(pass) escaped credentials and reflected response identifiers cannot enter saved evidence [1.15ms]
+(pass) a stalled response body is cancelled at the deadline and retains its reservation [7.63ms]
+(pass) wire input is bounded in UTF-8 bytes rather than character count [1.10ms]
+
+bench/selection/union.test.ts:
+(pass) union recorded input identity > unchanged inputs preserve source identity and embedding provenance [32.79ms]
+(pass) union recorded input identity > rejects changed request with the same case id [23.08ms]
+(pass) union recorded input identity > rejects changed materials with the same case id [23.44ms]
+(pass) union recorded input identity > rejects changed gold with the same case id [22.33ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: catalog [22.63ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: snapshot [15.77ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: duplicate-case [20.40ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: duplicate-ranking [22.83ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: unknown-ranking [22.05ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: legacy [17.19ms]
+(pass) union recorded input identity > rejects unverifiable or malformed results: embedding [18.77ms]
+(pass) unionPresented > keeps the emb-prefix top-12 order, then appends unseen BM25 entries in BM25 order [0.06ms]
+(pass) unionPresented > k=0 is exactly the emb-prefix top-12 baseline [0.02ms]
+(pass) unionPresented > adds nothing when the BM25 top-k is already inside the base set [0.01ms]
+(pass) unionPresented > never duplicates an entry and never shrinks the base set [0.02ms]
+(pass) setContainsAll > requires every required entry to be presented [0.02ms]
+
+bench/selection/router.test.ts:
+(pass) RouterSelection over the stub transport (wiring only) > ranks the card whose passages share the request's words first, deterministically [0.84ms]
+(pass) RouterSelection over the stub transport (wiring only) > covers the full offered set of the real catalog [12.61ms]
+(pass) RouterSelection over the stub transport (wiring only) > a transport that answers the wrong shape fails loudly [0.15ms]
+(pass) liveConfigStatus > both variables are required; absence is reported, never guessed [0.07ms]
+
+bench/selection/experiment.test.ts:
+(pass) charNgramTokens > strips whitespace and emits 2-grams then 3-grams [0.01ms]
+(pass) charNgramTokens > short texts yield fewer tokens [0.01ms]
+(pass) bm25 > a lexical hit outranks a miss; misses score 0 [0.03ms]
+(pass) bm25 > zero-score ties fall back to entry-id order [0.01ms]
+(pass) reciprocalRankFusion > fuses two rankings with k=60 [0.07ms]
+(pass) scoreCase / aggregateMethodMetrics > worst required rank and its reciprocal [0.02ms]
+(pass) scoreCase / aggregateMethodMetrics > containment counts cases whose worst required rank is within k [0.03ms]
+(pass) runSelectionExperiment (test transport, synthetic) > evaluates the dev pipeline cases and reports every method [45.80ms]
+(pass) runSelectionExperiment (test transport, synthetic) > a null rerank scorer makes only emb-rerank unavailable [41.91ms]
+
+bench/selection/tuning.test.ts:
+(pass) reciprocalRankFusionK > rewards entries ranked high by both legs, more sharply for small k [0.04ms]
+(pass) reciprocalRankFusionK > with a large k approaches a Borda-like count [0.03ms]
+(pass) normalizeScores > maps min to 0 and max to 1 [0.09ms]
+(pass) normalizeScores > maps a degenerate map to all zeros [0.01ms]
+(pass) weightedFusion > weight 1 follows the embedding leg, weight 0 the BM25 leg [0.07ms]
+(pass) deriveRanking > passes the base legs through unchanged [0.14ms]
+(pass) freezeByRule > picks the highest top-12 containment [0.08ms]
+(pass) freezeByRule > breaks a top-12 tie by mean worst reciprocal rank [0.02ms]
+(pass) freezeByRule > breaks a full tie by simplicity (earlier wins) [0.01ms]
+(pass) freezeByRule > returns null when nothing was evaluated
+
+bench/selection/rerank.test.ts:
+(pass) rerankCommand / isRerankCommand > the command is exactly [python, helper, modelDir] [0.08ms]
+(pass) rerankCommand / isRerankCommand > anything else is not the rerank command [0.02ms]
+(pass) scoreRerankPairs > parses one score per pair, in order [3.45ms]
+(pass) scoreRerankPairs > any failure yields null for the whole batch [0.07ms]
+(pass) scoreRerankPairs > a missing model directory yields null without running the helper [0.03ms]
+
+bench/selection/live.test.ts:
+(pass) embedding deadline aborts a stalled dependency and redirects are never followed [6.88ms]
+
+bench/export/quality-report.test.ts:
+(pass) host plan judging uses the same bound request as scoring and report verification [329.97ms]
+(pass) blinded judgements must match the exact scored candidate, not just an authentic API output [454.38ms]
+(pass) reported API usage cannot be changed by editing an untrusted provenance sidecar [314.92ms]
+(pass) frozen judge input changes cannot spend budget even when the request digest is updated [255.83ms]
+(pass) a single API judgement cannot be counted as two independent requests [401.69ms]
+
+bench/export/export.test.ts:
+(pass) bench:export (synthetic recordings) > host export reproduces the scored reading: paraphrased [78.38ms]
+(pass) bench:export (synthetic recordings) > host export reproduces the scored reading: bare [57.38ms]
+(pass) bench:export (synthetic recordings) > host export reproduces the scored reading: bom [52.55ms]
+(pass) bench:export (synthetic recordings) > staged compose and repair export the marker-free definitions that were executed [96.63ms]
+(pass) bench:export (synthetic recordings) > later gold changes cannot be attributed to the historical run [144.02ms]
+(pass) bench:export (synthetic recordings) > a compose run exports with provenance and a clean cross-check [51.90ms]
+(pass) bench:export (synthetic recordings) > a tampered summary is reported, not silently trusted [54.16ms]
+(pass) bench:export (synthetic recordings) > a repair run exports before/after verdicts from its own trials [94.95ms]
+(pass) bench:export (synthetic recordings) > a restored cell exports its flag, its definition and the restore totals [61.44ms]
+(pass) bench:export (synthetic recordings) > a normalized cell exports its flag, its saved definition and the normalize totals [87.17ms]
+(pass) bench:export (synthetic recordings) > an unknown run id fails loudly [0.54ms]
+
+bench/export/bundle.test.ts:
+(pass) bundling rejects a changed evaluated input: data/source/eumenes-catalog-2026-11-03.sqlite3 [228.39ms]
+(pass) bundling rejects a changed evaluated input: data/contracts/eumenes-contracts-2026-11-03.json [189.63ms]
+(pass) bundling rejects a changed evaluated input: data/contracts/fixture-outputs.json [182.29ms]
+(pass) a host replay bundle retains the exact external snapshot after its source changes [273.23ms]
+(pass) portable evidence pins code, cases, original outputs and database, rejects missing or changed bytes [267.91ms]
+(pass) a manifest path cannot follow a file or directory symlink outside the bundle [2.96ms]
+
+bench/store/work-db.test.ts:
+(pass) version-one migration preserves completed runs and shares the budget across connections [34.13ms]
+(pass) work db > records a run with trials, usage, checks and scores [14.92ms]
+(pass) work db > finished trials and runs cannot change; nothing can be deleted [11.46ms]
+(pass) work db > the same case, condition, attempt and phase cannot be recorded twice in a run [10.82ms]
+(pass) work db > a retried experiment is a new run linked to its parent [23.07ms]
+(pass) work db holes found in review > REPLACE cannot overwrite a finished row [10.83ms]
+(pass) work db holes found in review > finished runs take no new trials; finished trials take no new calls or checks [13.05ms]
+(pass) work db holes found in review > refuses to initialize a database that is not empty [2.69ms]
+(pass) work db holes found in review > model call usage may be unknown [13.78ms]
+
+bench/store/api-budget.test.ts:
+(pass) shared API budget > unknown responses retain full reservations and settlements release only the unused bound [1.10ms]
+(pass) shared API budget > rejects settlement without a reservation or above it [0.81ms]
+
+src/contracts/record.test.ts:
+(pass) documentRecord > accepts a valid record; revisionOf is optional [0.52ms]
+(pass) documentRecord > rejects digests that are not 64 lowercase hex characters [0.07ms]
+(pass) documentRecord > rejects a non-positive document version [0.05ms]
+
+src/contracts/execution.test.ts:
+(pass) isAdoptable > only a confirmed completion may be handed to later steps [0.05ms]
+
+src/contracts/authoring.test.ts:
+(pass) authoringOutcome > accepts a ready outcome [0.07ms]
+(pass) authoringOutcome > accepts needs_input, with and without a note [0.03ms]
+(pass) authoringOutcome > accepts unsupported with reasons [0.20ms]
+(pass) authoringOutcome > rejects a ready outcome whose definition is invalid [0.04ms]
+(pass) authoringOutcome > rejects extra fields (strict objects) [0.04ms]
+(pass) authoringOutcome > rejects an empty questions array [0.01ms]
+
+src/internal/strict-json.test.ts:
+(pass) the public strict reader refuses what JSON.parse would silently accept [0.09ms]
+
+ 428 pass
+ 0 fail
+ 4408 expect() calls
+Ran 428 tests across 51 files. [6.87s]

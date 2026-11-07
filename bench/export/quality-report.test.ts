@@ -10,7 +10,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { loadCases } from "../cases/cases.ts";
 import { freezeEvaluation } from "../cases/freeze.ts";
-import { BASELINE_CONDITION } from "../format/conditions.ts";
+import { BASELINE_CONDITION, CONDITIONS } from "../format/conditions.ts";
+import { hostPromptIdentity, loadHostPrompt } from "../format/host-prompt.ts";
 import { runFormat } from "../format/run.ts";
 import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
 import { runApiInference } from "../infer/run-api.ts";
@@ -31,7 +32,8 @@ const approved = JSON.stringify({
 	},
 	rationale: "synthetic test judgement",
 });
-async function fixture(runJudge = true) {
+async function fixture(runJudge = true, hostReading = false) {
+	const condition = hostReading ? CONDITIONS.eumenes : BASELINE_CONDITION;
 	const root = mkdtempSync(join(tmpdir(), "quality-report-review-")),
 		runsRoot = join(root, "runs"),
 		dbPath = join(root, "work.sqlite3"),
@@ -73,7 +75,10 @@ async function fixture(runJudge = true) {
 		protocol: {
 			intent: "recording-regrade",
 			formatMethod: {
-				condition: BASELINE_CONDITION,
+				condition,
+				...(hostReading
+					? { hostPrompt: hostPromptIdentity(loadHostPrompt()) }
+					: {}),
 				formats: ["json"],
 				repair: false,
 				restoreSyntax: false,
@@ -103,6 +108,7 @@ async function fixture(runJudge = true) {
 		},
 	});
 	const format = {
+		condition,
 		session: "source",
 		runsRoot,
 		dbPath,
@@ -111,9 +117,18 @@ async function fixture(runJudge = true) {
 		freezePath,
 	};
 	await runFormat(format);
-	const output = SYNTHETIC_OUTPUTS.find(
+	const originalOutput = SYNTHETIC_OUTPUTS.find(
 		(x) => x.caseId === c.id && x.format === "json",
 	)!.output;
+	const output = hostReading
+		? JSON.stringify({
+				status: "ready",
+				definition: {
+					...JSON.parse(originalOutput),
+					request: "計算する依頼の言い換え",
+				},
+			})
+		: originalOutput;
 	let httpRequests = 0;
 	const api = async (
 		session: string,
@@ -153,6 +168,7 @@ async function fixture(runJudge = true) {
 			catalog: catalog.view,
 			output: candidate,
 			nativeSchema: true,
+			hostReading,
 		});
 		const dir = join(runsRoot, session, "judge-requests");
 		mkdirSync(dir, { recursive: true });
@@ -193,6 +209,29 @@ async function fixture(runJudge = true) {
 		},
 	};
 }
+
+test("host plan judging uses the same bound request as scoring and report verification", async () => {
+	const f = await fixture(true, true);
+	try {
+		const request = JSON.parse(
+			readFileSync(
+				join(f.runsRoot, "judge", "judge-requests/prime-count--json.json"),
+				"utf8",
+			),
+		);
+		const body = JSON.parse(request.prompt);
+		expect(body.structuralCheck.ok).toBe(true);
+		expect(body.candidate.definition.request).toBe(
+			loadCases().find((c) => c.id === "prime-count")!.request,
+		);
+		const result = runQualityReport(f.options);
+		expect(result.completed).toBe(true);
+		expect(result.generations[0]?.mechanicallyValid).toBe(1);
+		expect(result.generations[0]?.qualifiedJudgeAppropriate).toBe(1);
+	} finally {
+		f.close();
+	}
+});
 
 test("blinded judgements must match the exact scored candidate, not just an authentic API output", async () => {
 	const f = await fixture();

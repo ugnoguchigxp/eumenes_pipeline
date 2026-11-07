@@ -1,0 +1,5 @@
+{"steps":1,"taskLength":20,"offeredCards":24,"samples":1000,"medianMs":0.0027909999999877755,"p95Ms":0.005791999999999575,"maxMs":0.7047500000000042,"heapDeltaBytes":688911,"actualBilledUsd":null,"apiCalls":0,"passed":true}
+{"steps":1,"taskLength":2000,"offeredCards":24,"samples":1000,"medianMs":0.0017079999999936035,"p95Ms":0.00304199999999355,"maxMs":0.5142500000000041,"heapDeltaBytes":99458,"actualBilledUsd":null,"apiCalls":0,"passed":true}
+{"steps":8,"taskLength":20,"offeredCards":24,"samples":1000,"medianMs":0.0051250000000067075,"p95Ms":0.006749999999996703,"maxMs":0.36754200000000026,"heapDeltaBytes":52430,"actualBilledUsd":null,"apiCalls":0,"passed":true}
+{"steps":8,"taskLength":2000,"offeredCards":24,"samples":1000,"medianMs":0.005624999999994884,"p95Ms":0.007000000000005002,"maxMs":0.5300000000000011,"heapDeltaBytes":55902,"actualBilledUsd":null,"apiCalls":0,"passed":true}
+{"runId":"8da74598-ebef-49af-ba49-ed7c8309cbb8","budget":{"p95Ms":5,"callsPerCell":1000,"warmups":100,"scope":"checkDefinition with the real offered catalog, 1/8 steps, short/maximum task text"},"passed":true}

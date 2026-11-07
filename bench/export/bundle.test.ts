@@ -7,13 +7,55 @@ import {
 	readFileSync,
 	writeFileSync,
 	symlinkSync,
+	cpSync,
+	existsSync,
+	chmodSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
+import { sourceProvenance } from "../cases/provenance.ts";
 import { runFormat } from "../format/run.ts";
 import { CONDITIONS } from "../format/conditions.ts";
 import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
 import { createEvidenceBundle, verifyEvidenceBundle } from "./bundle.ts";
+
+test.each([
+	"data/source/eumenes-catalog-2026-11-03.sqlite3",
+	"data/contracts/eumenes-contracts-2026-11-03.json",
+	"data/contracts/fixture-outputs.json",
+])("bundling rejects a changed evaluated input: %s", async (changedPath) => {
+	const dir = mkdtempSync(join(tmpdir(), "evidence-input-drift-"));
+	const root = join(dir, "source");
+	const runsRoot = join(dir, "runs");
+	const dbPath = join(dir, "work.sqlite3");
+	const report = await runFormat({
+		session: "drift",
+		runsRoot,
+		dbPath,
+		caseIds: ["vague-request"],
+		formats: ["json"],
+	});
+	for (const path of Object.keys(sourceProvenance().files)) {
+		mkdirSync(dirname(join(root, path)), { recursive: true });
+		cpSync(path, join(root, path));
+	}
+	for (const path of ["data/source", "data/contracts", "vendor/router"])
+		cpSync(path, join(root, path), { recursive: true });
+	const file = join(root, changedPath);
+	chmodSync(file, 0o600);
+	writeFileSync(file, Buffer.concat([readFileSync(file), Buffer.from("\n")]));
+	const target = join(dir, "bundle");
+	expect(() =>
+		createEvidenceBundle({
+			runId: report.runId,
+			dbPath,
+			runsRoot,
+			root,
+			target,
+		}),
+	).toThrow("input changed since run");
+	expect(existsSync(target)).toBe(false);
+});
 
 test("a host replay bundle retains the exact external snapshot after its source changes", async () => {
 	const dir = mkdtempSync(join(tmpdir(), "pipeline-host-evidence-"));

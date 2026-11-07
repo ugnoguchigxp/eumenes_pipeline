@@ -1,0 +1,32 @@
+{
+	"before": {
+		"request": "paraphrase",
+		"check": {
+			"issues": [
+				{
+					"code": "request_mismatch",
+					"message": "definition request differs from the host's original request",
+					"path": "request",
+					"severity": "error"
+				}
+			],
+			"ok": false
+		}
+	},
+	"after": {
+		"request": "original",
+		"check": {
+			"issues": [],
+			"ok": true,
+			"outputFrom": ["s"],
+			"resolvedSteps": [
+				{
+					"entry": "entry",
+					"from": ["request"],
+					"id": "s"
+				}
+			]
+		}
+	},
+	"apiCalls": 0
+}

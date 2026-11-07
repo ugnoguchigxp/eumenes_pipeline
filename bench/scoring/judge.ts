@@ -8,6 +8,7 @@ import { parseJsonFormat } from "../formats/json.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
 import { canonicalJson } from "../catalog/load.ts";
 import { parseJsonStrict } from "../formats/strict-json.ts";
+import { rederiveAuthoring } from "../format/run.ts";
 
 export const JUDGE_VERSION = "semantic-judge-v3";
 const verdict = z.enum(["pass", "fail", "unknown"]);
@@ -113,8 +114,27 @@ export function buildRecordedJudgeRequest(input: {
 	catalog: CatalogView;
 	output: string;
 	nativeSchema: boolean;
+	/** The recorded compose condition, never inferred from output wording. */
+	hostReading?: boolean;
 }): InferenceRequest {
-	const parsed = parseJsonFormat(input.output);
+	const derived = input.hostReading
+		? rederiveAuthoring("json", input.output, {
+				restored: false,
+				normalizeIds: false,
+				hostReading: true,
+				sourceRequest: input.request,
+			})
+		: null;
+	const parsed =
+		derived?.outcome?.status === "ready"
+			? {
+					ok: true as const,
+					outcome: {
+						kind: "ready" as const,
+						definition: derived.outcome.definition,
+					},
+				}
+			: (derived?.parse ?? parseJsonFormat(input.output));
 	const request = buildJudgeRequest({
 		request: input.request,
 		providedMaterials: input.providedMaterials,

@@ -67,7 +67,25 @@ export function prepareJudgements(options: {
 		throw new Error("cases changed after freeze");
 	const byId = new Map(cases.map((c) => [c.id, c]));
 	const catalog = loadBenchCatalog();
+	const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
 	try {
+		const sourceRun = work.db
+			.query<{ config_json: string }, [string]>(
+				"SELECT config_json FROM runs WHERE kind='format' AND status='completed' AND json_extract(config_json,'$.session')=? ORDER BY rowid DESC LIMIT 1",
+			)
+			.get(options.source);
+		const sourceConfig = sourceRun ? JSON.parse(sourceRun.config_json) : null;
+		if (frozen && sourceConfig?.freezeDigest !== frozen.digest)
+			throw new Error(
+				"judge source was not prepared under the frozen protocol",
+			);
+		const condition = sourceRun
+			? sourceConfig.condition
+			: (
+					frozen?.protocol.formatMethod as
+						{ condition?: { promptStyle?: string } } | undefined
+				)?.condition;
+		const hostReading = condition?.promptStyle === "eumenes-p0-3";
 		const dir = join(root, options.session, "judge-requests");
 		const prepared = [...sources.files].map(([name, recording]) => {
 			const c = byId.get(name.replace(/--[^.]+\.json$/, ""));
@@ -79,6 +97,7 @@ export function prepareJudgements(options: {
 				catalog: catalog.view,
 				output: recording.output,
 				nativeSchema: !!options.nativeSchema,
+				hostReading,
 			});
 			const promptDigest = inferenceDigest(request),
 				content = canonicalJson({ ...request, promptDigest }),
@@ -92,20 +111,15 @@ export function prepareJudgements(options: {
 			if (!existsSync(p.target))
 				writeFileSync(p.target, p.content, { flag: "wx", mode: 0o600 });
 		if (frozen) {
-			const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
-			try {
-				recordPreparedRequests(work, {
-					session: options.session,
-					freezeDigest: frozen.digest,
-					requests: prepared.map((p) => ({
-						phase: "judge",
-						name: p.name,
-						promptDigest: p.promptDigest,
-					})),
-				});
-			} finally {
-				work.close();
-			}
+			recordPreparedRequests(work, {
+				session: options.session,
+				freezeDigest: frozen.digest,
+				requests: prepared.map((p) => ({
+					phase: "judge",
+					name: p.name,
+					promptDigest: p.promptDigest,
+				})),
+			});
 		}
 		return {
 			session: options.session,
@@ -113,6 +127,7 @@ export function prepareJudgements(options: {
 			judgeVersion: JUDGE_VERSION,
 		};
 	} finally {
+		work.close();
 		catalog.close();
 	}
 }

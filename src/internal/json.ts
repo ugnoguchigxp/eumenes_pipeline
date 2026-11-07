@@ -1,4 +1,31 @@
 /** Literal JSON with bounded validation work; no application meaning is inferred here. */
+import type { JsonValue } from "../contracts/definition.ts";
+
+/** Copy validated JSON data without consulting toJSON, getters, or inherited setters. */
+export function copyArguments(
+	value: Record<string, JsonValue>,
+): Record<string, JsonValue> {
+	const copy = (input: JsonValue): JsonValue => {
+		if (input === null || typeof input !== "object")
+			// Keep JSON.stringify's existing normalization of negative zero.
+			return typeof input === "number" && input === 0 ? 0 : input;
+		const output: JsonValue[] | Record<string, JsonValue> = Array.isArray(input)
+			? []
+			: {};
+		for (const key of Object.keys(input)) {
+			const property = Object.getOwnPropertyDescriptor(input, key)!;
+			Object.defineProperty(output, key, {
+				value: copy(property.value),
+				enumerable: true,
+				writable: true,
+				configurable: true,
+			});
+		}
+		return output;
+	};
+	return copy(value) as Record<string, JsonValue>;
+}
+
 export function boundedArguments(value: unknown): boolean {
 	if (
 		!value ||

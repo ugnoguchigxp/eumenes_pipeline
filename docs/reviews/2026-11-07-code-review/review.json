@@ -1,0 +1,486 @@
+{
+	"rubric_version": "1.1.0",
+	"mode": "technical",
+	"depth": "deep",
+	"technical_profile": "library",
+	"assessment_kind": "re-evaluated",
+	"target": {
+		"locator": "/Users/y.noguchi/Code/eumenes_pipeline",
+		"snapshot": "139284d + source SHA-256 a290e6148207a2b084d8e8e7df726b6de511e8a7d62cb87efb3c50a65f6cc8d0",
+		"reviewed_at": "2026-11-07",
+		"stage": "pilot library and evaluation harness",
+		"scope": "公開srcの全主要経路、benchの入力・推論・予算・保存・採点・選択・再生、抽出と配布scriptをレビュー。周辺CLIとmodel helperは抽出調査。vendor Routerは接続契約まで、生成distは配布検査で確認。本体・Routerの編集、実API、稼働環境、CI、未見の品質実測は対象外。"
+	},
+	"evidence": [
+		{
+			"id": "E01",
+			"kind": "code",
+			"locator": "src/*; bench/{format,mock,store,infer,cases,scoring,selection,export}; scripts/* @ source-identity.json",
+			"observed_at": "2026-11-07",
+			"observation": "公開契約・原文・入口・引数・参照の検査から、確定結果の採用、追記保存、export/replayまで追跡。LLMが意味、コードが契約と状態を判断する境界を維持。",
+			"scope": "主要経路の調査と周辺の抽出調査。実ホスト受入は含まない。"
+		},
+		{
+			"id": "E02",
+			"kind": "execution",
+			"locator": "before-probes.json; src/check.test.ts; before-regression.log; after-regression.log",
+			"observed_at": "2026-11-07",
+			"observation": "修正前は非列挙toJSON getterが1回実行されn=1がn=999へ変わって受理。修正後はdescriptorでデータだけをコピーし、root/nested/arrayのhook呼出し0、特殊キー・負のゼロも回帰確認。",
+			"scope": "JavaScriptオブジェクトを渡すschema APIの問題。JSONテキストから関数を注入できるという主張ではない。"
+		},
+		{
+			"id": "E03",
+			"kind": "execution",
+			"locator": "before-probes.json; bench/export/bundle.test.ts; after-regression.log",
+			"observed_at": "2026-11-07",
+			"observation": "評価後に別コピーのfixtureへ改行追加してもbundle作成・verifyが成功し、元runと違うdigestを同梱できた。修正後はsnapshot/contracts/fixtureの3入力をtarget作成前とコピー時に照合して拒否。",
+			"scope": "変更注入は一時コピーだけ。通常bundle・改変拒否・symlink拒否は維持。"
+		},
+		{
+			"id": "E04",
+			"kind": "execution",
+			"locator": "scripts/extract-eumenes-prompt.ts:54; data/contracts/eumenes-compose-prompt-v2.json; verification.json",
+			"observed_at": "2026-11-07",
+			"observation": "git showの本文trimを除き、二ファイルの記録hashがGitの実バイトと一致。revision2をCLIで再抽出し、指示文SHA-256はc6ae5096a78b6c5856a08589084eb35472670e0e9441dc990dee7936b1316dc5のまま。",
+			"scope": "指示文・旧snapshot・既存API記録は不変。"
+		},
+		{
+			"id": "E05",
+			"kind": "execution",
+			"locator": "judge-before-after.json; bench/export/quality-report.test.ts; judge-regression.log",
+			"observed_at": "2026-11-07",
+			"observation": "139284dのjudgeはhostの結合前requestを使いrequest_mismatch。修正後はrederiveAuthoringを共有し要求準備・report双方が同じ原文結合済み定義を評価する。frozenな生成元も照合。結合8件成功。",
+			"scope": "eumenes条件の不整合。baselineの過去24件の再ラベル付けではない。"
+		},
+		{
+			"id": "E06",
+			"kind": "execution",
+			"locator": "check-all.log; verify.log; verification.json",
+			"observed_at": "2026-11-07",
+			"observation": "bun run check:all exit0、型・lint・formatと428 pass/0 fail。bench:verify --db :memory: exit0、87/87、外部到達0。修正前40 pass/4 fail、修正後51 pass/0 fail。",
+			"scope": "Bun1.4.4/macOS arm64。最初の全体ゲートは新規review.jsonの整形で停止し、整形後に成功。期待値の緩和は無し。"
+		},
+		{
+			"id": "E07",
+			"kind": "execution",
+			"locator": "historical-judge-result.json; verification.json",
+			"observed_at": "2026-11-07",
+			"observation": "保存済48セルを別DBへ再生しsummary（runId除外）・ケース結果・480採点行が一致。過去judge96要求も元DBの由来照合後、schema込みの再計算digestが全件一致。API0件。",
+			"scope": "legacy保存欄ではなく、元要求の実内容から再計算した識別値同士を比較。未見評価ではない。"
+		},
+		{
+			"id": "E08",
+			"kind": "execution",
+			"locator": "pack-check.log; pack.log; verification.json",
+			"observed_at": "2026-11-07",
+			"observation": "pack:check/pack exit0、33ファイルとtarball内容照合、空consumer導入・型・実行成功。新tar SHA-256 678a9a1774e3df369dd895b6e1816d962261603ce374f205859fd1af95408468。",
+			"scope": "本体への採用や署名配信の認証ではない。既存artifactは上書き無し。"
+		},
+		{
+			"id": "E09",
+			"kind": "execution",
+			"locator": "performance.log",
+			"observed_at": "2026-11-07",
+			"observation": "既存performance CLIを専用の別DBで実行しexit0。1/8手順×20/2000文字×1000件、最大p95 0.0070msで5ms以下。",
+			"scope": "構造検査だけ。最大引数schema、peak memory、実モデル・実ツールの時間と費用は未測定。"
+		},
+		{
+			"id": "E10",
+			"kind": "code",
+			"locator": "package.json; bun.lock; bunfig.toml; LICENSE; scripts/pack.ts",
+			"observed_at": "2026-11-07",
+			"observation": "runtime依存zodのみ、固定lockと7日releaseAge、梱包allowlist、空consumer、MITの本体と配布依存の識別を確認。",
+			"scope": "脆弱性の到達性と更新運用の継続実績は未監査。"
+		}
+	],
+	"claims": [
+		{
+			"id": "C01",
+			"type": "Fact",
+			"statement": "基準commitで確認した4根因を修正し、回帰・結合・全体・配布検証を通した。",
+			"evidence_ids": ["E02", "E03", "E04", "E05", "E06", "E08"],
+			"limitations": "未調査経路の無欠陥を意味しない。"
+		},
+		{
+			"id": "C02",
+			"type": "Unknown",
+			"statement": "本体通常設定での安定性と、未使用ケースでの実成果物品質。",
+			"evidence_ids": [],
+			"limitations": "今回の対象外。モックや保存済み例から推定しない。"
+		}
+	],
+	"findings": [
+		{
+			"id": "F01",
+			"status": "withdrawn",
+			"resolution": "fixed-and-verified",
+			"baseline_status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "次の配布・評価で該当経路を利用する前に修正。",
+			"confidence": "High",
+			"title": "引数コピーが隠れたtoJSONを呼ぶ",
+			"root_cause": "JSON.stringifyが非列挙hookも参照",
+			"condition": "JavaScriptオブジェクトをschemaへ渡す",
+			"consequence": "検査中の副作用と未検査値への置換",
+			"counterevidence": "JSONテキストには関数hookが無い",
+			"fix": "検査済みデータをdescriptor経由でコピー",
+			"verification": "hook0回・元値・特殊キーを回帰で確認",
+			"evidence_ids": ["E02", "E06"],
+			"withdrawal_reason": "実装と検証で解消。未実装の提案を取り下げたという意味ではない。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "edge_cases",
+					"reason": "検査中の副作用と未検査値への置換"
+				}
+			]
+		},
+		{
+			"id": "F02",
+			"status": "withdrawn",
+			"resolution": "fixed-and-verified",
+			"baseline_status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "次の配布・評価で該当経路を利用する前に修正。",
+			"confidence": "High",
+			"title": "証拠bundleへ評価後の別入力が入る",
+			"root_cause": "ソースだけを比較し元runの3入力digestを照合しない",
+			"condition": "契約等を再生成してからbundle作成",
+			"consequence": "入力が違ってもverify済みの証拠になる",
+			"counterevidence": "source/caseとbundle内改変の検出は既存",
+			"fix": "保存前とコピー時に元run digestを照合",
+			"verification": "3入力の変更拒否と正常bundleを対照",
+			"evidence_ids": ["E03", "E06"],
+			"withdrawal_reason": "実装と検証で解消。未実装の提案を取り下げたという意味ではない。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "supply_chain",
+					"criterion": "build_release",
+					"reason": "入力が違ってもverify済みの証拠になる"
+				}
+			]
+		},
+		{
+			"id": "F03",
+			"status": "withdrawn",
+			"resolution": "fixed-and-verified",
+			"baseline_status": "confirmed",
+			"severity": "Low",
+			"priority": "P2",
+			"priority_reason": "次の配布・評価で該当経路を利用する前に修正。",
+			"confidence": "High",
+			"title": "本体参照ファイルのhashが実バイトと違う",
+			"root_cause": "file本文にもtrimを適用",
+			"condition": "末尾改行等を含む参照ファイル",
+			"consequence": "実ファイルへのdigest照合ができない",
+			"counterevidence": "指示文構成のtrim自体はhostと同じで正しい",
+			"fix": "file本文はraw、commit IDだけtrim",
+			"verification": "再抽出で二hash一致・指示文hash不変",
+			"evidence_ids": ["E04"],
+			"withdrawal_reason": "実装と検証で解消。未実装の提案を取り下げたという意味ではない。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "signals",
+					"reason": "実ファイルへのdigest照合ができない"
+				}
+			]
+		},
+		{
+			"id": "F04",
+			"status": "withdrawn",
+			"resolution": "fixed-and-verified",
+			"baseline_status": "confirmed",
+			"severity": "Medium",
+			"priority": "P1",
+			"priority_reason": "次の配布・評価で該当経路を利用する前に修正。",
+			"confidence": "High",
+			"title": "意味評価が本体採点と異なる定義を使う",
+			"root_cause": "judgeが原文結合を再現しない",
+			"condition": "eumenes条件でrequestをモデルが言い換える",
+			"consequence": "有効になった計画へjudge側だけrequest_mismatch",
+			"counterevidence": "baseline条件の過去成績とは独立",
+			"fix": "既存の再導出を条件付きで共有",
+			"verification": "旧commitとの前後対照・結合8件・baseline96要求不変",
+			"evidence_ids": ["E05", "E07"],
+			"withdrawal_reason": "実装と検証で解消。未実装の提案を取り下げたという意味ではない。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "common_components",
+					"criterion": "duplication",
+					"reason": "有効になった計画へjudge側だけrequest_mismatch"
+				}
+			]
+		}
+	],
+	"tracks": {
+		"technical": {
+			"dimensions": {
+				"architecture": {
+					"criteria": {
+						"boundaries": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06", "E08"],
+							"rationale": "src純度、port、bench/配布境界をguardとconsumerで対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"flow": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "確定結果と追記台帳を正本とする主要経路を確認"
+						},
+						"fit": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E08"],
+							"rationale": "8手順・直列・host実行器という制約に適合"
+						}
+					}
+				},
+				"correctness": {
+					"criteria": {
+						"contracts": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E06"],
+							"rationale": "正常・不正入力・状態契約と本体条件の結合を確認",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"edge_cases": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E06"],
+							"rationale": "循環・容量・アクセサー・特殊キー・hidden hookを対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"concurrency": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "予算の複数接続、取消/期限後不採用、追記トリガーを確認"
+						}
+					}
+				},
+				"security": {
+					"criteria": {
+						"access": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "offered/runnable、到達ガード、公式endpoint制約を追跡"
+						},
+						"input_secrets": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E06"],
+							"rationale": "入力容量、コピー、秘密の反射redactionのnegative controls",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"abuse": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "構造上限、API容量・timeoutを検査"
+						}
+					}
+				},
+				"reliability": {
+					"criteria": {
+						"failure": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "失敗・待機・取消・期限・未知usageの保持を対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"recovery": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "クラッシュ窓と再起動後の全工程復旧を今回実測していない。"
+						},
+						"resilience": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06"],
+							"rationale": "応答制限と予算不足時の送信拒否を確認"
+						}
+					}
+				},
+				"maintainability": {
+					"criteria": {
+						"clarity": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01"],
+							"rationale": "主要処理の責務と公開契約を追跡"
+						},
+						"change": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E03", "E05", "E06"],
+							"rationale": "局所の修正を回帰と複数の結合経路で検証",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"debt": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01"],
+							"rationale": "runner分離を維持し新規分類器/runtimeは無し"
+						}
+					}
+				},
+				"common_components": {
+					"criteria": {
+						"duplication": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E05", "E07"],
+							"rationale": "採点・export・host judgeの再導出を共有し旧記録を対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"reuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E08"],
+							"rationale": "既存検査とportを複数の利用側で共有",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"abstraction": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05"],
+							"rationale": "新たな意味判定層を追加せず既存機構で修正"
+						}
+					}
+				},
+				"testing": {
+					"criteria": {
+						"risk_coverage": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E03", "E05", "E06"],
+							"rationale": "主要境界を直接壊す回帰と結合を確認",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"quality": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E03", "E06", "E07"],
+							"rationale": "修正前の実失敗と旧記録の独立照合を確認",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"automation": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E06", "E08"],
+							"rationale": "手元の型/lint/format/test/配布を再現。CIは利用者指定で対象外"
+						}
+					}
+				},
+				"supply_chain": {
+					"criteria": {
+						"dependencies": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "脆弱性の到達性と更新運用の実績を今回監査していない。"
+						},
+						"build_release": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E08"],
+							"rationale": "配布内容・consumer・元入力hash・改変拒否を対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"license": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E10"],
+							"rationale": "本体と実配布runtimeの利用条件を識別"
+						}
+					}
+				},
+				"performance": {
+					"criteria": {
+						"budget": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E09"],
+							"rationale": "構造検査4条件で5msの既定p95予算内"
+						},
+						"hot_path": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E09"],
+							"rationale": "8手順と固定catalogで計算量と測定が適合"
+						},
+						"measurement": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E09"],
+							"rationale": "既存CLIの同じ4負荷を専用DBで測定"
+						}
+					}
+				},
+				"operability": {
+					"criteria": {
+						"signals": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E04", "E05", "E06"],
+							"rationale": "不一致を明示拒否し原因を追える記録と対照",
+							"countercheck": "引用した正常系とnegative control、旧記録、または空consumerの独立経路を対照し限界も記した。"
+						},
+						"lifecycle": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E08"],
+							"rationale": "空consumerで導入・型・実行、新artifactを確認"
+						},
+						"interaction": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06", "E08"],
+							"rationale": "SDKの検査とエラー回復の契約を固定試験で確認"
+						}
+					}
+				}
+			}
+		}
+	}
+}

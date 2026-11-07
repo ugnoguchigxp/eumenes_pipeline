@@ -1,0 +1,39 @@
+import { createHash } from "node:crypto";
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { pipelineStep } from "/Users/y.noguchi/Code/eumenes_pipeline/src/contracts/definition.ts";
+import { sourceProvenance } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/cases/provenance.ts";
+import { runFormat } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/run.ts";
+import { createEvidenceBundle, verifyEvidenceBundle } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/export/bundle.ts";
+import { installGuard } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/mock/guard.ts";
+installGuard();
+const results: Record<string, unknown> = {};
+let hookCalls = 0;
+const args = Object.defineProperty({n: 1}, "toJSON", {
+  get() { hookCalls++; return () => ({n: 999}); },
+});
+const parsed = pipelineStep.safeParse({id:"s", bundle:"a", task:"t", from:["request"], result:"r", arguments: args});
+results.hiddenSerializationHook = {hookCalls, accepted:parsed.success, output: parsed.success ? parsed.data.arguments : null};
+const root = "/tmp/eumenes-review.RI07BD/copy";
+const repo = "/Users/y.noguchi/Code/eumenes_pipeline";
+for (const path of Object.keys(sourceProvenance().files)) {
+  mkdirSync(dirname(join(root,path)),{recursive:true});
+  cpSync(join(repo,path),join(root,path));
+}
+for (const path of ["data/source","data/contracts","vendor/router"]) cpSync(join(repo,path),join(root,path),{recursive:true});
+const runsRoot = "/tmp/eumenes-review.RI07BD/runs";
+const dbPath = "/tmp/eumenes-review.RI07BD/bundle.sqlite3";
+const report = await runFormat({session:"drift", runsRoot, dbPath, caseIds:["vague-request"],formats:["json"]});
+const fixture = join(root,"data/contracts/fixture-outputs.json");
+const before = readFileSync(fixture);
+writeFileSync(fixture, Buffer.concat([before,Buffer.from("\n")]));
+const target="/tmp/eumenes-review.RI07BD/drift-bundle";
+const manifest=createEvidenceBundle({runId:report.runId,dbPath,runsRoot,target,root});
+verifyEvidenceBundle(target);
+results.bundleCatalogDrift={accepted:true,verified:true,originalDigest:createHash("sha256").update(before).digest("hex"),bundledDigest:manifest.files["data/contracts/fixture-outputs.json"]};
+const snapshot=JSON.parse(readFileSync("data/contracts/eumenes-compose-prompt-v2.json","utf8"));
+results.mirroredDigests=snapshot.source.mirrored.map((entry:any)=>({
+  path:entry.path, matchesRawSource:entry.headSha256===createHash("sha256").update(readFileSync(join(repo,"../eumenes",entry.path))).digest("hex")
+}));
+writeFileSync("/tmp/eumenes-review.RI07BD/before-probes.json",JSON.stringify(results,null,2));
+console.log(JSON.stringify(results));

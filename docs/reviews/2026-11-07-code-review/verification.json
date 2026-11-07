@@ -1,0 +1,61 @@
+{
+	"baselineCommit": "139284d",
+	"sourceSha256": "a290e6148207a2b084d8e8e7df726b6de511e8a7d62cb87efb3c50a65f6cc8d0",
+	"checkAll": {
+		"exitCode": 0,
+		"passed": 428,
+		"failed": 0
+	},
+	"benchVerify": {
+		"exitCode": 0,
+		"passed": 87,
+		"reachAttempts": 0
+	},
+	"regressionBefore": {
+		"passed": 40,
+		"failed": 4
+	},
+	"regressionAfter": {
+		"passed": 51,
+		"failed": 0
+	},
+	"judgeIntegration": {
+		"passed": 8,
+		"failed": 0
+	},
+	"historicalReplay": {
+		"cells": 48,
+		"scoreRows": 480,
+		"summaryEqualExceptRunId": true,
+		"cellsEqual": true,
+		"scoresEqual": true
+	},
+	"historicalJudgeRequests": {
+		"checked": 96,
+		"mismatches": 0
+	},
+	"mirroredRawHashesMatch": true,
+	"pack": {
+		"exitCode": 0,
+		"files": 33,
+		"consumerInstall": true,
+		"consumerTypes": true,
+		"consumerExecution": true,
+		"artifact": "artifacts/eumenes-pipeline-0.1.0-ce2eb2248bc6/eumenes-pipeline-0.1.0-ce2eb2248bc6.tgz",
+		"sha256": "678a9a1774e3df369dd895b6e1816d962261603ce374f205859fd1af95408468"
+	},
+	"performance": {
+		"exitCode": 0,
+		"cases": 4,
+		"samplesPerCase": 1000,
+		"maxP95Ms": 0.007000000000005002,
+		"budgetP95Ms": 5
+	},
+	"apiCalls": 0,
+	"notes": [
+		"初回全体ゲートは新規review.jsonの整形で停止。整形後に成功。",
+		"コピーsnapshotのreadonlyによるEACCESは試験準備を修正し、一時コピーだけを変更した。",
+		"過去要求のlegacy digest欄ではなく、由来照合した元要求のschema込み再計算値同士を比較した。",
+		"本体・Router・設定・サーバー・CI・既見goldは変更しない。"
+	]
+}

@@ -53,7 +53,7 @@ const { toolchain, pack, binding, instructions, instructionsSha256 } =
 
 const git = (args: string[]) => {
 	const r = Bun.spawnSync(["git", "-C", root, ...args]);
-	return r.exitCode === 0 ? r.stdout.toString().trim() : null;
+	return r.exitCode === 0 ? r.stdout.toString() : null;
 };
 const dirty = git(["status", "--porcelain", "--", BUNDLE]);
 /**
@@ -78,7 +78,7 @@ const snapshot = {
 	formatVersion: 1,
 	source: {
 		repository: relative(process.cwd(), root),
-		gitCommit: git(["rev-parse", "HEAD"]),
+		gitCommit: git(["rev-parse", "HEAD"])?.trim() ?? null,
 		bundleFile: BUNDLE,
 		bundleSha256: sha256(bundleText),
 		bundleDirty: dirty === null ? null : dirty.length > 0,

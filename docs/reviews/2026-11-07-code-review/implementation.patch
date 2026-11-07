@@ -1,0 +1,493 @@
+diff --git a/bench/export/bundle.test.ts b/bench/export/bundle.test.ts
+index 26573c5..16b3a56 100644
+--- a/bench/export/bundle.test.ts
++++ b/bench/export/bundle.test.ts
+@@ -7,14 +7,56 @@ import {
+ 	readFileSync,
+ 	writeFileSync,
+ 	symlinkSync,
++	cpSync,
++	existsSync,
++	chmodSync,
+ } from "node:fs";
+ import { tmpdir } from "node:os";
+-import { join } from "node:path";
++import { join, dirname } from "node:path";
++import { sourceProvenance } from "../cases/provenance.ts";
+ import { runFormat } from "../format/run.ts";
+ import { CONDITIONS } from "../format/conditions.ts";
+ import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
+ import { createEvidenceBundle, verifyEvidenceBundle } from "./bundle.ts";
+ 
++test.each([
++	"data/source/eumenes-catalog-2026-11-03.sqlite3",
++	"data/contracts/eumenes-contracts-2026-11-03.json",
++	"data/contracts/fixture-outputs.json",
++])("bundling rejects a changed evaluated input: %s", async (changedPath) => {
++	const dir = mkdtempSync(join(tmpdir(), "evidence-input-drift-"));
++	const root = join(dir, "source");
++	const runsRoot = join(dir, "runs");
++	const dbPath = join(dir, "work.sqlite3");
++	const report = await runFormat({
++		session: "drift",
++		runsRoot,
++		dbPath,
++		caseIds: ["vague-request"],
++		formats: ["json"],
++	});
++	for (const path of Object.keys(sourceProvenance().files)) {
++		mkdirSync(dirname(join(root, path)), { recursive: true });
++		cpSync(path, join(root, path));
++	}
++	for (const path of ["data/source", "data/contracts", "vendor/router"])
++		cpSync(path, join(root, path), { recursive: true });
++	const file = join(root, changedPath);
++	chmodSync(file, 0o600);
++	writeFileSync(file, Buffer.concat([readFileSync(file), Buffer.from("\n")]));
++	const target = join(dir, "bundle");
++	expect(() =>
++		createEvidenceBundle({
++			runId: report.runId,
++			dbPath,
++			runsRoot,
++			root,
++			target,
++		}),
++	).toThrow("input changed since run");
++	expect(existsSync(target)).toBe(false);
++});
++
+ test("a host replay bundle retains the exact external snapshot after its source changes", async () => {
+ 	const dir = mkdtempSync(join(tmpdir(), "pipeline-host-evidence-"));
+ 	const runsRoot = join(dir, "runs");
+diff --git a/bench/export/bundle.ts b/bench/export/bundle.ts
+index 75c1181..3630929 100644
+--- a/bench/export/bundle.ts
++++ b/bench/export/bundle.ts
+@@ -15,6 +15,8 @@ import { z } from "zod";
+ import { RecordedInference } from "../infer/recorded.ts";
+ import { verifyApiRecording } from "../infer/provenance.ts";
+ import { canonicalJson } from "../catalog/load.ts";
++import { DEFAULT_SNAPSHOT } from "../catalog/snapshot.ts";
++import { DEFAULT_CONTRACTS, DEFAULT_FIXTURES } from "../catalog/contracts.ts";
+ import { readCaseSnapshot, sourceProvenance } from "../cases/provenance.ts";
+ 
+ const hash = (bytes: Uint8Array) =>
+@@ -53,6 +55,20 @@ export function createEvidenceBundle(options: {
+ 				"source changed since run; preserve original source before bundling",
+ 			);
+ 		const { snapshot } = readCaseSnapshot(inputs.caseSnapshot);
++		const expectedFiles: Record<string, string> = { ...source.files };
++		for (const [path, digest] of [
++			[DEFAULT_SNAPSHOT, inputs.snapshotSha256],
++			[DEFAULT_CONTRACTS, inputs.contractsSha256],
++			[DEFAULT_FIXTURES, inputs.fixturesSha256],
++		]) {
++			if (typeof digest !== "string" || !/^[a-f0-9]{64}$/.test(digest))
++				throw new Error(`missing evaluated input digest: ${path}`);
++			expectedFiles[path] = digest;
++		}
++		// Fail before creating a target, and check the bytes again when copying below.
++		for (const [path, digest] of Object.entries(expectedFiles))
++			if (hash(readFileSync(join(root, path))) !== digest)
++				throw new Error(`evidence input changed since run: ${path}`);
+ 		const hostPrompt = config.condition?.hostPrompt;
+ 		if (
+ 			hostPrompt &&
+@@ -71,7 +87,10 @@ export function createEvidenceBundle(options: {
+ 		mkdirSync(options.target, { recursive: false });
+ 		const files: Record<string, string> = {};
+ 		const save = (path: string, bytes: Uint8Array) => {
+-			files[path] = hash(bytes);
++			const digest = hash(bytes);
++			if (expectedFiles[path] !== undefined && expectedFiles[path] !== digest)
++				throw new Error(`evidence input changed since run: ${path}`);
++			files[path] = digest;
+ 			mkdirSync(dirname(join(options.target, path)), { recursive: true });
+ 			writeFileSync(join(options.target, path), bytes, {
+ 				flag: "wx",
+diff --git a/bench/export/quality-report.test.ts b/bench/export/quality-report.test.ts
+index da75836..218a8d8 100644
+--- a/bench/export/quality-report.test.ts
++++ b/bench/export/quality-report.test.ts
+@@ -10,7 +10,8 @@ import { tmpdir } from "node:os";
+ import { join } from "node:path";
+ import { loadCases } from "../cases/cases.ts";
+ import { freezeEvaluation } from "../cases/freeze.ts";
+-import { BASELINE_CONDITION } from "../format/conditions.ts";
++import { BASELINE_CONDITION, CONDITIONS } from "../format/conditions.ts";
++import { hostPromptIdentity, loadHostPrompt } from "../format/host-prompt.ts";
+ import { runFormat } from "../format/run.ts";
+ import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
+ import { runApiInference } from "../infer/run-api.ts";
+@@ -31,7 +32,8 @@ const approved = JSON.stringify({
+ 	},
+ 	rationale: "synthetic test judgement",
+ });
+-async function fixture(runJudge = true) {
++async function fixture(runJudge = true, hostReading = false) {
++	const condition = hostReading ? CONDITIONS.eumenes : BASELINE_CONDITION;
+ 	const root = mkdtempSync(join(tmpdir(), "quality-report-review-")),
+ 		runsRoot = join(root, "runs"),
+ 		dbPath = join(root, "work.sqlite3"),
+@@ -73,7 +75,10 @@ async function fixture(runJudge = true) {
+ 		protocol: {
+ 			intent: "recording-regrade",
+ 			formatMethod: {
+-				condition: BASELINE_CONDITION,
++				condition,
++				...(hostReading
++					? { hostPrompt: hostPromptIdentity(loadHostPrompt()) }
++					: {}),
+ 				formats: ["json"],
+ 				repair: false,
+ 				restoreSyntax: false,
+@@ -103,6 +108,7 @@ async function fixture(runJudge = true) {
+ 		},
+ 	});
+ 	const format = {
++		condition,
+ 		session: "source",
+ 		runsRoot,
+ 		dbPath,
+@@ -111,9 +117,18 @@ async function fixture(runJudge = true) {
+ 		freezePath,
+ 	};
+ 	await runFormat(format);
+-	const output = SYNTHETIC_OUTPUTS.find(
++	const originalOutput = SYNTHETIC_OUTPUTS.find(
+ 		(x) => x.caseId === c.id && x.format === "json",
+ 	)!.output;
++	const output = hostReading
++		? JSON.stringify({
++				status: "ready",
++				definition: {
++					...JSON.parse(originalOutput),
++					request: "計算する依頼の言い換え",
++				},
++			})
++		: originalOutput;
+ 	let httpRequests = 0;
+ 	const api = async (
+ 		session: string,
+@@ -153,6 +168,7 @@ async function fixture(runJudge = true) {
+ 			catalog: catalog.view,
+ 			output: candidate,
+ 			nativeSchema: true,
++			hostReading,
+ 		});
+ 		const dir = join(runsRoot, session, "judge-requests");
+ 		mkdirSync(dir, { recursive: true });
+@@ -194,6 +210,29 @@ async function fixture(runJudge = true) {
+ 	};
+ }
+ 
++test("host plan judging uses the same bound request as scoring and report verification", async () => {
++	const f = await fixture(true, true);
++	try {
++		const request = JSON.parse(
++			readFileSync(
++				join(f.runsRoot, "judge", "judge-requests/prime-count--json.json"),
++				"utf8",
++			),
++		);
++		const body = JSON.parse(request.prompt);
++		expect(body.structuralCheck.ok).toBe(true);
++		expect(body.candidate.definition.request).toBe(
++			loadCases().find((c) => c.id === "prime-count")!.request,
++		);
++		const result = runQualityReport(f.options);
++		expect(result.completed).toBe(true);
++		expect(result.generations[0]?.mechanicallyValid).toBe(1);
++		expect(result.generations[0]?.qualifiedJudgeAppropriate).toBe(1);
++	} finally {
++		f.close();
++	}
++});
++
+ test("blinded judgements must match the exact scored candidate, not just an authentic API output", async () => {
+ 	const f = await fixture();
+ 	try {
+diff --git a/bench/export/quality-report.ts b/bench/export/quality-report.ts
+index 17ef96b..be9b1f4 100644
+--- a/bench/export/quality-report.ts
++++ b/bench/export/quality-report.ts
+@@ -139,6 +139,9 @@ export function runQualityReport(options: {
+ 							catalog: catalog.view,
+ 							output: candidate.output,
+ 							nativeSchema: judgeConfig?.nativeSchema === true,
++							hostReading:
++								(exp.config.condition as { promptStyle?: string } | undefined)
++									?.promptStyle === "eumenes-p0-3",
+ 						});
+ 						if (inferenceDigest(request) !== raw.promptDigest)
+ 							throw new Error("judgement does not target the scored candidate");
+diff --git a/bench/scoring/judge.ts b/bench/scoring/judge.ts
+index 969357b..0bf6a42 100644
+--- a/bench/scoring/judge.ts
++++ b/bench/scoring/judge.ts
+@@ -8,6 +8,7 @@ import { parseJsonFormat } from "../formats/json.ts";
+ import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
+ import { canonicalJson } from "../catalog/load.ts";
+ import { parseJsonStrict } from "../formats/strict-json.ts";
++import { rederiveAuthoring } from "../format/run.ts";
+ 
+ export const JUDGE_VERSION = "semantic-judge-v3";
+ const verdict = z.enum(["pass", "fail", "unknown"]);
+@@ -113,8 +114,27 @@ export function buildRecordedJudgeRequest(input: {
+ 	catalog: CatalogView;
+ 	output: string;
+ 	nativeSchema: boolean;
++	/** The recorded compose condition, never inferred from output wording. */
++	hostReading?: boolean;
+ }): InferenceRequest {
+-	const parsed = parseJsonFormat(input.output);
++	const derived = input.hostReading
++		? rederiveAuthoring("json", input.output, {
++				restored: false,
++				normalizeIds: false,
++				hostReading: true,
++				sourceRequest: input.request,
++			})
++		: null;
++	const parsed =
++		derived?.outcome?.status === "ready"
++			? {
++					ok: true as const,
++					outcome: {
++						kind: "ready" as const,
++						definition: derived.outcome.definition,
++					},
++				}
++			: (derived?.parse ?? parseJsonFormat(input.output));
+ 	const request = buildJudgeRequest({
+ 		request: input.request,
+ 		providedMaterials: input.providedMaterials,
+diff --git a/bench/scoring/prepare-judge.ts b/bench/scoring/prepare-judge.ts
+index a74030c..190e2a9 100644
+--- a/bench/scoring/prepare-judge.ts
++++ b/bench/scoring/prepare-judge.ts
+@@ -67,7 +67,25 @@ export function prepareJudgements(options: {
+ 		throw new Error("cases changed after freeze");
+ 	const byId = new Map(cases.map((c) => [c.id, c]));
+ 	const catalog = loadBenchCatalog();
++	const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
+ 	try {
++		const sourceRun = work.db
++			.query<{ config_json: string }, [string]>(
++				"SELECT config_json FROM runs WHERE kind='format' AND status='completed' AND json_extract(config_json,'$.session')=? ORDER BY rowid DESC LIMIT 1",
++			)
++			.get(options.source);
++		const sourceConfig = sourceRun ? JSON.parse(sourceRun.config_json) : null;
++		if (frozen && sourceConfig?.freezeDigest !== frozen.digest)
++			throw new Error(
++				"judge source was not prepared under the frozen protocol",
++			);
++		const condition = sourceRun
++			? sourceConfig.condition
++			: (
++					frozen?.protocol.formatMethod as
++						{ condition?: { promptStyle?: string } } | undefined
++				)?.condition;
++		const hostReading = condition?.promptStyle === "eumenes-p0-3";
+ 		const dir = join(root, options.session, "judge-requests");
+ 		const prepared = [...sources.files].map(([name, recording]) => {
+ 			const c = byId.get(name.replace(/--[^.]+\.json$/, ""));
+@@ -79,6 +97,7 @@ export function prepareJudgements(options: {
+ 				catalog: catalog.view,
+ 				output: recording.output,
+ 				nativeSchema: !!options.nativeSchema,
++				hostReading,
+ 			});
+ 			const promptDigest = inferenceDigest(request),
+ 				content = canonicalJson({ ...request, promptDigest }),
+@@ -92,20 +111,15 @@ export function prepareJudgements(options: {
+ 			if (!existsSync(p.target))
+ 				writeFileSync(p.target, p.content, { flag: "wx", mode: 0o600 });
+ 		if (frozen) {
+-			const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
+-			try {
+-				recordPreparedRequests(work, {
+-					session: options.session,
+-					freezeDigest: frozen.digest,
+-					requests: prepared.map((p) => ({
+-						phase: "judge",
+-						name: p.name,
+-						promptDigest: p.promptDigest,
+-					})),
+-				});
+-			} finally {
+-				work.close();
+-			}
++			recordPreparedRequests(work, {
++				session: options.session,
++				freezeDigest: frozen.digest,
++				requests: prepared.map((p) => ({
++					phase: "judge",
++					name: p.name,
++					promptDigest: p.promptDigest,
++				})),
++			});
+ 		}
+ 		return {
+ 			session: options.session,
+@@ -113,6 +127,7 @@ export function prepareJudgements(options: {
+ 			judgeVersion: JUDGE_VERSION,
+ 		};
+ 	} finally {
++		work.close();
+ 		catalog.close();
+ 	}
+ }
+diff --git a/data/contracts/eumenes-compose-prompt-v2.json b/data/contracts/eumenes-compose-prompt-v2.json
+index cddfdb7..0778b3a 100644
+--- a/data/contracts/eumenes-compose-prompt-v2.json
++++ b/data/contracts/eumenes-compose-prompt-v2.json
+@@ -18,12 +18,12 @@
+ 		"mirrored": [
+ 			{
+ 				"path": "api/application/pipelines/component-catalog.ts",
+-				"headSha256": "1da1672669cadcba7c372c72fbcb288a1149de030ff9c1750adc2ebb25eec001",
++				"headSha256": "0da0899a9d214dd8a834850c0e879cfaf2fd0c7d936c69acc3bca8e88170ee69",
+ 				"dirty": false
+ 			},
+ 			{
+ 				"path": "api/domains/agent-runtime/service/execution-compose.ts",
+-				"headSha256": "72b4fbcebb257c9cd8565d7cf675af3504c7f2ce583d2c9edd2c00741313fe20",
++				"headSha256": "00f223f2818bfa5e439ce9ffc1a8ff96cf53e5d51361080dcee0e5f985341356",
+ 				"dirty": false
+ 			}
+ 		]
+diff --git a/scripts/extract-eumenes-prompt.ts b/scripts/extract-eumenes-prompt.ts
+index 315c9ea..ffef553 100644
+--- a/scripts/extract-eumenes-prompt.ts
++++ b/scripts/extract-eumenes-prompt.ts
+@@ -53,7 +53,7 @@ const { toolchain, pack, binding, instructions, instructionsSha256 } =
+ 
+ const git = (args: string[]) => {
+ 	const r = Bun.spawnSync(["git", "-C", root, ...args]);
+-	return r.exitCode === 0 ? r.stdout.toString().trim() : null;
++	return r.exitCode === 0 ? r.stdout.toString() : null;
+ };
+ const dirty = git(["status", "--porcelain", "--", BUNDLE]);
+ /**
+@@ -78,7 +78,7 @@ const snapshot = {
+ 	formatVersion: 1,
+ 	source: {
+ 		repository: relative(process.cwd(), root),
+-		gitCommit: git(["rev-parse", "HEAD"]),
++		gitCommit: git(["rev-parse", "HEAD"])?.trim() ?? null,
+ 		bundleFile: BUNDLE,
+ 		bundleSha256: sha256(bundleText),
+ 		bundleDirty: dirty === null ? null : dirty.length > 0,
+diff --git a/src/check.test.ts b/src/check.test.ts
+index a82cd26..9fe68e6 100644
+--- a/src/check.test.ts
++++ b/src/check.test.ts
+@@ -2,7 +2,45 @@ import { describe, expect, test } from "bun:test";
+ import { createCatalogView, isRunnable, type CatalogView } from "./catalog.ts";
+ import { checkDefinition, type IssueCode } from "./check.ts";
+ import { record } from "./test-support.ts";
+-import { pipelineDefinition } from "./contracts/definition.ts";
++import { pipelineDefinition, pipelineStep } from "./contracts/definition.ts";
++
++test("argument copying never invokes hidden JSON serialization hooks", () => {
++	let calls = 0;
++	const hiddenHook = (value: object) =>
++		Object.defineProperty(value, "toJSON", {
++			get() {
++				calls++;
++				return () => ({ changed: true });
++			},
++		});
++	const value = {
++		root: hiddenHook({ n: 1 }),
++		array: hiddenHook([1, { n: 2 }]),
++	};
++	const parsed = pipelineStep.parse({
++		id: "s",
++		bundle: "e",
++		task: "t",
++		from: [],
++		result: "r",
++		arguments: hiddenHook(value),
++	});
++	expect(calls).toBe(0);
++	expect(parsed.arguments).toEqual({ root: { n: 1 }, array: [1, { n: 2 }] });
++	expect(parsed.arguments?.root).not.toBe(value.root);
++	expect(parsed.arguments?.array).not.toBe(value.array);
++	const special = pipelineStep.parse({
++		id: "s",
++		bundle: "e",
++		task: "t",
++		from: [],
++		result: "r",
++		arguments: JSON.parse('{"__proto__":{"safe":true},"zero":-0}'),
++	});
++	expect(Object.hasOwn(special.arguments!, "__proto__")).toBe(true);
++	expect(Object.getPrototypeOf(special.arguments!)).toBe(Object.prototype);
++	expect(Object.is(special.arguments!.zero, -0)).toBe(false);
++});
+ 
+ test("oversized step arrays fail before per-element errors can amplify memory use", () => {
+ 	const parsed = pipelineDefinition.safeParse({
+diff --git a/src/internal/json.ts b/src/internal/json.ts
+index d70cca0..39c2d84 100644
+--- a/src/internal/json.ts
++++ b/src/internal/json.ts
+@@ -1,4 +1,31 @@
+ /** Literal JSON with bounded validation work; no application meaning is inferred here. */
++import type { JsonValue } from "../contracts/definition.ts";
++
++/** Copy validated JSON data without consulting toJSON, getters, or inherited setters. */
++export function copyArguments(
++	value: Record<string, JsonValue>,
++): Record<string, JsonValue> {
++	const copy = (input: JsonValue): JsonValue => {
++		if (input === null || typeof input !== "object")
++			// Keep JSON.stringify's existing normalization of negative zero.
++			return typeof input === "number" && input === 0 ? 0 : input;
++		const output: JsonValue[] | Record<string, JsonValue> = Array.isArray(input)
++			? []
++			: {};
++		for (const key of Object.keys(input)) {
++			const property = Object.getOwnPropertyDescriptor(input, key)!;
++			Object.defineProperty(output, key, {
++				value: copy(property.value),
++				enumerable: true,
++				writable: true,
++				configurable: true,
++			});
++		}
++		return output;
++	};
++	return copy(value) as Record<string, JsonValue>;
++}
++
+ export function boundedArguments(value: unknown): boolean {
+ 	if (
+ 		!value ||
+diff --git a/src/internal/schemas.ts b/src/internal/schemas.ts
+index 85a13fe..a79ef86 100644
+--- a/src/internal/schemas.ts
++++ b/src/internal/schemas.ts
+@@ -1,7 +1,7 @@
+ import { z } from "zod";
+ import { ENTRY_PATTERN } from "../contracts/component.ts";
+ import { MAX_STEPS } from "../contracts/limits.ts";
+-import { boundedArguments } from "./json.ts";
++import { boundedArguments, copyArguments } from "./json.ts";
+ import type { JsonValue } from "../contracts/definition.ts";
+ 
+ const stepId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
+@@ -27,9 +27,7 @@ export const pipelineStepSchema = z.strictObject({
+ 			message:
+ 				"arguments must be literal JSON: at most 32 keys, depth 64, 10000 nodes and 100000 text units; no cycles or accessors",
+ 		})
+-		.transform(
+-			(value) => JSON.parse(JSON.stringify(value)) as Record<string, JsonValue>,
+-		)
++		.transform(copyArguments)
+ 		.optional(),
+ 	/** Natural-language description of the wanted result; not a type, not a promise. */
+ 	result: z.string().trim().min(1).max(500),

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { ENTRY_PATTERN } from "../contracts/component.ts";
 import { MAX_STEPS } from "../contracts/limits.ts";
-import { boundedArguments } from "./json.ts";
+import { boundedArguments, copyArguments } from "./json.ts";
 import type { JsonValue } from "../contracts/definition.ts";
 
 const stepId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
@@ -27,9 +27,7 @@ export const pipelineStepSchema = z.strictObject({
 			message:
 				"arguments must be literal JSON: at most 32 keys, depth 64, 10000 nodes and 100000 text units; no cycles or accessors",
 		})
-		.transform(
-			(value) => JSON.parse(JSON.stringify(value)) as Record<string, JsonValue>,
-		)
+		.transform(copyArguments)
 		.optional(),
 	/** Natural-language description of the wanted result; not a type, not a promise. */
 	result: z.string().trim().min(1).max(500),

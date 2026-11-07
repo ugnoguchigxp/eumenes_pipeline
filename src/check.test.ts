@@ -2,7 +2,45 @@ import { describe, expect, test } from "bun:test";
 import { createCatalogView, isRunnable, type CatalogView } from "./catalog.ts";
 import { checkDefinition, type IssueCode } from "./check.ts";
 import { record } from "./test-support.ts";
-import { pipelineDefinition } from "./contracts/definition.ts";
+import { pipelineDefinition, pipelineStep } from "./contracts/definition.ts";
+
+test("argument copying never invokes hidden JSON serialization hooks", () => {
+	let calls = 0;
+	const hiddenHook = (value: object) =>
+		Object.defineProperty(value, "toJSON", {
+			get() {
+				calls++;
+				return () => ({ changed: true });
+			},
+		});
+	const value = {
+		root: hiddenHook({ n: 1 }),
+		array: hiddenHook([1, { n: 2 }]),
+	};
+	const parsed = pipelineStep.parse({
+		id: "s",
+		bundle: "e",
+		task: "t",
+		from: [],
+		result: "r",
+		arguments: hiddenHook(value),
+	});
+	expect(calls).toBe(0);
+	expect(parsed.arguments).toEqual({ root: { n: 1 }, array: [1, { n: 2 }] });
+	expect(parsed.arguments?.root).not.toBe(value.root);
+	expect(parsed.arguments?.array).not.toBe(value.array);
+	const special = pipelineStep.parse({
+		id: "s",
+		bundle: "e",
+		task: "t",
+		from: [],
+		result: "r",
+		arguments: JSON.parse('{"__proto__":{"safe":true},"zero":-0}'),
+	});
+	expect(Object.hasOwn(special.arguments!, "__proto__")).toBe(true);
+	expect(Object.getPrototypeOf(special.arguments!)).toBe(Object.prototype);
+	expect(Object.is(special.arguments!.zero, -0)).toBe(false);
+});
 
 test("oversized step arrays fail before per-element errors can amplify memory use", () => {
 	const parsed = pipelineDefinition.safeParse({

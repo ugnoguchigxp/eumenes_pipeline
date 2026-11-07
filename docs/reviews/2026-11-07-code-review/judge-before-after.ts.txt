@@ -1,0 +1,17 @@
+import { writeFileSync } from "node:fs";
+import { buildRecordedJudgeRequest as before } from "./prior-judge.ts";
+import { buildRecordedJudgeRequest as after } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/scoring/judge.ts";
+import { record } from "/Users/y.noguchi/Code/eumenes_pipeline/src/test-support.ts";
+import { createCatalogView } from "/Users/y.noguchi/Code/eumenes_pipeline/src/catalog.ts";
+const component=record("entry");
+const catalog=createCatalogView([component],{version:"fixture",offer:()=>true});
+const input={request:"original",providedMaterials:[],cards:[component.card],catalog,
+  nativeSchema:true,hostReading:true,output:JSON.stringify({status:"ready",definition:{
+  request:"paraphrase",steps:[{id:"s",bundle:"entry",task:"t",from:["request"],result:"r"}],
+  output:{from:["s"],deliver:"d"}}})};
+const a=JSON.parse(before(input).prompt),b=JSON.parse(after(input).prompt);
+const result={before:{request:a.candidate.definition.request,check:a.structuralCheck},
+  after:{request:b.candidate.definition.request,check:b.structuralCheck},apiCalls:0};
+writeFileSync("/tmp/eumenes-review.RI07BD/judge-before-after.json",JSON.stringify(result,null,2));
+console.log(JSON.stringify(result));
+if(a.structuralCheck.ok!==false||b.structuralCheck.ok!==true)process.exitCode=1;

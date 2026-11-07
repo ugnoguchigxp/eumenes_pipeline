@@ -1,0 +1,18 @@
+bun test v1.4.4 (38afee6c8)
+
+bench/scoring/judge.test.ts:
+(pass) judge input has public task information but no producer, score, gold or cost fields [1.17ms]
+(pass) judge receives the checker's resolved public entry even when its bundle name differs [2.09ms]
+(pass) unparseable, inconsistent and uncertain verdicts never become a successful judgement [0.99ms]
+
+bench/export/quality-report.test.ts:
+(pass) host plan judging uses the same bound request as scoring and report verification [401.41ms]
+(pass) blinded judgements must match the exact scored candidate, not just an authentic API output [403.30ms]
+(pass) reported API usage cannot be changed by editing an untrusted provenance sidecar [333.62ms]
+(pass) frozen judge input changes cannot spend budget even when the request digest is updated [225.22ms]
+(pass) a single API judgement cannot be counted as two independent requests [362.19ms]
+
+ 8 pass
+ 0 fail
+ 25 expect() calls
+Ran 8 tests across 2 files. [2.14s]

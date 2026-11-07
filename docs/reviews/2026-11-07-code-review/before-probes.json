@@ -1,0 +1,25 @@
+{
+	"hiddenSerializationHook": {
+		"hookCalls": 1,
+		"accepted": true,
+		"output": {
+			"n": 999
+		}
+	},
+	"bundleCatalogDrift": {
+		"accepted": true,
+		"verified": true,
+		"originalDigest": "025fc7dbf939e517d84ab56def8198cb770bdf87f3a4515e5ec438d712331ee3",
+		"bundledDigest": "09e06ebe4e1216c049934036f6e8b4f1a1bdba70cc0ac193afd22c084f53d769"
+	},
+	"mirroredDigests": [
+		{
+			"path": "api/application/pipelines/component-catalog.ts",
+			"matchesRawSource": false
+		},
+		{
+			"path": "api/domains/agent-runtime/service/execution-compose.ts",
+			"matchesRawSource": false
+		}
+	]
+}

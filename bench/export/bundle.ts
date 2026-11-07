@@ -15,6 +15,8 @@ import { z } from "zod";
 import { RecordedInference } from "../infer/recorded.ts";
 import { verifyApiRecording } from "../infer/provenance.ts";
 import { canonicalJson } from "../catalog/load.ts";
+import { DEFAULT_SNAPSHOT } from "../catalog/snapshot.ts";
+import { DEFAULT_CONTRACTS, DEFAULT_FIXTURES } from "../catalog/contracts.ts";
 import { readCaseSnapshot, sourceProvenance } from "../cases/provenance.ts";
 
 const hash = (bytes: Uint8Array) =>
@@ -53,6 +55,20 @@ export function createEvidenceBundle(options: {
 				"source changed since run; preserve original source before bundling",
 			);
 		const { snapshot } = readCaseSnapshot(inputs.caseSnapshot);
+		const expectedFiles: Record<string, string> = { ...source.files };
+		for (const [path, digest] of [
+			[DEFAULT_SNAPSHOT, inputs.snapshotSha256],
+			[DEFAULT_CONTRACTS, inputs.contractsSha256],
+			[DEFAULT_FIXTURES, inputs.fixturesSha256],
+		]) {
+			if (typeof digest !== "string" || !/^[a-f0-9]{64}$/.test(digest))
+				throw new Error(`missing evaluated input digest: ${path}`);
+			expectedFiles[path] = digest;
+		}
+		// Fail before creating a target, and check the bytes again when copying below.
+		for (const [path, digest] of Object.entries(expectedFiles))
+			if (hash(readFileSync(join(root, path))) !== digest)
+				throw new Error(`evidence input changed since run: ${path}`);
 		const hostPrompt = config.condition?.hostPrompt;
 		if (
 			hostPrompt &&
@@ -71,7 +87,10 @@ export function createEvidenceBundle(options: {
 		mkdirSync(options.target, { recursive: false });
 		const files: Record<string, string> = {};
 		const save = (path: string, bytes: Uint8Array) => {
-			files[path] = hash(bytes);
+			const digest = hash(bytes);
+			if (expectedFiles[path] !== undefined && expectedFiles[path] !== digest)
+				throw new Error(`evidence input changed since run: ${path}`);
+			files[path] = digest;
 			mkdirSync(dirname(join(options.target, path)), { recursive: true });
 			writeFileSync(join(options.target, path), bytes, {
 				flag: "wx",

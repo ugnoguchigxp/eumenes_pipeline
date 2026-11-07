@@ -1,0 +1,63 @@
+bun test v1.4.4 (38afee6c8)
+
+scripts/eumenes-prompt.test.ts:
+(pass) a single revision preserves legacy extraction and instruction bytes [0.20ms]
+(pass) an explicit revision 1 is invariant under definition order [0.06ms]
+(pass) an explicit revision 2 is invariant under definition order [0.02ms]
+(pass) multiple or missing revisions cannot silently choose an entry [0.06ms]
+(pass) expected adopted instructions must match the selected revision [0.03ms]
+(pass) duplicate revisions and broken references are refused [0.03ms]
+(pass) the committed single-revision prompt is reproduced without changing its snapshot [0.16ms]
+
+src/check.test.ts:
+(pass) argument copying never invokes hidden JSON serialization hooks [1.07ms]
+(pass) oversized step arrays fail before per-element errors can amplify memory use [0.45ms]
+(pass) argument JSON rejects cycles, excessive depth, unsupported values and accessors without executing them [1.12ms]
+(pass) checkDefinition > accepts a serial plan and resolves entries, revisions and output contracts [0.20ms]
+(pass) checkDefinition > rejects reserved id [0.07ms]
+(pass) checkDefinition > rejects duplicate id [0.02ms]
+(pass) checkDefinition > rejects forward reference [0.02ms]
+(pass) checkDefinition > rejects reference cycle [0.02ms]
+(pass) checkDefinition > rejects self reference [0.02ms]
+(pass) checkDefinition > rejects unknown reference [0.02ms]
+(pass) checkDefinition > rejects duplicate reference [0.02ms]
+(pass) checkDefinition > rejects unknown output reference [0.02ms]
+(pass) checkDefinition > rejects unknown component [0.03ms]
+(pass) checkDefinition > rejects ambiguous bundle [0.01ms]
+(pass) checkDefinition > rejects entry from another bundle [0.01ms]
+(pass) checkDefinition > rejects excluded entry
+(pass) checkDefinition > rejects excluded bundle [0.01ms]
+(pass) checkDefinition > rejects expression field [0.06ms]
+(pass) checkDefinition > rejects no steps [0.02ms]
+(pass) checkDefinition > rejects blank task [0.02ms]
+(pass) checkDefinition > a single-entry bundle and an entry id both resolve without `entry` [0.03ms]
+(pass) checkDefinition > an unused result is a warning, not a rejection [0.03ms]
+(pass) checkDefinition > ambiguity reports the candidate entries [0.02ms]
+(pass) step arguments > valid arguments pass and are carried into the plan verbatim [0.70ms]
+(pass) step arguments > arguments for an entry that declares no schema are rejected [0.04ms]
+(pass) step arguments > an enum violation is invalid_arguments [0.17ms]
+(pass) step arguments > a missing required argument is invalid_arguments [0.14ms]
+(pass) step arguments > omitted arguments pass: the entry structures them itself [0.03ms]
+(pass) step arguments > a schema the converter cannot handle is reported unchecked, never silently passed [0.11ms]
+(pass) trusted host context detects model changes to the original request, preserving exact bytes [0.03ms]
+(pass) createCatalogView > refuses duplicate entries [0.02ms]
+(pass) createCatalogView > an exact entry name wins over a bundle of the same name [0.05ms]
+(pass) createCatalogView > a multi-entry bundle named without `entry` is ambiguous [0.02ms]
+(pass) createCatalogView > an unknown name does not resolve [0.01ms]
+(pass) createCatalogView > a near-miss name is not resolved by similarity or prefix [0.02ms]
+(pass) createCatalogView > a catalogued entry that is not offered does not resolve [0.04ms]
+(pass) runnable components > a permissive host offer cannot widen the view past runnable records [0.08ms]
+(pass) runnable components > a hand-built view that resolves an unrunnable record is still rejected [0.05ms]
+
+bench/export/bundle.test.ts:
+(pass) bundling rejects a changed evaluated input: data/source/eumenes-catalog-2026-11-03.sqlite3 [110.30ms]
+(pass) bundling rejects a changed evaluated input: data/contracts/eumenes-contracts-2026-11-03.json [94.20ms]
+(pass) bundling rejects a changed evaluated input: data/contracts/fixture-outputs.json [95.78ms]
+(pass) a host replay bundle retains the exact external snapshot after its source changes [185.56ms]
+(pass) portable evidence pins code, cases, original outputs and database, rejects missing or changed bytes [176.54ms]
+(pass) a manifest path cannot follow a file or directory symlink outside the bundle [1.55ms]
+
+ 51 pass
+ 0 fail
+ 129 expect() calls
+Ran 51 tests across 3 files. [753.00ms]

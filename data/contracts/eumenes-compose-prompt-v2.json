@@ -18,12 +18,12 @@
 		"mirrored": [
 			{
 				"path": "api/application/pipelines/component-catalog.ts",
-				"headSha256": "1da1672669cadcba7c372c72fbcb288a1149de030ff9c1750adc2ebb25eec001",
+				"headSha256": "0da0899a9d214dd8a834850c0e879cfaf2fd0c7d936c69acc3bca8e88170ee69",
 				"dirty": false
 			},
 			{
 				"path": "api/domains/agent-runtime/service/execution-compose.ts",
-				"headSha256": "72b4fbcebb257c9cd8565d7cf675af3504c7f2ce583d2c9edd2c00741313fe20",
+				"headSha256": "00f223f2818bfa5e439ce9ffc1a8ff96cf53e5d51361080dcee0e5f985341356",
 				"dirty": false
 			}
 		]

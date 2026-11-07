@@ -96,3 +96,11 @@ commitとpushは実行していない。既存の計画書差分と評価基準�
 benchの `eumenes` 条件でsnapshotと期待revisionを明示指定できるようにし、freezeには指示文だけでなくsnapshot全体のdigestと出所も含める。使用した本文は作業DBと証拠bundleへ保存し、外部ファイルの後日の変更から再生を独立させる。入力の近似範囲もrunに明記する。新しい未使用ケースの実API評価、本体の通常設定での反復受入、実成果物の品質測定は未実施であり、過去24件の成績は更新しない。
 
 runnerは入力準備・実行と記録・集計と書出しに分離した。旧条件と採点基準は保持し、保存済みのLuna/Sonnet各24出力を一時的な別DBへ再生して、変更前後のsummary・ケース結果・各240採点行の一致を確認した。`check:all` は423件成功・0失敗、`bench:verify --db :memory:` は87/87・外部到達0件。旧revision 1を使った証拠bundleを別ディレクトリへ作り、固定依存の導入後に同梱CLIで再生して `equal: true` を確認した。実API呼出しは0件。再生の確認は実モデルの新規測定ではない。詳細な指定手順と制限は [評価手順](../evaluation.md#評価する版の指定と固定2026-11-07) を参照する。
+
+## 2026-11-07 全体コードレビュー後の修正
+
+[全体レビュー](../reviews/2026-11-07-code-review/report.md)で4件を確認し修正した。引数コピーが非列挙toJSONを呼ぶ問題、bundleに元runと違うcatalog/契約/fixtureを混ぜられる問題、抽出時にfile本文をtrimして出所hashがずれる問題、本体条件のjudgeだけが原文結合前を評価する問題である。LLMの意味判断は変更していない。
+
+出所hashを正すためrevision 2のsnapshotを同じCLIで再抽出した。参照元本体は `fb8eac06ba1e32891c51355c4e067d678e7fd555` のまま、指示文digestも `c6ae5096a78b6c5856a08589084eb35472670e0e9441dc990dee7936b1316dc5` のまま。本体参照二ファイルの記録hashはGitの実バイトと一致した。旧snapshotと過去API記録・goldは保持している。
+
+全体428件・配線87件が成功。保存済48出力・480採点行と、過去judge96要求のschema込み再計算digestが一致した。配布33ファイルと空consumerを確認した新tarは `artifacts/eumenes-pipeline-0.1.0-ce2eb2248bc6/eumenes-pipeline-0.1.0-ce2eb2248bc6.tgz`、SHA-256 `678a9a1774e3df369dd895b6e1816d962261603ce374f205859fd1af95408468`。本体へは配置していない。実API呼出し0件。通常設定の本体受入と新しい未見品質実測は残作業である。

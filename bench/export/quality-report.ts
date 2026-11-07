@@ -139,6 +139,9 @@ export function runQualityReport(options: {
 							catalog: catalog.view,
 							output: candidate.output,
 							nativeSchema: judgeConfig?.nativeSchema === true,
+							hostReading:
+								(exp.config.condition as { promptStyle?: string } | undefined)
+									?.promptStyle === "eumenes-p0-3",
 						});
 						if (inferenceDigest(request) !== raw.promptDigest)
 							throw new Error("judgement does not target the scored candidate");
