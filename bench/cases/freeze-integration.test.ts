@@ -1,13 +1,100 @@
 import { expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { freezeEvaluation } from "./freeze.ts";
 import { loadCases } from "./cases.ts";
 import { runFormat } from "../format/run.ts";
-import { BASELINE_CONDITION } from "../format/conditions.ts";
 import { runApiInference } from "../infer/run-api.ts";
+import { BASELINE_CONDITION, CONDITIONS } from "../format/conditions.ts";
+import {
+	DEFAULT_HOST_PROMPT,
+	loadHostPrompt,
+	hostPromptIdentity,
+} from "../format/host-prompt.ts";
 
+test("frozen host evaluation rejects snapshot drift even outside the source tree", async () => {
+	const root = mkdtempSync(join(tmpdir(), "frozen-host-"));
+	const casesDir = join(root, "cases");
+	mkdirSync(casesDir);
+	const c = {
+		...loadCases()[0]!,
+		id: "host-freeze-fixture",
+		split: "holdout",
+		group: "host-freeze-fixture",
+	};
+	writeFileSync(join(casesDir, `${c.id}.json`), JSON.stringify(c));
+	const snapshot = JSON.parse(readFileSync(DEFAULT_HOST_PROMPT, "utf8"));
+	const hostPromptPath = join(root, "host-prompt.json");
+	writeFileSync(hostPromptPath, JSON.stringify(snapshot));
+	const policyPath = join(root, "policy.json");
+	writeFileSync(policyPath, "{}");
+	const session = "host-frozen";
+	const freezePath = join(root, "freeze.json");
+	freezeEvaluation({
+		path: freezePath,
+		id: session,
+		casesDir,
+		policyPath,
+		sessions: [session],
+		protocol: {
+			formatMethod: {
+				condition: CONDITIONS.eumenes,
+				formats: ["json"],
+				repair: false,
+				restoreSyntax: false,
+				normalizeIds: false,
+				triage: false,
+				staged: false,
+				coverageRepair: false,
+				candidates: null,
+				hostPrompt: hostPromptIdentity(loadHostPrompt(hostPromptPath)),
+			},
+		},
+	});
+	const options = {
+		session,
+		casesDir,
+		runsRoot: join(root, "runs"),
+		dbPath: ":memory:",
+		formats: ["json"] as const,
+		condition: CONDITIONS.eumenes,
+		freezePath,
+		hostPromptPath,
+	};
+	expect((await runFormat(options)).totals.missing).toBe(1);
+	const requestPath = join(
+		options.runsRoot,
+		session,
+		"requests",
+		`${c.id}--json.json`,
+	);
+	const request = readFileSync(requestPath, "utf8");
+	const changedInstructions = `${snapshot.instructions}\n追加の契約指示`;
+	for (const changed of [
+		{
+			...snapshot,
+			source: {
+				...snapshot.source,
+				toolchainRevisionId: "toolchain:pipeline.execute@1",
+			},
+		},
+		{
+			...snapshot,
+			instructions: changedInstructions,
+			instructionsSha256: createHash("sha256")
+				.update(changedInstructions)
+				.digest("hex"),
+		},
+	]) {
+		writeFileSync(hostPromptPath, JSON.stringify(changed));
+		await expect(runFormat(options)).rejects.toThrow("method differs");
+		expect(readFileSync(requestPath, "utf8")).toBe(request);
+	}
+	writeFileSync(hostPromptPath, JSON.stringify(snapshot));
+	expect((await runFormat(options)).totals.missing).toBe(1);
+});
 test("frozen evaluation blocks method changes and partial API batches before network access", async () => {
 	const root = mkdtempSync(join(tmpdir(), "frozen-integration-"));
 	const casesDir = join(root, "cases");

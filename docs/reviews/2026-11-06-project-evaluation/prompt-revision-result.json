@@ -1,0 +1,11 @@
+{
+	"command": "bun scripts/extract-eumenes-prompt.ts --eumenes <isolated fixture> --out <temporary JSON>",
+	"exitCodes": [0, 0],
+	"sameDefinitionSet": true,
+	"originalSelect": "toolchain:pipeline.execute@1",
+	"reversedSelect": "toolchain:pipeline.execute@2",
+	"originalInstructionsSha256": "ab45970740fadcce80de103f167a3d53f9fc36e72c19913e3d2e0a4f5073952e",
+	"reversedInstructionsSha256": "c6ae5096a78b6c5856a08589084eb35472670e0e9441dc990dee7936b1316dc5",
+	"sourceBundleSha256": "869d5762d4ac2afcb1115fa7751daddb1e34cf848ac444740e6c9f086ea9e14f",
+	"conditions": "Same registered revisions and reference graph, only array order changed. Fixture has no Git metadata; loadHostPrompt would refuse it. This probe establishes extraction ambiguity, not current deployment selection or a completed model measurement."
+}

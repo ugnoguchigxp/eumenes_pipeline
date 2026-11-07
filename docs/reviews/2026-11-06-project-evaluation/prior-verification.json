@@ -1,0 +1,33 @@
+{
+	"reviewedCommit": "8a45a9a",
+	"sourceChanges": false,
+	"targetedTests": {
+		"passed": 32,
+		"failed": 0
+	},
+	"benchVerify": {
+		"passed": 87,
+		"failed": 0
+	},
+	"pack": {
+		"location": "/var/folders/mx/jbv8qfwd52z14q0mby_273lhlp5gd2/T/eumenes-review-pack-01ht4hws",
+		"sourceDigest": "a859fd16ce46b3650de68cca70e55c2a2e4f122be9786622c071c2deb22f9ad4",
+		"sha256": "4c60c46ab77040b3ff4ed23433ca0ae9bd2e689efb8ea1db67da9234d8570f4f",
+		"sameAsExistingTarball": true,
+		"files": 33,
+		"verification": {
+			"packContents": "passed",
+			"tarballContents": "passed",
+			"freshConsumerInstall": "passed",
+			"consumerTypecheck": "passed"
+		}
+	},
+	"performance": {
+		"runId": "1192ae23-e9a4-43d4-95ba-14713338b64b",
+		"conditionsPassed": 4,
+		"maxP95Ms": 0.01545800000000952,
+		"budgetP95Ms": 5,
+		"apiCalls": 0
+	},
+	"fullCheckAll": "Not rerun: read-only assessment, no source changes; targeted and offline integration verification run instead."
+}

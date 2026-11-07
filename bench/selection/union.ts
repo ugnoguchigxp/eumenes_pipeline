@@ -1,4 +1,8 @@
-import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
+import {
+	captureCases,
+	readCaseSnapshot,
+	type CaseSnapshot,
+} from "../cases/provenance.ts";
 /**
  * Accuracy item 3: union presentation — emb-prefix top-12 ∪ BM25 top-k.
  *
@@ -22,7 +26,8 @@ import { captureCases, type CaseSnapshot } from "../cases/provenance.ts";
  * holdout split and how many extra cards the prompt has to carry.
  */
 import { readFileSync } from "node:fs";
-import { loadBenchCatalog } from "../catalog/load.ts";
+import { z } from "zod";
+import { loadBenchCatalog, sha256 } from "../catalog/load.ts";
 import { loadCases, type EvalCase } from "../cases/cases.ts";
 import {
 	createBm25Index,
@@ -66,17 +71,32 @@ export function setContainsAll(
 	return required.every((entry) => set.has(entry));
 }
 
-type RecordedCase = {
-	caseId: string;
-	required: string[];
-	rankings: Record<string, EntryRanking | undefined>;
-};
-
-type RecordedResults = {
-	runId: string;
-	split: "dev" | "holdout";
-	perCase: RecordedCase[];
-};
+const embeddingProvenance = z.object({
+	network: z.string().min(1),
+	space: z.object({
+		modelId: z.string().min(1),
+		revision: z.string().min(1),
+		artifactDigest: z.string().min(1),
+		dimension: z.number().int().positive(),
+	}),
+});
+const recordedResults = z.object({
+	runId: z.string().min(1),
+	split: z.enum(["dev", "holdout"]),
+	caseSnapshot: z.unknown(),
+	catalog: z.object({
+		version: z.string().min(1),
+		snapshotSha256: z.string().min(1),
+	}),
+	embedding: embeddingProvenance,
+	perCase: z.array(
+		z.object({
+			caseId: z.string().min(1),
+			required: z.array(z.string()),
+			rankings: z.record(z.string(), z.array(z.string())),
+		}),
+	),
+});
 
 export type UnionCaseResult = {
 	caseId: string;
@@ -108,6 +128,8 @@ export type UnionReport = {
 	split: "dev" | "holdout";
 	sourceRunId: string;
 	sourceResultsPath: string;
+	sourceResultsSha256: string;
+	embedding: z.infer<typeof embeddingProvenance>;
 	catalog: { snapshotSha256: string; version: string };
 	bm25Validation: { checked: number; mismatches: string[] };
 	evaluated: number;
@@ -128,18 +150,30 @@ export function runUnionAnalysis(options: {
 }): UnionReport {
 	const startedAt = new Date().toISOString();
 	const runId = crypto.randomUUID();
-	const recorded = JSON.parse(
-		readFileSync(options.recordedResultsPath, "utf8"),
-	) as RecordedResults;
-	if (recorded.split !== "dev" && recorded.split !== "holdout")
+	const recordedText = readFileSync(options.recordedResultsPath, "utf8");
+	const parsed = recordedResults.safeParse(JSON.parse(recordedText));
+	if (!parsed.success)
 		throw new Error(
-			`recorded results carry an unknown split: ${String(recorded.split)}`,
+			`union requires verifiable case/catalog/embedding provenance; replay legacy results with their original archive: ${parsed.error.message}`,
 		);
+	const recorded = parsed.data;
+	if (recorded.caseSnapshot === undefined)
+		throw new Error(
+			"union requires a recorded case snapshot; replay legacy results with their original archive",
+		);
+	const sourceCases = readCaseSnapshot(recorded.caseSnapshot);
 
 	const catalog = loadBenchCatalog({ policy: "ready+partial" });
 	try {
 		const cards = catalog.cards;
 		const entries = cards.map((c) => c.entry);
+		if (
+			recorded.catalog.version !== catalog.view.version ||
+			recorded.catalog.snapshotSha256 !== catalog.snapshot.sha256
+		)
+			throw new Error(
+				"union catalog mismatch; use the original catalog and code",
+			);
 		const perCard = cards.map((card) => ({
 			entry: card.entry,
 			passages: passagesOf(card),
@@ -157,6 +191,10 @@ export function runUnionAnalysis(options: {
 		// drifted and the comparison would be meaningless.
 		const allCases = loadCases(options.casesDir);
 		const caseSnapshot = captureCases(allCases, options.casesDir);
+		if (sourceCases.snapshot.digest !== caseSnapshot.digest)
+			throw new Error(
+				"union case snapshot mismatch; use the original case snapshot",
+			);
 		const splitCases = allCases.filter((c) => c.split === recorded.split);
 		const evaluated: EvalCase[] = splitCases.filter(
 			(c) =>
@@ -166,6 +204,8 @@ export function runUnionAnalysis(options: {
 		const recordedById = new Map(
 			recorded.perCase.map((c) => [c.caseId, c] as const),
 		);
+		if (recordedById.size !== recorded.perCase.length)
+			throw new Error("duplicate case in recorded results");
 		if (recordedById.size !== evaluated.length)
 			throw new Error(
 				`case set mismatch: recorded ${recordedById.size} cases vs re-derived ${evaluated.length}`,
@@ -177,6 +217,8 @@ export function runUnionAnalysis(options: {
 			const rec = recordedById.get(evalCase.id);
 			if (!rec) throw new Error(`recorded results lack case ${evalCase.id}`);
 			const required = evalCase.expected.requiredBundles ?? [];
+			if (new Set(rec.required).size !== rec.required.length)
+				throw new Error(`duplicate required entry for ${evalCase.id}`);
 			if (!sameSet(rec.required, required))
 				throw new Error(
 					`required-set mismatch for ${evalCase.id}: recorded ${rec.required} vs case ${required}`,
@@ -188,6 +230,18 @@ export function runUnionAnalysis(options: {
 				);
 			const bm25Ranking = rankFromScores(entries, bm25.score(evalCase.request));
 			const recordedBm25 = rec.rankings["bm25"];
+			for (const ranking of [
+				embPrefix,
+				...(recordedBm25 ? [recordedBm25] : []),
+			])
+				if (
+					ranking.length !== entries.length ||
+					new Set(ranking).size !== entries.length ||
+					ranking.some((entry) => !entries.includes(entry))
+				)
+					throw new Error(
+						`invalid or duplicate ranking entries for ${evalCase.id}`,
+					);
 			if (recordedBm25) {
 				validation.checked += 1;
 				if (!sameRanking(recordedBm25, bm25Ranking))
@@ -270,6 +324,8 @@ export function runUnionAnalysis(options: {
 			split: recorded.split,
 			sourceRunId: recorded.runId,
 			sourceResultsPath: options.recordedResultsPath,
+			sourceResultsSha256: sha256(recordedText),
+			embedding: recorded.embedding,
 			catalog: {
 				snapshotSha256: catalog.snapshot.sha256,
 				version: catalog.view.version,
@@ -291,6 +347,8 @@ export function renderUnionSummary(report: UnionReport): string {
 		``,
 		`- split: ${report.split}（pipeline ケース ${report.evaluated} 件）`,
 		`- source run: ${report.sourceRunId}（${report.sourceResultsPath}）`,
+		`- source results SHA-256: ${report.sourceResultsSha256}`,
+		`- embedding: ${report.embedding.network} / ${report.embedding.space.modelId}@${report.embedding.space.revision} / ${report.embedding.space.artifactDigest}`,
 		`- bm25 再計算の検証: recorded と照合 ${report.bm25Validation.checked} 件、不一致 ${report.bm25Validation.mismatches.length} 件`,
 		``,
 		`| bm25 k | 含有 | 含有率 | 平均提示件数 | 平均追加 | 平均追加文字数 | 回復ケース |`,

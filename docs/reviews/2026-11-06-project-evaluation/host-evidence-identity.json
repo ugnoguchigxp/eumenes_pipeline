@@ -1,0 +1,30 @@
+{
+	"hostCommit": "0559873582e75c822ccc3d442e153e0f0a25711b",
+	"trackedFileStatus": " M api/domains/capabilities/bundles/pipeline-execution.bundle.json\n M spec/project-issues-2026-11-06.md\n M spec/project-issues-first-batch-2026-11-06.md\n M spec/verification/project-issues-first-batch-2026-11-06/README.md\n",
+	"filesSha256": {
+		"spec/pipeline-0.1.0-hardening-2026-11-06.md": "191084dd16ea88c02612be109d103a445cb8d14e725763d636557a146dcc5f20",
+		"spec/project-issues-2026-11-06.md": "9597d40a3e8d8bbac533fe0046b6fda3d4ba302626a39fb5d2b247e381c24091",
+		"spec/project-issues-first-batch-2026-11-06.md": "7edd34e0d0cd9f473c4cc000e415b9c9a7a4f5f1212f871a9d50d9d611c9dc37",
+		"spec/verification/project-issues-first-batch-2026-11-06/README.md": "65032dd8f46887c227e104d608555c12c5131558ee9e4af96e8ab79b070153a2",
+		"spec/verification/pipeline-0.1.0-2026-11-06/live/routing-summary.json": "f36bf6c4195ad8ce3deb5efaa1c81f3385b8e1904cf722a46a95c17ffc10b2d7",
+		"spec/verification/pipeline-0.1.0-2026-11-06/live/end-to-end-f.json": "42b90bd158cea7ec56486ebaa30fd1051d083135f85255b3a63153b8d00ab0c4",
+		"api/domains/agent-runtime/service/execution-pipeline.ts": "59c4cdd87495777074893a7545e7be60675b4837fe939a42d78e46b5523a1c8c",
+		"api/domains/capabilities/bundles/pipeline-execution.bundle.json": "869d5762d4ac2afcb1115fa7751daddb1e34cf848ac444740e6c9f086ea9e14f"
+	},
+	"observedAt": "2026-11-06",
+	"scope": "Read-only exact files, historic live observations plus latest acceptance status. Not a review or live rerun of the whole host.",
+	"endOfReviewRecheck": {
+		"observedAt": "2026-11-06",
+		"retained": {
+			"spec/pipeline-0.1.0-hardening-2026-11-06.md": {
+				"retainedFile": "host-observed-pipeline-0.1.0-hardening-2026-11-06.md.txt",
+				"sha256": "89f7fa201ec70587208302db4052838cb54380025742170961dfdcd2c81dca28"
+			},
+			"spec/project-issues-first-batch-2026-11-06.md": {
+				"retainedFile": "host-observed-project-issues-first-batch-2026-11-06.md.txt",
+				"sha256": "7e00829aacdebe6ab177395cd9ee4e6583f1716be21d78c68b7cde682f13819a"
+			}
+		},
+		"note": "本体の別作業で資料が更新された。過去liveと現行受入未達の区別を再確認。採用版/設定の実接続検証が続いており、本評価で本体作業の最終完了は認定しない。保存した読取りsnapshotを本評価の根拠とし、以降の本体更新は追跡しない。"
+	}
+}

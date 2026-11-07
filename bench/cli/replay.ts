@@ -45,6 +45,10 @@ if (values.run && values.bundle && values.db) {
 		formats: config.formats,
 		seed: config.seed,
 		condition: config.conditionDefinition ?? config.condition,
+		hostPromptPath: config.condition?.hostPrompt
+			? "data/replay-host-prompt.json"
+			: undefined,
+		hostToolchainRevisionId: config.condition?.hostPrompt?.toolchainRevisionId,
 		candidates: meta.inputs?.candidates,
 		repair: config.repair,
 		restoreSyntax: config.restoreSyntax,

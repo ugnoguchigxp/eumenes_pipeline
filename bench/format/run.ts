@@ -1,3 +1,7 @@
+import { prepareRunInputs, prepareRunCells } from "./prepare.ts";
+export { DEFAULT_RUNS_ROOT } from "./prepare.ts";
+import { summarizeFormatRun, writeFormatSummary } from "./report.ts";
+export { emptyGroup, addCell } from "./report.ts";
 import {
 	recordPreparedRequests,
 	type PreparedApiRequest,
@@ -101,18 +105,14 @@ import {
  * enabled). Off by default: a run without them is byte-for-byte the pre-staged
  * bench.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { checkDefinition, type CheckResult } from "../../src/check.ts";
 import type { InferenceResult } from "../../src/ports.ts";
 import type { AuthoringOutcome } from "../../src/contracts/authoring.ts";
-import type { ComponentCard } from "../../src/contracts/component.ts";
 import { CONTRACT_VERSION } from "../../src/contracts/record.ts";
-import { canonicalJson, loadBenchCatalog } from "../catalog/load.ts";
-import { loadCases, DEFAULT_CASES_DIR, type EvalCase } from "../cases/cases.ts";
+import { canonicalJson, type loadBenchCatalog } from "../catalog/load.ts";
+import type { EvalCase } from "../cases/cases.ts";
 import { captureCases } from "../cases/provenance.ts";
-import { verifyFreeze } from "../cases/freeze.ts";
-import { FORMAT_PARSERS, FORMAT_IDS, type FormatId } from "../formats/index.ts";
+import { FORMAT_PARSERS, type FormatId } from "../formats/index.ts";
 import {
 	ID_NORMALIZE_VERSION,
 	validateAuthoring,
@@ -130,63 +130,27 @@ import {
 } from "../infer/recorded.ts";
 import { runPlan } from "../mock/driver.ts";
 import { MockHost } from "../mock/host.ts";
-import {
-	DEFAULT_ATTEMPT_SEED,
-	type AttemptResults,
-} from "../scoring/evaluate.ts";
+import type { AttemptResults } from "../scoring/evaluate.ts";
 import { scoreCase, type CaseScore } from "../scoring/score.ts";
 import { openWorkDb, DEFAULT_WORK_DB } from "../store/work-db.ts";
-import { countTokens, tokenizerProvenance } from "../tokens.ts";
 import type { TokenizerProvenance } from "../tokens.ts";
-import {
-	BASELINE_CONDITION,
-	summarizeCondition,
-	WORKED_EXAMPLES,
-	type ConditionSummary,
-	type FormatCondition,
-} from "./conditions.ts";
-import {
-	buildFormatPrompt,
-	CARDS_RENDERING,
-	GUIDANCE_TEXTS,
-	PROMPT_TEMPLATE_VERSION,
-} from "./prompt.ts";
-import {
-	buildHostPrompt,
-	loadHostPrompt,
-	parseHostOutput,
-} from "./host-prompt.ts";
+import { type ConditionSummary, type FormatCondition } from "./conditions.ts";
+import { CARDS_RENDERING, PROMPT_TEMPLATE_VERSION } from "./prompt.ts";
+import { parseHostOutput } from "./host-prompt.ts";
 import { bindSourceRequest } from "../../src/source-request.ts";
 import {
-	buildEnumPrompt,
 	computeCoverage,
 	coverageErrorLine,
-	enumNoteText,
 	ENUM_TEMPLATE_VERSION,
-	parseEnumOutput,
 	stripItemMarkers,
 	type CoverageResult,
 	type EnumConclusion,
 	type WorkItem,
 } from "./enumerate.ts";
-import {
-	buildTriagePrompt,
-	parseTriageOutput,
-	TRIAGE_TEMPLATE_VERSION,
-	triageNoteText,
-	type TriageConclusion,
-	type TriageVerdict,
-} from "./triage.ts";
-import {
-	resolvePrePass,
-	resolveRecordedCall,
-	type PrePassResolution,
-} from "./recorded-call.ts";
+import { TRIAGE_TEMPLATE_VERSION, type TriageVerdict } from "./triage.ts";
+import { resolveRecordedCall } from "./recorded-call.ts";
 
-export const DEFAULT_RUNS_ROOT = "data/runs/format";
 export const FORMAT_SCORER = "bench-format-v3";
-
-const SESSION_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/;
 
 export type FormatCellStatus =
 	"scored" | "missing" | "digest-mismatch" | "inference-error";
@@ -372,54 +336,6 @@ export type FormatRunReport = {
 	staged?: FormatEnumSummary;
 };
 
-export const emptyGroup = (): FormatGroupSummary => ({
-	cells: 0,
-	scored: 0,
-	missing: 0,
-	digestMismatch: 0,
-	inferenceErrors: 0,
-	parseOk: 0,
-	authoringOk: 0,
-	checkAttempts: 0,
-	checkOk: 0,
-	stateMatch: 0,
-	bundlesOk: 0,
-	mockAttempts: 0,
-	mockCompleted: 0,
-	passed: 0,
-});
-
-export function addCell(
-	group: FormatGroupSummary,
-	cell: {
-		status: string;
-		authoringOk?: boolean | null;
-		passed?: boolean | null;
-		score?: CaseScore | null;
-	},
-): void {
-	group.cells += 1;
-	if (cell.status === "missing") group.missing += 1;
-	if (cell.status === "digest-mismatch") group.digestMismatch += 1;
-	if (cell.status === "inference-error") group.inferenceErrors += 1;
-	if (cell.status !== "scored" || !cell.score) return;
-	group.scored += 1;
-	const score = cell.score;
-	if (score.parseOk) group.parseOk += 1;
-	if (cell.authoringOk) group.authoringOk += 1;
-	if (score.checkOk !== null) {
-		group.checkAttempts += 1;
-		if (score.checkOk) group.checkOk += 1;
-	}
-	if (score.stateMatch) group.stateMatch += 1;
-	if (score.score.bundles) group.bundlesOk += 1;
-	if (score.mockCompleted !== null) {
-		group.mockAttempts += 1;
-		if (score.mockCompleted) group.mockCompleted += 1;
-	}
-	if (cell.passed) group.passed += 1;
-}
-
 /**
  * The P0b contract gate lives in `bench/formats/normalize-ids.ts`
  * (`validateAuthoring`): a parsed outcome still has to be a valid
@@ -430,7 +346,7 @@ export function addCell(
  */
 
 /** One evaluated attempt: everything the evaluator path produced for one output text. */
-type EvaluatedAttempt = {
+export type EvaluatedAttempt = {
 	parse: ParseResult;
 	authored: AuthoringOutcome | null;
 	/** Authoring-schema issues (path + message) when the contract gate failed. */
@@ -574,6 +490,10 @@ const verdictOf = (
 
 export type FormatRunOptions = {
 	session: string;
+	/** Explicit instruction snapshot for the eumenes condition; historical files are retained. */
+	hostPromptPath?: string;
+	/** Refuse a snapshot from another host revision rather than silently measuring it. */
+	hostToolchainRevisionId?: string;
 	freezePath?: string;
 	runsRoot?: string;
 	dbPath?: string;
@@ -631,24 +551,6 @@ export type FormatRunOptions = {
 	coverageRepair?: boolean;
 };
 
-/** The cards one cell offers, in catalog order, under the condition and any candidates. */
-function selectCards(
-	condition: FormatCondition,
-	candidates: FormatRunOptions["candidates"],
-	evalCase: EvalCase,
-	all: readonly ComponentCard[],
-): readonly ComponentCard[] {
-	const entries =
-		candidates && Object.hasOwn(candidates, evalCase.id)
-			? candidates[evalCase.id]
-			: condition.cardSet === "all"
-				? null
-				: condition.cardSet.entries;
-	if (!entries) return all;
-	const wanted = new Set(entries);
-	return all.filter((card) => wanted.has(card.entry));
-}
-
 function recordPrePassTrials(
 	work: ReturnType<typeof openWorkDb>,
 	runId: string,
@@ -692,304 +594,24 @@ function recordPrePassTrials(
 			});
 	}
 }
-export async function runFormat(
+/** Persist the fixed run inputs before recording any trials. */
+function startFormatRun(
 	options: FormatRunOptions,
-): Promise<FormatRunReport> {
-	if (!SESSION_PATTERN.test(options.session))
-		throw new Error(
-			`invalid session name "${options.session}" (letters, digits, . _ -, up to 64 chars)`,
-		);
-	if (options.coverageRepair && !options.staged)
-		throw new Error(
-			"coverageRepair requires staged (stage C reviews stage A's items)",
-		);
-	const sessionDir = join(
-		options.runsRoot ?? DEFAULT_RUNS_ROOT,
-		options.session,
-	);
-	const requestsDir = join(sessionDir, "requests");
-	const recordingsDir = join(sessionDir, "recordings");
-	mkdirSync(requestsDir, { recursive: true });
-	mkdirSync(recordingsDir, { recursive: true });
-	const repairRequestsDir = join(sessionDir, "repair-requests");
-	const repairRecordingsDir = join(sessionDir, "repair-recordings");
-	if (options.repair || options.coverageRepair) {
-		mkdirSync(repairRequestsDir, { recursive: true });
-		mkdirSync(repairRecordingsDir, { recursive: true });
-	}
-	const triageRequestsDir = join(sessionDir, "triage-requests");
-	const triageRecordingsDir = join(sessionDir, "triage-recordings");
-	if (options.triage) {
-		mkdirSync(triageRequestsDir, { recursive: true });
-		mkdirSync(triageRecordingsDir, { recursive: true });
-	}
-	const enumRequestsDir = join(sessionDir, "enum-requests");
-	const enumRecordingsDir = join(sessionDir, "enum-recordings");
-	if (options.staged) {
-		mkdirSync(enumRequestsDir, { recursive: true });
-		mkdirSync(enumRecordingsDir, { recursive: true });
-	}
-
-	const frozen = options.freezePath
-		? verifyFreeze(
-				options.freezePath,
-				options.session,
-				undefined,
-				options.casesDir ?? DEFAULT_CASES_DIR,
-			)
-		: undefined;
-	if (frozen) {
-		const method = {
-			condition: options.condition ?? BASELINE_CONDITION,
-			formats: options.formats ?? FORMAT_IDS,
-			repair: !!options.repair,
-			restoreSyntax: !!options.restoreSyntax,
-			normalizeIds: !!options.normalizeIds,
-			triage: !!options.triage,
-			staged: !!options.staged,
-			coverageRepair: !!options.coverageRepair,
-			candidates: options.candidates ?? null,
-		};
-		if (canonicalJson(method) !== canonicalJson(frozen.protocol.formatMethod))
-			throw new Error("format method differs from frozen protocol");
-	}
-	const catalog = loadBenchCatalog({ policy: "ready+partial" });
-	const allCases = loadCases(options.casesDir);
-	if (frozen && options.caseIds && options.caseIds.length !== allCases.length)
-		throw new Error("frozen evaluation cannot select a partial case set");
-	const cases = options.caseIds
-		? allCases.filter((c) => options.caseIds?.includes(c.id))
-		: allCases;
-	if (options.caseIds && cases.length !== options.caseIds.length)
-		throw new Error(
-			`unknown case id(s): ${options.caseIds.filter((id) => !cases.some((c) => c.id === id)).join(", ")}`,
-		);
-	const formats = options.formats ?? FORMAT_IDS;
-	const seed = options.seed ?? DEFAULT_ATTEMPT_SEED;
-	const condition = options.condition ?? BASELINE_CONDITION;
-
-	// Validate the condition and the candidates BEFORE the run starts: an entry id that is
-	// not offered, or a candidates key that is not a case, is a bench setup error and must
-	// fail loudly here — never shrink a cell's cards or a run's cases silently.
-	const offeredEntries = new Set(catalog.cards.map((c) => c.entry));
-	const unknownEntries = new Set<string>();
-	const checkEntries = (entries: readonly string[]) => {
-		for (const entry of entries)
-			if (!offeredEntries.has(entry)) unknownEntries.add(entry);
-	};
-	if (condition.cardSet !== "all") checkEntries(condition.cardSet.entries);
-	if (options.candidates)
-		for (const [caseId, entries] of Object.entries(options.candidates)) {
-			if (!allCases.some((c) => c.id === caseId))
-				throw new Error(`candidates name an unknown case id: ${caseId}`);
-			checkEntries(entries);
-		}
-	if (unknownEntries.size > 0)
-		throw new Error(
-			`condition/candidates name entries that are not offered: ${[...unknownEntries].sort().join(", ")}`,
-		);
-	// The host-prompt condition sends Eumenes' own composing prompt: JSON only, no other
-	// prompt option, and the snapshot it came from is part of the recorded condition.
-	const hostPrompt =
-		condition.promptStyle === "eumenes-p0-3" ? loadHostPrompt() : undefined;
-	if (hostPrompt) {
-		if (formats.some((f) => f !== "json"))
-			throw new Error(
-				"the eumenes prompt style is defined for the json format only",
-			);
-		if (
-			condition.shots !== 0 ||
-			condition.guidance ||
-			condition.cardStyle !== "full" ||
-			condition.outputStyle !== "default" ||
-			options.triage ||
-			options.staged ||
-			options.repair ||
-			options.coverageRepair ||
-			options.restoreSyntax ||
-			options.normalizeIds
-		)
-			throw new Error(
-				"the eumenes prompt style takes no other option (shots, guidance, card style, output style, triage, staged, repair, restore, normalize): the host has its own repair message, unmeasured here",
-			);
-	}
-	const conditionInfo = {
-		...summarizeCondition(condition, options.candidates !== undefined),
-		...(hostPrompt
-			? {
-					hostPrompt: {
-						instructionsSha256: hostPrompt.instructionsSha256,
-						gitCommit: hostPrompt.gitCommit,
-					},
-				}
-			: {}),
-	};
-	const provenance = tokenizerProvenance();
-
-	// Triage resolution (triage runs only): one recorded call per case, resolved
-	// BEFORE the composing prompts are built, because a concluded case's prompt
-	// carries the conclusion. The calls are recorded as work-db trials once the
-	// run exists (below); here only files and recordings are touched.
-	const triageResolutions = new Map<
-		string,
-		PrePassResolution<EvalCase, TriageConclusion>
-	>();
-	if (options.triage) {
-		const triageRecordings =
-			RecordedInference.fromDirectory(triageRecordingsDir);
-		for (const evalCase of cases) {
-			const built = buildTriagePrompt(evalCase);
-			triageResolutions.set(
-				evalCase.id,
-				await resolvePrePass({
-					evalCase,
-					files: triageRecordings.files,
-					complete: (request) => triageRecordings.inference.complete(request),
-					request: {
-						purpose: TRIAGE_PURPOSE,
-						system: built.system,
-						prompt: built.prompt,
-					},
-					requestsDir: triageRequestsDir,
-					missingError: (fileName) =>
-						`missing triage recording; request written to triage-requests/${fileName}`,
-					mismatchPrefix: "triage recording",
-					invalidError:
-						'triage output is not a verdict document (expected {"verdict": "proceed"} or {"verdict": "needs_input", "questions": [...]})',
-					parse: parseTriageOutput,
-				}),
-			);
-		}
-	}
-
-	// Enumeration resolution (staged runs only): one recorded call per case,
-	// resolved BEFORE the composing prompts are built, because a concluded
-	// case's prompt carries the item list. Resolved by the same recorded-call
-	// rules as triage; the calls are recorded as work-db trials once the run
-	// exists (below).
-	const enumResolutions = new Map<
-		string,
-		PrePassResolution<EvalCase, EnumConclusion>
-	>();
-	if (options.staged) {
-		const enumRecordings = RecordedInference.fromDirectory(enumRecordingsDir);
-		for (const evalCase of cases) {
-			const built = buildEnumPrompt(evalCase);
-			enumResolutions.set(
-				evalCase.id,
-				await resolvePrePass({
-					evalCase,
-					files: enumRecordings.files,
-					complete: (request) => enumRecordings.inference.complete(request),
-					request: {
-						purpose: ENUM_PURPOSE,
-						system: built.system,
-						prompt: built.prompt,
-					},
-					requestsDir: enumRequestsDir,
-					missingError: (fileName) =>
-						`missing enumeration recording; request written to enum-requests/${fileName}`,
-					mismatchPrefix: "enumeration recording",
-					invalidError:
-						'enumeration output is not an item list (expected {"items": ["...", ...]})',
-					parse: parseEnumOutput,
-				}),
-			);
-		}
-	}
-
-	// Build every prompt up front and count them in one batch: the prompt of a cell does
-	// not depend on its recording, and one helper call keeps the counting cheap.
-	type PreparedCell = {
-		evalCase: EvalCase;
-		format: FormatId;
-		system: string;
-		prompt: string;
-		promptTokens: number | null;
-		/** The triage conclusion the prompt carries (triage runs, concluded cases). */
-		triageConclusion?: TriageConclusion;
-		/** Why this cell cannot compose (triage runs, unconcluded cases). */
-		triageBlocked?: { status: FormatCellStatus; error: string };
-		/** The stage-A conclusion the prompt carries (staged runs, concluded cases). */
-		enumConclusion?: EnumConclusion;
-		/** Why this cell cannot compose (staged runs, unconcluded cases). */
-		enumBlocked?: { status: FormatCellStatus; error: string };
-	};
-	const prepared: PreparedCell[] = [];
-	for (const evalCase of cases)
-		for (const format of formats) {
-			const triage = triageResolutions.get(evalCase.id);
-			const enumeration = enumResolutions.get(evalCase.id);
-			const cards = selectCards(
-				condition,
-				options.candidates,
-				evalCase,
-				catalog.cards,
-			);
-			const built = hostPrompt
-				? buildHostPrompt({ evalCase, cards, host: hostPrompt })
-				: buildFormatPrompt({
-						evalCase,
-						format,
-						cards,
-						cardStyle: condition.cardStyle,
-						outputStyle: condition.outputStyle,
-						...(condition.shots === 1
-							? { workedExample: WORKED_EXAMPLES[format] }
-							: {}),
-						...(condition.guidance
-							? { guidanceText: GUIDANCE_TEXTS[condition.guidance] }
-							: {}),
-						...(triage?.conclusion
-							? { triageNote: triageNoteText(triage.conclusion) }
-							: {}),
-						...(enumeration?.conclusion
-							? { enumNote: enumNoteText(enumeration.conclusion) }
-							: {}),
-					});
-			const blockedOf = (
-				resolution:
-					{ state: string; error?: string; conclusion?: unknown } | undefined,
-				label: string,
-			) =>
-				resolution && !resolution.conclusion
-					? {
-							status:
-								resolution.state === "missing"
-									? ("missing" as const)
-									: resolution.state === "digest-mismatch"
-										? ("digest-mismatch" as const)
-										: ("inference-error" as const),
-							error: `${label} pre-pass unavailable: ${resolution.error ?? resolution.state}`,
-						}
-					: undefined;
-			const triageBlocked = blockedOf(triage, "triage");
-			const enumBlocked = blockedOf(enumeration, "enumeration");
-			prepared.push({
-				evalCase,
-				format,
-				...built,
-				promptTokens: null,
-				...(triage?.conclusion ? { triageConclusion: triage.conclusion } : {}),
-				...(triageBlocked ? { triageBlocked } : {}),
-				...(enumeration?.conclusion
-					? { enumConclusion: enumeration.conclusion }
-					: {}),
-				...(enumBlocked ? { enumBlocked } : {}),
-			});
-		}
-	const promptCounts = countTokens(
-		prepared.map((cell) => `${cell.system}\n${cell.prompt}`),
-	);
-	prepared.forEach((cell, i) => {
-		cell.promptTokens = promptCounts[i] ?? null;
-	});
-
-	const composeRecordings = RecordedInference.fromDirectory(recordingsDir);
-	const preparedRepairRecordings =
-		options.repair || options.coverageRepair
-			? RecordedInference.fromDirectory(repairRecordingsDir)
-			: undefined;
+	input: ReturnType<typeof prepareRunInputs>,
+	preparedRun: Awaited<ReturnType<typeof prepareRunCells>>,
+) {
+	const {
+		frozen,
+		catalog,
+		cases,
+		formats,
+		seed,
+		condition,
+		conditionInfo,
+		provenance,
+		hostPrompt,
+	} = input;
+	const { composeRecordings, preparedRepairRecordings } = preparedRun;
 	const apiSources = Object.fromEntries(composeRecordings.provenance);
 	const work = openWorkDb(options.dbPath ?? DEFAULT_WORK_DB);
 	const runId = work.startRun({
@@ -1044,6 +666,7 @@ export async function runFormat(
 				: {}),
 		},
 		inputs: {
+			...(hostPrompt ? { hostPromptSnapshot: hostPrompt.snapshotText } : {}),
 			snapshotSha256: catalog.snapshot.sha256,
 			contractsSha256: catalog.contracts.contractsSha256,
 			fixturesSha256: catalog.contracts.fixturesSha256,
@@ -1061,6 +684,34 @@ export async function runFormat(
 				: {}),
 		},
 	});
+
+	return { work, runId };
+}
+
+export async function runFormat(
+	options: FormatRunOptions,
+): Promise<FormatRunReport> {
+	const input = prepareRunInputs(options);
+	const {
+		requestsDir,
+		repairRequestsDir,
+		repairRecordingsDir,
+		frozen,
+		catalog,
+		seed,
+		condition,
+		hostPrompt,
+	} = input;
+	const preparedRun = await prepareRunCells(options, input);
+	const {
+		prepared,
+		triageResolutions,
+		enumResolutions,
+		composeRecordings,
+		preparedRepairRecordings,
+	} = preparedRun;
+
+	const { work, runId } = startFormatRun(options, input, preparedRun);
 
 	const cells: FormatCellReport[] = [];
 	const outputs = new Map<string, string>();
@@ -1190,214 +841,18 @@ export async function runFormat(
 		catalog.close();
 	}
 
-	// Count the recorded outputs in one batch and attach them to their cells.
-	const withOutputs = cells.filter((cell) => outputs.has(cellKey(cell)));
-	const outputCounts = countTokens(
-		withOutputs.map((cell) => outputs.get(cellKey(cell)) as string),
-	);
-	withOutputs.forEach((cell, i) => {
-		cell.outputTokens = outputCounts[i] ?? null;
-	});
-
-	// The repair calls' token cost, counted the same way (null where unavailable).
-	const repairCells = cells.filter((cell) => cell.repair);
-	const repairPromptCounts = countTokens(
-		repairCells.map((cell) => repairPromptTexts.get(cellKey(cell)) as string),
-	);
-	repairCells.forEach((cell, i) => {
-		if (cell.repair) cell.repair.promptTokens = repairPromptCounts[i] ?? null;
-	});
-	const repairScored = repairCells.filter(
-		(cell) => cell.repair?.status === "scored",
-	);
-	const repairOutputCounts = countTokens(
-		repairScored.map((cell) => repairOutputTexts.get(cellKey(cell)) as string),
-	);
-	repairScored.forEach((cell, i) => {
-		if (cell.repair) cell.repair.outputTokens = repairOutputCounts[i] ?? null;
-	});
-	let repairSummary: FormatRepairSummary | undefined;
-	if (options.repair || options.coverageRepair) {
-		const sumOrNull = (values: (number | null)[]) =>
-			values.some((v) => v === null)
-				? null
-				: values.reduce<number>((a, v) => a + (v ?? 0), 0);
-		repairSummary = {
-			attempted: repairCells.length,
-			scored: repairScored.length,
-			missing: repairCells.filter((c) => c.repair?.status === "missing").length,
-			digestMismatch: repairCells.filter(
-				(c) => c.repair?.status === "digest-mismatch",
-			).length,
-			inferenceErrors: repairCells.filter(
-				(c) => c.repair?.status === "inference-error",
-			).length,
-			passedBefore: repairCells.filter((c) => c.repair?.before.passed).length,
-			passedAfter: repairCells.filter((c) => c.repair?.after?.passed).length,
-			promptTokens: sumOrNull(
-				repairCells.map((c) => c.repair?.promptTokens ?? null),
-			),
-			outputTokens:
-				repairScored.length === 0
-					? 0
-					: sumOrNull(repairScored.map((c) => c.repair?.outputTokens ?? null)),
-		};
-	}
-
-	const byFormat = {} as FormatRunReport["byFormat"];
-	for (const format of formats) {
-		const group = {
-			catalogOnly: emptyGroup(),
-			fixtureDependent: emptyGroup(),
-			total: emptyGroup(),
-		};
-		for (const cell of cells.filter((c) => c.format === format)) {
-			addCell(
-				cell.fixtureDependent ? group.fixtureDependent : group.catalogOnly,
-				cell,
-			);
-			addCell(group.total, cell);
-		}
-		byFormat[format] = group;
-	}
-	const totals = emptyGroup();
-	for (const cell of cells) addCell(totals, cell);
-	// Restore totals over the composing attempts (the evaluations map holds those
-	// only; repair attempts carry their own per-cell flag instead).
-	let restoreSummary: FormatRestoreSummary | undefined;
-	if (options.restoreSyntax) {
-		const attempts = [...evaluations.values()];
-		restoreSummary = {
-			attempted: attempts.filter((a) => a.restoreAttempted).length,
-			recovered: attempts.filter((a) => a.syntaxRestored).length,
-		};
-	}
-	// Normalization totals, likewise over the composing attempts only.
-	let normalizeSummary: FormatNormalizeSummary | undefined;
-	if (options.normalizeIds) {
-		const attempts = [...evaluations.values()];
-		normalizeSummary = {
-			attempted: attempts.filter((a) => a.normalizeAttempted).length,
-			recovered: attempts.filter((a) => a.idsNormalized).length,
-		};
-	}
-	// Triage totals over the per-case resolutions, with the calls' token cost
-	// counted the same way as the composing traffic (null where uncountable).
-	let triageSummary: FormatTriageSummary | undefined;
-	if (options.triage) {
-		const resolutions = [...triageResolutions.values()];
-		const sumOrNull = (values: (number | null)[]) =>
-			values.some((v) => v === null)
-				? null
-				: values.reduce<number>((a, v) => a + (v ?? 0), 0);
-		const triagePromptCounts = countTokens(
-			resolutions.map((r) => `${r.system}\n${r.prompt}`),
-		);
-		const withOutput = resolutions.filter((r) => r.result?.ok);
-		const triageOutputCounts = countTokens(
-			withOutput.map((r) => (r.result?.ok ? r.result.text : "")),
-		);
-		triageSummary = {
-			cases: resolutions.length,
-			concluded: resolutions.filter((r) => r.state === "concluded").length,
-			proceed: resolutions.filter((r) => r.conclusion?.verdict === "proceed")
-				.length,
-			needsInput: resolutions.filter(
-				(r) => r.conclusion?.verdict === "needs_input",
-			).length,
-			missing: resolutions.filter((r) => r.state === "missing").length,
-			digestMismatch: resolutions.filter((r) => r.state === "digest-mismatch")
-				.length,
-			invalid: resolutions.filter((r) => r.state === "invalid").length,
-			promptTokens: sumOrNull(triagePromptCounts),
-			outputTokens: withOutput.length === 0 ? 0 : sumOrNull(triageOutputCounts),
-		};
-	}
-	// Enumeration totals over the per-case resolutions, counted like triage's.
-	let enumSummary: FormatEnumSummary | undefined;
-	if (options.staged) {
-		const resolutions = [...enumResolutions.values()];
-		const sumOrNull = (values: (number | null)[]) =>
-			values.some((v) => v === null)
-				? null
-				: values.reduce<number>((a, v) => a + (v ?? 0), 0);
-		const enumPromptCounts = countTokens(
-			resolutions.map((r) => `${r.system}\n${r.prompt}`),
-		);
-		const withOutput = resolutions.filter((r) => r.result?.ok);
-		const enumOutputCounts = countTokens(
-			withOutput.map((r) => (r.result?.ok ? r.result.text : "")),
-		);
-		enumSummary = {
-			cases: resolutions.length,
-			concluded: resolutions.filter((r) => r.state === "concluded").length,
-			missing: resolutions.filter((r) => r.state === "missing").length,
-			digestMismatch: resolutions.filter((r) => r.state === "digest-mismatch")
-				.length,
-			invalid: resolutions.filter((r) => r.state === "invalid").length,
-			items: resolutions.reduce(
-				(a, r) => a + (r.conclusion?.items.length ?? 0),
-				0,
-			),
-			promptTokens: sumOrNull(enumPromptCounts),
-			outputTokens: withOutput.length === 0 ? 0 : sumOrNull(enumOutputCounts),
-		};
-	}
-	const report: FormatRunReport = {
+	const report = summarizeFormatRun({
 		runId,
-		sessionDir,
-		condition: conditionInfo,
-		tokenizer: provenance,
+		input,
+		preparedRun,
+		options,
 		cells,
-		byFormat,
-		totals,
-		...(repairSummary ? { repair: repairSummary } : {}),
-		...(restoreSummary ? { restore: restoreSummary } : {}),
-		...(normalizeSummary ? { normalize: normalizeSummary } : {}),
-		...(triageSummary ? { triage: triageSummary } : {}),
-		...(enumSummary ? { staged: enumSummary } : {}),
-	};
-	writeFileSync(
-		join(sessionDir, "summary.json"),
-		`${JSON.stringify(
-			{
-				runId,
-				condition: conditionInfo,
-				conditionDefinition: condition,
-				tokenizer: provenance,
-				byFormat,
-				totals,
-				...(repairSummary ? { repair: repairSummary } : {}),
-				...(restoreSummary ? { restore: restoreSummary } : {}),
-				...(normalizeSummary ? { normalize: normalizeSummary } : {}),
-				...(triageSummary ? { triage: triageSummary } : {}),
-				...(enumSummary ? { staged: enumSummary } : {}),
-				cells: cells.map((cell) => ({
-					caseId: cell.caseId,
-					format: cell.format,
-					fixtureDependent: cell.fixtureDependent,
-					status: cell.status,
-					...(cell.authoringOk !== undefined
-						? { authoringOk: cell.authoringOk }
-						: {}),
-					...(cell.passed !== undefined ? { passed: cell.passed } : {}),
-					promptTokens: cell.promptTokens,
-					outputTokens: cell.outputTokens,
-					...(cell.syntaxRestored !== undefined
-						? { syntaxRestored: cell.syntaxRestored }
-						: {}),
-					...(cell.idsNormalized !== undefined
-						? { idsNormalized: cell.idsNormalized }
-						: {}),
-					...(cell.triage ? { triage: cell.triage } : {}),
-					...(cell.coverage ? { coverage: cell.coverage } : {}),
-					...(cell.repair ? { repair: cell.repair } : {}),
-				})),
-			},
-			null,
-			"\t",
-		)}\n`,
-	);
+		outputs,
+		evaluations,
+		repairPromptTexts,
+		repairOutputTexts,
+	});
+	writeFormatSummary(report, condition);
 	return report;
 }
 
@@ -1459,22 +914,59 @@ export function readFormatOutput(
 }
 
 /**
- * Re-read a recorded output the way export reconstructs it. `restored` means
- * this trial's parse was recovered, so json goes through that restore.
- * `normalizeIds` is passed to the authoring gate as the caller sets it.
+ * The deterministic derivation shared by scoring and export. Coverage uses the
+ * raw parse; authoring sees stripped markers and the checker sees the host-bound
+ * request. Raw model text is never changed. Export supplies the run's recorded
+ * conditions and original request, including for repair attempts.
  */
 export function rederiveAuthoring(
 	format: string,
 	outputText: string | null,
-	flags: { restored: boolean; normalizeIds: boolean },
-): ReturnType<typeof validateAuthoring> | null {
-	if (!outputText || !(format in FORMAT_PARSERS)) return null;
-	const { parse } = readFormatOutput(
-		outputText,
-		format as FormatId,
-		flags.restored,
-	);
-	return validateAuthoring(parse, { normalizeIds: flags.normalizeIds });
+	flags: {
+		restored: boolean;
+		normalizeIds: boolean;
+		hostReading?: boolean;
+		stripMarkers?: boolean;
+		sourceRequest?: string;
+	},
+) {
+	if (outputText === null || !Object.hasOwn(FORMAT_PARSERS, format))
+		return null;
+	if (flags.hostReading && flags.sourceRequest === undefined)
+		throw new Error("host derivation requires the original request");
+	const read = flags.hostReading
+		? {
+				parse: parseHostOutput(outputText),
+				restoreAttempted: false,
+				syntaxRestored: false,
+			}
+		: readFormatOutput(outputText, format as FormatId, flags.restored);
+	const rawParse = read.parse;
+	const parse: ParseResult =
+		flags.stripMarkers && rawParse.ok && rawParse.outcome.kind === "ready"
+			? {
+					ok: true,
+					outcome: {
+						kind: "ready",
+						definition: stripItemMarkers(rawParse.outcome.definition),
+					},
+				}
+			: rawParse;
+	const gate = validateAuthoring(parse, { normalizeIds: flags.normalizeIds });
+	const bound =
+		flags.hostReading && gate.outcome?.status === "ready"
+			? bindSourceRequest(gate.outcome.definition, flags.sourceRequest!)
+			: undefined;
+	return {
+		...read,
+		...gate,
+		parse,
+		rawParse,
+		outcome: bound
+			? { status: "ready" as const, definition: bound.definition }
+			: gate.outcome,
+		requestMatched: bound?.matched,
+	};
 }
 /**
  * The evaluator path of one output text — parse → authoring → check → mock → score —
@@ -1510,51 +1002,36 @@ async function evaluateAttempt(ctx: {
 	enumItems?: readonly WorkItem[];
 }): Promise<EvaluatedAttempt> {
 	const { evalCase, format } = ctx;
-	let parse: ParseResult;
-	let restoreAttempted = false;
-	let syntaxRestored = false;
-	if (ctx.restoreSyntax && format === "json") {
-		const read = readFormatOutput(ctx.text, format, true);
-		parse = read.parse;
-		restoreAttempted = read.restoreAttempted;
-		syntaxRestored = read.syntaxRestored;
-	} else if (ctx.hostReading) {
-		parse = parseHostOutput(ctx.text);
-	} else {
-		parse = readFormatOutput(ctx.text, format, false).parse;
-	}
-	// Stage C's deterministic half: coverage is read off the RAW parse (markers
-	// intact), then the markers are stripped — authoring, checking, mock and
-	// scoring all see the plain definition, exactly as in a non-staged run.
-	let coverage: CoverageResult | undefined;
-	if (ctx.enumItems && parse.ok && parse.outcome.kind === "ready") {
-		coverage = computeCoverage(ctx.enumItems, parse.outcome.definition);
-		parse = {
-			ok: true,
-			outcome: {
-				kind: "ready",
-				definition: stripItemMarkers(parse.outcome.definition),
-			},
-		};
-	}
+	const derived = rederiveAuthoring(format, ctx.text, {
+		restored: ctx.restoreSyntax,
+		normalizeIds: ctx.normalizeIds,
+		hostReading: ctx.hostReading,
+		stripMarkers: ctx.enumItems !== undefined,
+		sourceRequest: evalCase.request,
+	});
+	if (!derived) throw new Error(`unsupported output format: ${format}`);
 	const {
+		parse,
+		rawParse,
 		outcome: authored,
 		issues: authoringIssues,
 		normalizeAttempted,
 		idsNormalized,
-	} = validateAuthoring(parse, { normalizeIds: ctx.normalizeIds });
+		restoreAttempted,
+		syntaxRestored,
+		requestMatched,
+	} = derived;
+	const coverage =
+		ctx.enumItems && rawParse.ok && rawParse.outcome.kind === "ready"
+			? computeCoverage(ctx.enumItems, rawParse.outcome.definition)
+			: undefined;
 	const attempt: AttemptResults = { parse };
 	let check: CheckResult | undefined;
 	if (authored?.status === "ready") {
-		const bound = ctx.hostReading
-			? bindSourceRequest(authored.definition, evalCase.request)
-			: undefined;
-		check = checkDefinition(
-			bound?.definition ?? authored.definition,
-			ctx.catalog.view,
-			{ sourceRequest: evalCase.request },
-		);
-		if (bound && !bound.matched)
+		check = checkDefinition(authored.definition, ctx.catalog.view, {
+			sourceRequest: evalCase.request,
+		});
+		if (requestMatched === false)
 			check = {
 				...check,
 				issues: [

@@ -50,11 +50,13 @@ try {
 			experiment: "accuracy3-union-presentation",
 			experimentRunId: report.runId,
 			sourceRunId: report.sourceRunId,
+			embedding: report.embedding,
 			split: report.split,
 			bm25Validation: report.bm25Validation,
 		},
 		inputs: {
 			caseSnapshot: report.caseSnapshot,
+			sourceResultsSha256: report.sourceResultsSha256,
 			snapshotSha256: report.catalog.snapshotSha256,
 			catalogVersion: report.catalog.version,
 			caseIds: report.perCase.map((c) => c.caseId),

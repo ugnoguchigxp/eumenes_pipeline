@@ -1,0 +1,25 @@
+{
+	"dbPath": "probe-records.sqlite3",
+	"runs": [
+		{
+			"file": "selection-probe-result.json",
+			"runId": "d60ba7d7-6234-47ee-b3e1-a837ccf5c913",
+			"trialId": "5e984b2a-e08e-4aa7-9437-020203bb0fa4"
+		},
+		{
+			"file": "selection-valid-result.json",
+			"runId": "da1ff26d-b89e-4989-a1f6-cb8b3ffa2a04",
+			"trialId": "bd497c76-dcb4-40e4-be60-df80d2967a01"
+		},
+		{
+			"file": "parser-probe.log",
+			"runId": "fd500aa6-ef7b-45bd-9930-16ad014f7002",
+			"trialId": "56b3e3cd-b9d6-451f-ae34-324aa96841da"
+		},
+		{
+			"file": "prompt-revision-result.json",
+			"runId": "399de057-2936-41cf-947f-b4aaab0741e1",
+			"trialId": "fac763cd-5d31-4a00-ba50-7049dfb84787"
+		}
+	]
+}

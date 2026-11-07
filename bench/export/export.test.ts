@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { Database } from "bun:sqlite";
 import {
 	cpSync,
 	mkdirSync,
@@ -12,9 +13,16 @@ import { sha256 } from "../catalog/load.ts";
 import { loadBenchCatalog } from "../catalog/load.ts";
 import { loadCases } from "../cases/cases.ts";
 import { buildFormatPrompt } from "../format/prompt.ts";
+import { CONDITIONS } from "../format/conditions.ts";
+import { buildHostPrompt, loadHostPrompt } from "../format/host-prompt.ts";
+import {
+	buildEnumPrompt,
+	enumNoteText,
+	parseEnumOutput,
+} from "../format/enumerate.ts";
 import { runFormat } from "../format/run.ts";
 import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
-import { inferenceDigest } from "../infer/recorded.ts";
+import { ENUM_PURPOSE, inferenceDigest } from "../infer/recorded.ts";
 import { buildRunExport, renderExportMarkdown } from "./export.ts";
 
 /**
@@ -27,6 +35,181 @@ describe("bench:export (synthetic recordings)", () => {
 		(s) => s.caseId === "prime-count" && s.format === "json",
 	)?.output;
 	if (!primeOutput) throw new Error("synthetic prime-count/json missing");
+
+	test.each(["paraphrased", "bare", "bom"] as const)(
+		"host export reproduces the scored reading: %s",
+		async (kind) => {
+			const runsRoot = mkdtempSync(join(tmpdir(), "export-host-"));
+			const dbPath = join(runsRoot, "work.sqlite3");
+			const session = `host-${kind}`;
+			const dir = join(runsRoot, session, "recordings");
+			mkdirSync(dir, { recursive: true });
+			const catalog = loadBenchCatalog();
+			const evalCase = loadCases().find((c) => c.id === "prime-count")!;
+			const built = buildHostPrompt({
+				evalCase,
+				cards: catalog.cards,
+				host: loadHostPrompt(),
+			});
+			catalog.close();
+			const original = JSON.parse(primeOutput);
+			const wrapped = JSON.stringify({
+				status: "ready",
+				definition: { ...original, request: "素数を数えて" },
+			});
+			const output =
+				kind === "bare"
+					? primeOutput
+					: kind === "bom"
+						? `\uFEFF${wrapped}`
+						: wrapped;
+			writeFileSync(
+				join(dir, "prime-count--json.json"),
+				JSON.stringify({
+					promptDigest: inferenceDigest({ purpose: "compose", ...built }),
+					output,
+				}),
+			);
+			const run = await runFormat({
+				session,
+				runsRoot,
+				dbPath,
+				caseIds: [evalCase.id],
+				formats: ["json"],
+				condition: CONDITIONS.eumenes,
+			});
+			const exported = buildRunExport({ runId: run.runId, dbPath, runsRoot });
+			const cell = exported.cells[0]!;
+			expect(cell.status).toBe("scored");
+			expect(cell.authoringOk).toBe(kind === "paraphrased");
+			expect(cell.definition).toEqual(kind === "paraphrased" ? original : null);
+			const db = new Database(dbPath, { readonly: true });
+			try {
+				expect(
+					db
+						.query("SELECT output_text FROM trials WHERE trial_id=?")
+						.get(cell.trialId),
+				).toEqual({ output_text: output });
+				if (kind === "paraphrased") {
+					expect(cell.passed).toBe(true);
+					expect(cell.checks).toContainEqual(
+						expect.objectContaining({
+							code: "request_mismatch",
+							severity: "warning",
+						}),
+					);
+					expect(
+						db
+							.query(
+								"SELECT reference_digests FROM mock_calls WHERE trial_id=?",
+							)
+							.get(cell.trialId),
+					).toEqual({
+						reference_digests: JSON.stringify([sha256(evalCase.request)]),
+					});
+				}
+			} finally {
+				db.close();
+			}
+		},
+	);
+
+	test("staged compose and repair export the marker-free definitions that were executed", async () => {
+		const runsRoot = mkdtempSync(join(tmpdir(), "export-staged-"));
+		const dbPath = join(runsRoot, "work.sqlite3");
+		const session = "staged-export";
+		const dir = join(runsRoot, session);
+		for (const child of ["recordings", "enum-recordings", "repair-recordings"])
+			mkdirSync(join(dir, child), { recursive: true });
+		const evalCase = loadCases().find((c) => c.id === "prime-count")!;
+		const catalog = loadBenchCatalog();
+		const enumOutput = JSON.stringify({
+			items: ["素数を数える", "個数を伝える"],
+		});
+		const enumeration = parseEnumOutput(enumOutput)!;
+		const built = buildFormatPrompt({
+			evalCase,
+			format: "json",
+			cards: catalog.cards,
+			enumNote: enumNoteText(enumeration),
+		});
+		catalog.close();
+		writeFileSync(
+			join(dir, "enum-recordings", "prime-count.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({
+					purpose: ENUM_PURPOSE,
+					...buildEnumPrompt(evalCase),
+				}),
+				output: enumOutput,
+			}),
+		);
+		const original = JSON.parse(primeOutput);
+		const marked = (markers: string) => {
+			const definition = structuredClone(original);
+			definition.steps[0].task = `${markers} ${definition.steps[0].task}`;
+			return JSON.stringify(definition);
+		};
+		const composeOutput = marked("[w1]");
+		const repairOutput = marked("[w1][w2]");
+		writeFileSync(
+			join(dir, "recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: inferenceDigest({ purpose: "compose", ...built }),
+				output: composeOutput,
+			}),
+		);
+		const options = {
+			session,
+			runsRoot,
+			dbPath,
+			caseIds: [evalCase.id],
+			formats: ["json"] as const,
+			staged: true,
+			coverageRepair: true,
+		};
+		await runFormat(options);
+		const request = JSON.parse(
+			readFileSync(
+				join(dir, "repair-requests", "prime-count--json.json"),
+				"utf8",
+			),
+		);
+		writeFileSync(
+			join(dir, "repair-recordings", "prime-count--json.json"),
+			JSON.stringify({
+				promptDigest: request.promptDigest,
+				output: repairOutput,
+			}),
+		);
+		const run = await runFormat(options);
+		const exported = buildRunExport({ runId: run.runId, dbPath, runsRoot });
+		const cell = exported.cells[0]!;
+		expect(cell.passed).toBe(true);
+		expect(cell.repair?.after?.passed).toBe(true);
+		expect(cell.definition).toEqual(original);
+		expect(cell.repair?.definition).toEqual(original);
+		const db = new Database(dbPath, { readonly: true });
+		try {
+			for (const [trialId, output] of [
+				[cell.trialId, composeOutput],
+				[cell.repair!.trialId, repairOutput],
+			]) {
+				expect(
+					db
+						.query("SELECT output_text FROM trials WHERE trial_id=?")
+						.get(trialId!),
+				).toEqual({ output_text: output });
+				expect(
+					db
+						.query("SELECT request_digest FROM mock_calls WHERE trial_id=?")
+						.get(trialId!),
+				).toEqual({ request_digest: sha256(original.steps[0].task) });
+			}
+		} finally {
+			db.close();
+		}
+	});
 	test("later gold changes cannot be attributed to the historical run", async () => {
 		const root = mkdtempSync(join(tmpdir(), "export-gold-drift-"));
 		const runsRoot = join(root, "runs");

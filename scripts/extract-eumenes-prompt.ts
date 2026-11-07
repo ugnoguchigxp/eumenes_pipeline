@@ -6,6 +6,10 @@
  * database, starts no server and writes nothing inside Eumenes.
  *
  *   bun scripts/extract-eumenes-prompt.ts [--eumenes ../eumenes] [--out <json>]
+ *     [--toolchain-revision toolchain:pipeline.execute@N]
+ *     [--expected-instructions-sha256 <adopted prompt digest>]
+ * Multiple revisions require an explicit selection; neither order nor the highest revision
+ * establishes which revision the host has adopted. This script never reads the live registry.
  *
  * The instructions are rebuilt the way Eumenes builds them for a pipeline toolchain
  * (`capabilities` `toolchainSetInTransaction` → `task-execution-port`): the package's profile body
@@ -16,10 +20,17 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
+import {
+	deriveHostPrompt,
+	revisionId,
+	type PromptBundle,
+} from "./eumenes-prompt.ts";
 
 const { values } = parseArgs({
 	options: {
 		eumenes: { type: "string", default: "../eumenes" },
+		"toolchain-revision": { type: "string" },
+		"expected-instructions-sha256": { type: "string" },
 		out: {
 			type: "string",
 			default: "data/contracts/eumenes-compose-prompt.json",
@@ -28,46 +39,17 @@ const { values } = parseArgs({
 });
 const BUNDLE =
 	"api/domains/capabilities/bundles/pipeline-execution.bundle.json";
-const TOOLCHAIN = "pipeline.execute";
 const root = resolve(values.eumenes);
 const bundleText = readFileSync(join(root, BUNDLE), "utf8");
 const sha256 = (text: string) =>
 	createHash("sha256").update(text).digest("hex");
 
-type Definition = {
-	kind: string;
-	id: string;
-	revision: number;
-	body?: string;
-	packageRevisionId?: string;
-	bindingRevisionId?: string;
-	profileRevisionId?: string;
-	requiredSkillRevisionIds?: string[];
-};
-const bundle = JSON.parse(bundleText) as {
-	bundleId: string;
-	definitions: Definition[];
-	bindings: Array<{ id: string; revision: number; contractVersion?: string }>;
-};
-const revisionId = (d: { kind: string; id: string; revision: number }) =>
-	`${d.kind}:${d.id}@${d.revision}`;
-const byRevision = new Map(bundle.definitions.map((d) => [revisionId(d), d]));
-const toolchain = bundle.definitions.find(
-	(d) => d.kind === "toolchain" && d.id === TOOLCHAIN,
-);
-if (!toolchain?.packageRevisionId)
-	throw new Error(`${BUNDLE} has no toolchain ${TOOLCHAIN} with a package`);
-const pack = byRevision.get(toolchain.packageRevisionId);
-const profile = byRevision.get(pack?.profileRevisionId ?? "")?.body?.trim();
-const skills = (pack?.requiredSkillRevisionIds ?? []).map((id) =>
-	byRevision.get(id)?.body?.trim(),
-);
-if (!profile || skills.length === 0 || skills.some((b) => !b))
-	throw new Error(`${BUNDLE}: profile or skill body missing`);
-const binding = bundle.bindings.find(
-	(b) => `binding:${b.id}@${b.revision}` === toolchain.bindingRevisionId,
-);
-const instructions = [profile, ...(skills as string[])].join("\n\n");
+const bundle = JSON.parse(bundleText) as PromptBundle;
+const { toolchain, pack, binding, instructions, instructionsSha256 } =
+	deriveHostPrompt(bundle, {
+		toolchainRevisionId: values["toolchain-revision"],
+		expectedInstructionsSha256: values["expected-instructions-sha256"],
+	});
 
 const git = (args: string[]) => {
 	const r = Bun.spawnSync(["git", "-C", root, ...args]);
@@ -103,8 +85,8 @@ const snapshot = {
 		bundleId: bundle.bundleId,
 		toolchainRevisionId: revisionId(toolchain),
 		packageRevisionId: toolchain.packageRevisionId,
-		profileRevisionId: pack!.profileRevisionId,
-		skillRevisionIds: pack!.requiredSkillRevisionIds,
+		profileRevisionId: pack.profileRevisionId,
+		skillRevisionIds: pack.requiredSkillRevisionIds,
 		bindingRevisionId: toolchain.bindingRevisionId ?? null,
 		contractVersion: binding?.contractVersion ?? null,
 		mirrored,
@@ -113,7 +95,7 @@ const snapshot = {
 	userMessage:
 		"JSON.stringify({ request, providedMaterials: [{ref,label,kind,preview}], answers, cards }) with cards mapped by application/pipelines/component-catalog",
 	instructions,
-	instructionsSha256: sha256(instructions),
+	instructionsSha256,
 };
 const out = resolve(values.out);
 mkdirSync(dirname(out), { recursive: true });

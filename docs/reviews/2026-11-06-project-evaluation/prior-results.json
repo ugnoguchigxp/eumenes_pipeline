@@ -1,0 +1,59 @@
+{
+	"root": "/private/var/folders/mx/jbv8qfwd52z14q0mby_273lhlp5gd2/T/eumenes-f01-review-rp6ethfp",
+	"apiCalls": 0,
+	"externalReachAttempts": 0,
+	"results": [
+		{
+			"mode": "baseline-control",
+			"runId": "d40184f5-188c-43ce-90b6-a08e5e855acf",
+			"passed": true,
+			"authoringOk": true,
+			"parseOk": true,
+			"exportedRequest": "1から100までの素数の個数を計算して教えてください",
+			"exportedTask": "1から100までの素数の個数を計算する",
+			"dispatchedRequest": "1から100までの素数の個数を計算して教えてください",
+			"dispatchedTask": "1から100までの素数の個数を計算する",
+			"definitionEqualsExpectedChecked": true,
+			"summaryDifferences": []
+		},
+		{
+			"mode": "host-request-mismatch",
+			"runId": "c52f366c-81bf-4ada-8d05-19075e96952b",
+			"passed": true,
+			"authoringOk": true,
+			"parseOk": true,
+			"exportedRequest": "素数を数えて",
+			"exportedTask": "1から100までの素数の個数を計算する",
+			"dispatchedRequest": "1から100までの素数の個数を計算して教えてください",
+			"dispatchedTask": "1から100までの素数の個数を計算する",
+			"definitionEqualsExpectedChecked": false,
+			"summaryDifferences": []
+		},
+		{
+			"mode": "host-bare-definition",
+			"runId": "33913dc5-b23d-4c40-a138-8ca952d14f59",
+			"passed": false,
+			"authoringOk": false,
+			"parseOk": false,
+			"exportedRequest": "1から100までの素数の個数を計算して教えてください",
+			"exportedTask": "1から100までの素数の個数を計算する",
+			"dispatchedRequest": null,
+			"dispatchedTask": null,
+			"definitionEqualsExpectedChecked": true,
+			"summaryDifferences": []
+		},
+		{
+			"mode": "staged-markers",
+			"runId": "7dfa448e-ed6c-4116-99d8-2785883a28e3",
+			"passed": true,
+			"authoringOk": true,
+			"parseOk": true,
+			"exportedRequest": "1から100までの素数の個数を計算して教えてください",
+			"exportedTask": "[w1][w2] 1から100までの素数の個数を計算する",
+			"dispatchedRequest": "1から100までの素数の個数を計算して教えてください",
+			"dispatchedTask": "1から100までの素数の個数を計算する",
+			"definitionEqualsExpectedChecked": false,
+			"summaryDifferences": []
+		}
+	]
+}

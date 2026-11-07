@@ -36,7 +36,9 @@ import {
 	type ParseResult,
 } from "../formats/outcome.ts";
 
-export const DEFAULT_HOST_PROMPT = "data/contracts/eumenes-compose-prompt.json";
+/** Revision 1 remains at its historical path for explicit replays. */
+export const DEFAULT_HOST_PROMPT =
+	"data/contracts/eumenes-compose-prompt-v2.json";
 
 const snapshotSchema = z.object({
 	formatVersion: z.literal(1),
@@ -45,6 +47,7 @@ const snapshotSchema = z.object({
 			gitCommit: z.string().nullable(),
 			bundleDirty: z.boolean().nullable(),
 			contractVersion: z.string().nullable(),
+			toolchainRevisionId: z.string().min(1),
 		})
 		.passthrough(),
 	instructions: z.string().min(1),
@@ -55,11 +58,30 @@ export type HostPrompt = {
 	instructions: string;
 	instructionsSha256: string;
 	gitCommit: string | null;
+	toolchainRevisionId: string;
+	snapshotSha256: string;
+	/** Exact source evidence retained in the work DB for portable replay. */
+	snapshotText: string;
 };
 
+/** Freeze all source evidence, not just the instruction text; paths are not identities. */
+export function hostPromptIdentity(host: HostPrompt) {
+	return {
+		instructionsSha256: host.instructionsSha256,
+		gitCommit: host.gitCommit,
+		toolchainRevisionId: host.toolchainRevisionId,
+		snapshotSha256: host.snapshotSha256,
+		inputMode: "bench-catalog-material-labels-no-answers" as const,
+	};
+}
+
 /** Load the snapshot; a changed text, a dirty source or another contract is a setup error. */
-export function loadHostPrompt(path = DEFAULT_HOST_PROMPT): HostPrompt {
-	const snapshot = snapshotSchema.parse(JSON.parse(readFileSync(path, "utf8")));
+export function loadHostPrompt(
+	path = DEFAULT_HOST_PROMPT,
+	expectedToolchainRevisionId?: string,
+): HostPrompt {
+	const raw = readFileSync(path, "utf8");
+	const snapshot = snapshotSchema.parse(JSON.parse(raw));
 	const digest = createHash("sha256")
 		.update(snapshot.instructions)
 		.digest("hex");
@@ -73,10 +95,20 @@ export function loadHostPrompt(path = DEFAULT_HOST_PROMPT): HostPrompt {
 		throw new Error(
 			`${path}: host binding contract ${snapshot.source.contractVersion} is not ${CONTRACT_VERSION}`,
 		);
+	if (
+		expectedToolchainRevisionId !== undefined &&
+		snapshot.source.toolchainRevisionId !== expectedToolchainRevisionId
+	)
+		throw new Error(
+			`${path}: host toolchain revision differs from requested revision`,
+		);
 	return {
 		instructions: snapshot.instructions,
 		instructionsSha256: snapshot.instructionsSha256,
 		gitCommit: snapshot.source.gitCommit,
+		toolchainRevisionId: snapshot.source.toolchainRevisionId,
+		snapshotSha256: createHash("sha256").update(raw).digest("hex"),
+		snapshotText: raw,
 	};
 }
 

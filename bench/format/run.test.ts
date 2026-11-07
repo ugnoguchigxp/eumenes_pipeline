@@ -19,7 +19,11 @@ import {
 import { CONDITIONS } from "./conditions.ts";
 import { buildEnumPrompt, enumNoteText, parseEnumOutput } from "./enumerate.ts";
 import { buildFormatPrompt } from "./prompt.ts";
-import { buildHostPrompt, loadHostPrompt } from "./host-prompt.ts";
+import {
+	buildHostPrompt,
+	loadHostPrompt,
+	hostPromptIdentity,
+} from "./host-prompt.ts";
 import { runFormat } from "./run.ts";
 import { SYNTHETIC_OUTPUTS } from "./synthetic.ts";
 import { buildTriagePrompt, triageNoteText } from "./triage.ts";
@@ -299,10 +303,7 @@ describe("bench:format conditions (synthetic recordings)", () => {
 			shots: 0,
 			outputStyle: "default",
 			promptStyle: "eumenes-p0-3",
-			hostPrompt: {
-				instructionsSha256: host.instructionsSha256,
-				gitCommit: host.gitCommit,
-			},
+			hostPrompt: hostPromptIdentity(host),
 		});
 		expect(report.cells[0]?.status).toBe("scored");
 		expect(report.cells[0]?.passed).toBe(true);
@@ -330,6 +331,42 @@ describe("bench:format conditions (synthetic recordings)", () => {
 				condition: CONDITIONS.eumenes,
 			}),
 		).rejects.toThrow("json format only");
+	});
+
+	test("an explicit historical host revision replays without switching to the current prompt", async () => {
+		const hostPromptPath = "data/contracts/eumenes-compose-prompt.json";
+		const host = loadHostPrompt(hostPromptPath);
+		const catalog = loadBenchCatalog({ policy: "ready+partial" });
+		const recording = setup(
+			(evalCase) => buildHostPrompt({ evalCase, cards: catalog.cards, host }),
+			JSON.stringify({ status: "ready", definition: JSON.parse(primeOutput) }),
+		);
+		catalog.close();
+		const options = {
+			...recording,
+			dbPath: ":memory:",
+			caseIds: ["prime-count"],
+			formats: ["json"] as const,
+			condition: CONDITIONS.eumenes,
+			hostPromptPath,
+			hostToolchainRevisionId: "toolchain:pipeline.execute@1",
+		};
+		const report = await runFormat(options);
+		expect(report.totals.scored).toBe(1);
+		expect(report.cells[0]?.passed).toBe(true);
+		expect(report.condition.hostPrompt).toEqual(hostPromptIdentity(host));
+		await expect(
+			runFormat({
+				...options,
+				hostToolchainRevisionId: "toolchain:pipeline.execute@2",
+			}),
+		).rejects.toThrow("revision differs");
+		await expect(
+			runFormat({
+				...options,
+				condition: CONDITIONS.baseline,
+			}),
+		).rejects.toThrow("require the eumenes");
 	});
 
 	test("candidates: a listed case is offered the subset, others keep all cards", async () => {

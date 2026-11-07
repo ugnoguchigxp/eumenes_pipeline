@@ -1,0 +1,877 @@
+{
+	"rubric_version": "1.1.0",
+	"mode": "full",
+	"depth": "deep",
+	"technical_profile": "library",
+	"assessment_kind": "current",
+	"target": {
+		"locator": "/Users/y.noguchi/Code/eumenes_pipeline",
+		"snapshot": "8a45a9aded00be1659b31be8d68a885e21afe887; source sha256:01f386b6bbe7104a03c739255f534e0a6307b418d6cd32f33c6963c0218c0d2c",
+		"reviewed_at": "2026-11-06",
+		"stage": "Eumenesへ0.1.0取込み済み、限定live成功、通常会話の実モデル受入と未見評価が残る段階",
+		"scope": "full/deep, library profile, rubric 1.1.0。src/配布ライブラリ、bench/評価基盤、scripts/梱包を主対象。既存60基準を維持しN/Aなし。本体は別スナップショットの参照ファイル・保存live記録・最新受入状態だけを調査し、全体技術点へ混入しない。host HEAD 0559873582e75c822ccc3d442e153e0f0a25711bと未commit資料はhost-evidence-identity.jsonの内容hashで識別。Bun1.4.4/Darwin arm64。製品コード・既存run・本体・Router・設定・CIを変更せず、新規有料推論・サーバー操作・別チャット送信なし。著者と同じ環境の担当による評価で、別工程で反証を確認した。独立レビューとは呼ばない。比較期間は現時点から次の12か月、利用対象は主に既存Eumenes利用者・保守担当。"
+	},
+	"evidence": [
+		{
+			"id": "E01",
+			"kind": "code",
+			"locator": "src/{catalog,check,ports,source-request,index}.ts; src/contracts/; src/internal/ @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "15個の配布TS、非試験1174行を追跡。厳格な定義schema→原文・ID/参照・exact entry・isRunnable・引数検査→版を固定したExecutionPlan。意味判断はモデル/hostへ分離。srcはzodと内部のみ、types:[]/ES2022でbuild。",
+			"scope": "配布物は検査・契約ライブラリ。hostの権限・台帳・再開・推論は別責任。src全体と主要callerを確認した。"
+		},
+		{
+			"id": "E02",
+			"kind": "execution",
+			"locator": "parser-probe.ts.txt; parser-probe.log; src/internal/strict-json.test.ts",
+			"observed_at": "2026-11-06",
+			"observation": "bun <一時コピーのparser-probe.ts> exit0、Bun1.4.4 Darwin arm64。固定seed761106、2000個の有効JSONをJSON.parseとdeep比較して全一致。特殊キー/日本語/escape/配列を含む。重複キー3条件と深さ66を拒否。外部到達0。",
+			"scope": "通信なしの合成差分検査。全JSON入力の証明ではない。398試験内の上限・引数・参照・host bypassの境界試験と併用。"
+		},
+		{
+			"id": "E03",
+			"kind": "execution",
+			"locator": "check-all.log; source-identity.json",
+			"observed_at": "2026-11-06",
+			"observation": "同一HEADの独立archiveコピーでbun run check:all exit0。型検査2設定・lint・整形・398test/50file、4325 assertions、0失敗。約3.75秒。Bun1.4.4 Darwin arm64。検査コピーと原本のsourceSha256が一致。",
+			"scope": "実API・実ツールを呼ばない。CIは利用者の対象外指定。F01/F02の反例は追加probeであり既存suiteには未収録。"
+		},
+		{
+			"id": "E04",
+			"kind": "execution",
+			"locator": "bench-verify.log",
+			"observed_at": "2026-11-06",
+			"observation": "bun run bench:verify --db :memory: exit0、87/87、0外部到達、catalog 3be9a125394c。Bun1.4.4 Darwin arm64。停止、取消、期限、未知参照、成果物契約を含む。",
+			"scope": "合成モックの配線。実ツール完了や実利用の依頼充足を示さない。"
+		},
+		{
+			"id": "E05",
+			"kind": "execution",
+			"locator": "prior-verification.json; verified-pack-manifest.json; scripts/pack.ts",
+			"observed_at": "2026-11-06",
+			"observation": "この会話前半の同一commitでbun run packを独立archiveコピーに対して完走、exit0。既存配布物をコピー外へ保全後に生成。33ファイル、sourceDigest a859fd16ce46b3650de68cca70e55c2a2e4f122be9786622c071c2deb22f9ad4、tarball SHA256 4c60c46ab77040b3ff4ed23433ca0ae9bd2e689efb8ea1db67da9234d8570f4fが既存と一致。空consumerへの導入、DOM/Bun型なし型検査、実行smoke成功。",
+			"scope": "独立コピーはbuild用node_modulesを原本にリンクし、consumerは外部の空ディレクトリで依存を導入。完全に独立したclean dependency install全体の検証とは区別。元artifactは上書きしていない。"
+		},
+		{
+			"id": "E06",
+			"kind": "execution",
+			"locator": "prior-verification.json; bench/cli/performance.ts",
+			"observed_at": "2026-11-06",
+			"observation": "この会話前半の同一commitでbun run bench:performance exit0、run1192ae23-e9a4-43d4-95ba-14713338b64b。24カード、1/8手順、task20/2000文字、各100warmup+1000sample。最大p95 0.015458msで5ms枠内、API0。作業DBは独立コピー内に記録。",
+			"scope": "checkDefinitionの構造検査の測定。推論/実ツールの遅延やpeak memory、実請求は含めない。"
+		},
+		{
+			"id": "E07",
+			"kind": "execution",
+			"locator": "prior-results.json; prior-reproduce.ts.txt; bench/format/run.ts:1466-1555; bench/export/export.ts:232-243",
+			"observed_at": "2026-11-06",
+			"observation": "同一HEADのfixture4runを記録DBからexport。正常JSONは一致。host条件のrequest言い換えは原文に戻して採点・dispatchするがexportは言い換えのまま。hostがstatus無しで拒否した出力もexportにはdefinition出現。段階実行でstripした[w1][w2]がexportに残留。全例summary differences=[]、API0/外部到達0。",
+			"scope": "採点済み証拠の保存定義の不整合。通常JSON復元・ID正規化まで共通化済み。全過去runの得点が誤りとは主張しない。"
+		},
+		{
+			"id": "E08",
+			"kind": "execution",
+			"locator": "selection-valid-probe.ts.txt; selection-valid-result.json; selection-valid-source.json; bench/selection/union.ts:125-195",
+			"observed_at": "2026-11-06",
+			"observation": "bun <一時コピーのselection-valid-probe.ts> exit0。同じcaseID・requiredBundlesのまま、元依頼の1〜100を1〜200へ修正。runSelectionTuningの記録済emb-prefix順位と現在の依頼から再計算したBM25をrunUnionAnalysisが混合して受理。sourceCaseDigest c259bfe9…と現在8ef6637f…は不一致、rejected=false、checked0/mismatches[]。無変更対照は受理。API0/外部到達0。",
+			"scope": "合成embed transport、実モデルの精度測定ではない。caseSnapshotは実reportに存在するがunionの入力型・照合が使っていない。現在の標準生成は全カード提示で、この分析は限定的な実験経路。"
+		},
+		{
+			"id": "E09",
+			"kind": "code",
+			"locator": "bench/store/{work-db,api-budget}.ts; corresponding tests @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "run/trialは追記専用trigger、完了後のUPDATE/DELETE/REPLACEと後付けtrial/callを拒否。retryは別run/parent。schema v1→v2移行で完了run維持。共通API予算はimmediate transactionでreserveし、未報告usageは予約維持、settleは予約額以内。398試験で対応する失敗系と複数接続共有に成功。",
+			"scope": "OSクラッシュ中・ディスク障害・実外部副作用の復旧は今回実測していない。benchの耐久性範囲。"
+		},
+		{
+			"id": "E10",
+			"kind": "code",
+			"locator": "bench/infer/{api,api-config,run-api}.ts; bench/mock/guard.ts; api*.test.ts @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "公式endpointをguardで制限しredirect拒否。wire入力200KB、response2MB、期限/取消、返却model照合、tools/override禁止。鍵値はredactしファイル600。空鍵/予算不足/取消時送信0、stalled stream・oversized response・escaped credential反例を398試験で確認。",
+			"scope": "ガードはテスト内の到達制御。OS隔離や本体の利用者権限を代替しない。新たな実credential読み出し・実API呼出しは行っていない。"
+		},
+		{
+			"id": "E11",
+			"kind": "code",
+			"locator": "bench/{cases/freeze.ts,infer/prepared.ts,infer/provenance.ts,export/quality-report.ts,export/bundle.ts}; associated tests @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "生成前source/case/protocolとrequest本文を固定し、API由来・元trial・usage・schema digest・judge対象を照合。別候補judge、二重計上、request改変、bundle byte改変・symlink外参照のnegative testsが398試験で成功。bundleはVACUUM INTOで独立SQLite、manifest最後。",
+			"scope": "この保証はformat/quality経路。unionに同じ入力固定保証があるとは扱わずE08で別検証した。"
+		},
+		{
+			"id": "E12",
+			"kind": "primary_doc",
+			"locator": "README.md:21-23; plan.md:3,430-439; docs/plans/improvement-design-2026-11-06.md:5-62 @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "READMEの現在地・改善参照は11/5中心。実装済み0.1.0取込み、host条件追加、11/6live成功と現在の受入範囲への案内が主入口にない。最新決定は改善設計書§0に別記。plan末尾は歴史的な未完了一覧。",
+			"scope": "plan冒頭は旧記述を歴史と明示している。古い履歴の存在自体を欠陥にせず、READMEから現行状態へ辿る負担に限定する。"
+		},
+		{
+			"id": "E13",
+			"kind": "primary_doc",
+			"locator": "docs/reviews/2026-11-05-quality-reevaluation/report.md; data/evaluation/quality-review-final-2026-11-05/; docs/plans/improvement-design-2026-11-06.md:28-34",
+			"observed_at": "2026-11-06",
+			"observation": "保存済24件×2モデルのAPI生成・参照/意味判定・再生記録がある。露出済dev、各1回、9件fixture依存。本体と同じpromptを測るeumenes条件は追加済みだが実測は未実施と記録。実請求不明はnull、過去費用上限5.204023USD。",
+			"scope": "歴史的結果を現行host promptの精度・未見精度・継続利用へ転用しない。今回の新規有料測定0。"
+		},
+		{
+			"id": "E14",
+			"kind": "primary_doc",
+			"locator": "host-routing-summary.json; host-end-to-end-f.json; host-evidence-identity.json",
+			"observed_at": "2026-11-06",
+			"observation": "11/6保存live記録：route条件で自然な複合作業4件は単一担当へ分岐、質問回答2件も別担当。例文を含む1件ではpipelineに届き計算→15秒timerの子2件completed。",
+			"scope": "旧route設定下の歴史的観測。現行host全体で同じ不具合が必ず残るとは断定しない。新しい実行は行っていない。"
+		},
+		{
+			"id": "E15",
+			"kind": "primary_doc",
+			"locator": "../eumenes/spec/project-issues-2026-11-06.md:18-31; project-issues-first-batch-2026-11-06.md; verification/project-issues-first-batch-2026-11-06/README.md; hashes in host-evidence-identity.json; end-of-review retained text in host-evidence-identity.json",
+			"observed_at": "2026-11-06",
+			"observation": "最新台帳：EUM001/002は構造契約route4/structure2を実装しfixture成功、20件の実モデル測定で14判定取得/6timeout、取消・同担当2操作に残件。通常会話の受入は未達。EUM005の試験選択漏れは修正済み。完了報告・通知追加EUM003は利用者不要で撤回。 終了前の再確認では通常会話の検証を続行中。同じ部品の二操作を一子へまとめて一操作だけ実施した観測、computeの会話範囲、構造出力flag接続の調査が追記された。最終受入済みとは記されていない。",
+			"scope": "host HEAD05598735とは別に未commit更新あり、参照ファイルの内容hashで固定。20件は正解率ではない。旧不具合の再実装・通知追加を提案しない。 更新された2文書を末尾で再読し、全文をtxtとして保存。以降の変更へ評価を広げず、実行件数と継続の受入へ集約する。"
+		},
+		{
+			"id": "E16",
+			"kind": "code",
+			"locator": "structure.json; bench/format/run.ts; bench/export/export.ts; git show 8a45a9a",
+			"observed_at": "2026-11-06",
+			"observation": "非試験src1174行に対しbench13790行。run.ts1910行、export.ts913行。直近commitで記録呼出し・復元・順位計算を共通化したが、E07/E08の処理差が残る。未採用条件はREADMEでoffを宣言しつつコードは保持。",
+			"scope": "行数自体を欠陥や無駄としない。過去結果の再現を保ちつつ変換・検査境界ごとに整理する余地。"
+		},
+		{
+			"id": "E17",
+			"kind": "execution",
+			"locator": "dependency-audit.json; structure.json; package.json; bun.lock; bunfig.toml; LICENSE @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "bun audit --json exit0、出力{}。Bun1.4.4 Darwin arm64、現行lock。直接依存の版・licenseを実packageで確認：配布zod4.6.7/MIT、dev jsonrepair/yaml ISC、TypeScript Apache2、oxlint/@types-bun/router MIT。root MIT、7日releaseAge、vendor tarball固定。",
+			"scope": "監査が検出する既知advisoryの範囲。脆弱性不存在や全transitive licenseの法的精査を意味しない。"
+		},
+		{
+			"id": "E18",
+			"kind": "primary_doc",
+			"locator": "plan.md; AGENTS.md; improvement-design-2026-11-06.md §0; git history and artifacts/ manifests @ 8a45a9aded00be1659b31be8d68a885e21afe887",
+			"observed_at": "2026-11-06",
+			"observation": "内部利用の目的、LLMとコードの責任、scope、予算、CI除外、host変更承認、版更新と記録が明記。0.1.0の配布/host接続まで実施。所有は作者側だが長期の担当分担・継続利用の測定は今回の材料で確定しない。",
+			"scope": "短期開発の実績でありcommit数を品質や需要の代理指標にしない。"
+		},
+		{
+			"id": "E19",
+			"kind": "primary_doc",
+			"locator": "https://docs.langchain.com/oss/javascript/langgraph/persistence ; https://docs.langchain.com/oss/javascript/langgraph/interrupts ; observed2026-11-06",
+			"observed_at": "2026-11-06",
+			"observation": "LangGraphはcheckpointerによるgraph state保持とinterrupt/Command再開を公式に提供する。状態付きagent/workflowの代替を確認。",
+			"scope": "一次仕様の機能比較のみ。移植・同一課題の速度・費用・成功率は未測定。自作短定義方式の優位を証明しない。"
+		},
+		{
+			"id": "E20",
+			"kind": "primary_doc",
+			"locator": "https://docs.temporal.io/workflow-execution ; https://docs.temporal.io/encyclopedia/retry-policies ; observed2026-11-06",
+			"observed_at": "2026-11-06",
+			"observation": "TemporalはWorkflow executionとActivitiesによる実行、既定Activity retry、deterministic workflow replayを公式に説明。長期状態と再試行が必要な場合の代替。",
+			"scope": "自然言語からEumenesカードを選ぶ能力の比較ではない。サービス導入/既存host移植の実費は未測定。"
+		},
+		{
+			"id": "E21",
+			"kind": "primary_doc",
+			"locator": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-statemachines.html ; observed2026-11-06",
+			"observed_at": "2026-11-06",
+			"observation": "Step FunctionsはASLでworkflowを定義し、Task/Choice/Wait/Map/Parallel、状態間JSON data flowと実行監視を提供する。",
+			"scope": "AWS上の固定業務の代替。現行Eumenes向け費用・接続作業・同一課題の測定はしていない。"
+		},
+		{
+			"id": "E22",
+			"kind": "code",
+			"locator": "../eumenes/api/domains/agent-runtime/service/{execution-pipeline,execution-compose}.ts; pipelines definition adapter; host-evidence-identity.json",
+			"observed_at": "2026-11-06",
+			"observation": "本体は既存parent/child lifecycleへpipelineを接続し、原文・receipt・参照を扱う。パイプライン用の別実行基盤を作らず、libraryのparse/bind/checkを再利用。最終outputはselected refsを集める。",
+			"scope": "hostの当該接続境界を読み取り。全domainの現行技術品質・権限・復旧を評価したものではない。"
+		},
+		{
+			"id": "E23",
+			"kind": "execution",
+			"locator": "scripts/extract-eumenes-prompt.ts:55-65; prompt-revision-result.json; prompt-original.json; prompt-reversed.json",
+			"observed_at": "2026-11-06",
+			"observation": "複数revisionを含む実バンドルの一時コピーを入力に、bun scripts/extract-eumenes-prompt.ts --eumenes <fixture> --out <temp>を2順序で実行、双方exit0。定義集合と参照を保ち配列順だけ逆転すると選択がtoolchain@1から@2へ変化。instructions digest ab459707…とc6ae5096…が不一致。先頭.findで版を選ぶ。",
+			"scope": "実host/設定/DBへの書込みなし。fixtureはGit metadata無しでloadHostPromptなら拒否されるため、現在のliveが誤指示で動いたという証拠ではない。次のcleanな複数revision bundleを抽出するときの曖昧さ。現在の稼働版を推測せず対象revisionの明示・照合が必要。"
+		}
+	],
+	"claims": [
+		{
+			"id": "C01",
+			"type": "Fact",
+			"statement": "現行coreと通常配線の検証は成功し、F01/F02はそのsuite外で再現する。",
+			"evidence_ids": ["E03", "E04", "E07", "E08"],
+			"limitations": "全体greenは条件ごとの証拠同一性を保証しない。"
+		},
+		{
+			"id": "C02",
+			"type": "Inference",
+			"statement": "当面は機能数より、評価証拠の整合性・本体経路の実測受入・実利用価値の検証が判断に効く。",
+			"evidence_ids": ["E07", "E08", "E13", "E14", "E15"],
+			"limitations": "受入に必要な本体の作業は別担当で進行中。新しい語句分岐や第二runtimeを提案しない。"
+		},
+		{
+			"id": "C03",
+			"type": "Assumption",
+			"statement": "主要利用先は既存Eumenesの内部利用で、判断期間は次の12か月とする。",
+			"evidence_ids": ["E18"],
+			"limitations": "第三者販売・大規模汎用workflow製品としての採用判断ではない。"
+		},
+		{
+			"id": "C04",
+			"type": "Unknown",
+			"statement": "継続利用で手戻り・介入・待ち時間がどの程度減るか、第三者が導入できるか。",
+			"evidence_ids": ["E13", "E15"],
+			"limitations": "作者の検証会話と模擬評価から実業務便益を推定しない。"
+		},
+		{
+			"id": "C05",
+			"type": "Fact",
+			"statement": "完了報告・通知追加は最新本体台帳で対象外と明示されている。",
+			"evidence_ids": ["E15"],
+			"limitations": "本評価でも改善課題へ再投入しない。実仕事の漏れとは別。"
+		}
+	],
+	"findings": [
+		{
+			"id": "F01",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P2",
+			"priority_reason": "次にこの機能を評価の根拠として再利用する前に修正する。",
+			"confidence": "High",
+			"title": "exportの保存定義が条件によって採点・検査定義と異なる",
+			"root_cause": "rederiveAuthoringはformat/restore/ID正規化のみで、host reader・原文結び付け・段階マーカー除去を再現しない。",
+			"evidence_ids": ["E07", "E11"],
+			"condition": "host promptやstagedを使った完了runをexportする。host status欠落で拒否したtrialも含む。",
+			"consequence": "採点証拠のdefinitionが実際の入力とずれ、失敗した候補まで保存定義として再利用できる。summary照合は検出しない。",
+			"counterevidence": "通常JSON・復元・ID正規化は既存共通機構がある。score/totalsそのものの誤りを今回証明したわけではない。",
+			"fix": "条件から決まる解析→marker除去→authoring→原文結び付けの再導出を既存共通口へまとめ、compose/repair/exportで同じ定義を得る。意味の判断は追加しない。",
+			"verification": "正常JSON対照、host言い換え、host status欠落/BOM、staged compose/repairをDBからexportし、checked definitionとの一致と解析・制作契約で拒否された時null、raw出力不変を検査。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "contracts",
+					"reason": "保存定義のobservable契約"
+				},
+				{
+					"track": "technical",
+					"dimension": "common_components",
+					"criterion": "duplication",
+					"reason": "同一出力の再導出が条件により分岐"
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "signals",
+					"reason": "保存証拠で診断を誤りうる"
+				}
+			]
+		},
+		{
+			"id": "F02",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P2",
+			"priority_reason": "次にこの機能を評価の根拠として再利用する前に修正する。",
+			"confidence": "High",
+			"title": "union分析が元の依頼と現在の依頼の不一致を拒否しない",
+			"root_cause": "RecordedResultsの読取りと検査はcase ID・required集合中心で、記録済caseSnapshotとcatalog/provenanceの同一性を照合しない。",
+			"evidence_ids": ["E08", "E11"],
+			"condition": "過去のtuning/selection結果に対し、case ID/requiredを保った依頼文修正後にunion分析を行う。tuning結果にはBM25対照がない。",
+			"consequence": "旧依頼のembedding順位と新依頼のBM25を混合し、現在のsnapshotを付した比較結果を受理する。",
+			"counterevidence": "required集合・case件数・BM25がある場合の順位は検査する。標準全カード生成を直接壊す経路ではなく、過去評価の再分析に限定される。",
+			"fix": "既存caseSnapshotの検証を再利用し、元結果の依頼本文・資料・catalog版と現在の入力を照合。異なる入力は混ぜず、旧snapshotで再生するか新runとして全順位を測る。旧形式は照合不可を明示する。",
+			"verification": "同一条件は通過し、caseID/required不変の本文だけの修正を拒否。catalog/card変更、duplicate case/ranking、provenance欠落も拒否または照合不可として明示。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "contracts",
+					"reason": "派生結果の同一条件比較の契約"
+				},
+				{
+					"track": "technical",
+					"dimension": "common_components",
+					"criterion": "duplication",
+					"reason": "format系にある入力固定をunionが使っていない"
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "risk_coverage",
+					"reason": "runUnionAnalysis全経路の欠陥検出fixture不足"
+				}
+			]
+		},
+		{
+			"id": "F03",
+			"status": "confirmed",
+			"severity": "Low",
+			"priority": "P2",
+			"priority_reason": "次の引継ぎや本体受入判断の前に入口の情報を揃える。",
+			"confidence": "High",
+			"title": "READMEの現在地から11月6日の採用状態と残作業へ案内されない",
+			"root_cause": "現在地・確認範囲の参照が11月5日で止まり、11月6日の採用決定を主入口へ反映していない。",
+			"evidence_ids": ["E12", "E15", "E18"],
+			"condition": "新しい保守担当がREADMEとそこから案内された品質改善記録で現況を判断する。",
+			"consequence": "実施済み接続の再調査や、撤回された案を再提案する手戻りが起こりやすい。",
+			"counterevidence": "AGENTSと改善設計書§0には正しい状態があり、planの旧記述は歴史と明示されている。全体受入が未完了というREADMEの一文自体は正しい。",
+			"fix": "READMEに0.1.0取込み済み/限定live成功/通常会話受入未達を分けて記し、改善設計書§0と本体最新受入台帳への案内を揃える。履歴は保持する。",
+			"verification": "READMEから現行の採用版・生成条件・実施済み/未達・対象外の決定へ迷わず到達でき、旧履歴を現行計画として読まない。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "maintainability",
+					"criterion": "clarity",
+					"reason": "現行の責任と進捗の追跡に余分な負担"
+				},
+				{
+					"track": "technical",
+					"dimension": "operability",
+					"criterion": "interaction",
+					"reason": "利用/受入の入口案内"
+				}
+			]
+		},
+		{
+			"id": "F04",
+			"status": "confirmed",
+			"severity": "Medium",
+			"priority": "P2",
+			"priority_reason": "eumenes条件の次回測定前に、測定対象の版が抽出順序で変わらないようにする。",
+			"confidence": "High",
+			"title": "指示文抽出が複数revisionから配列先頭のtoolchainを選ぶ",
+			"root_cause": "definitions.find(kind/id)がrevisionを指定せず最初の一致を採用する。bundleは新旧revisionを同時に含められる。",
+			"evidence_ids": ["E23", "E13", "E15"],
+			"condition": "pipeline.executeの新旧toolchain/package/skillを一つのbundleに保持して抽出する。",
+			"consequence": "配列順だけで抽出指示が変わり、再抽出しても旧skillを選ぶ。指定した本体条件と同じ指示を測る前提を失いうる。",
+			"counterevidence": "一つのrevisionだけの旧bundleでは問題にならず、snapshotのdigestとselected revision自体は記録される。dirty/不明なsnapshotはreaderが拒否するが、cleanな複数revision bundleの選択を正しくする仕組みではない。",
+			"fix": "対象のtoolchainRevisionIdを入力契約で明示し、既存revision mapからpackage/profile/skillを辿る。対象が一意でなければ拒否し、稼働・採用manifestとの一致を測定前に確認する。最大revisionが稼働中と無条件に推定しない。",
+			"verification": "同じ複数revisionを順不同で並べても指定revisionのinstructions digestが一致する。旧版指定、新版指定、未知/未指定で曖昧な場合、採用manifest不一致を検査する。",
+			"impacts": [
+				{
+					"track": "technical",
+					"dimension": "correctness",
+					"criterion": "contracts",
+					"reason": "本体の計画指示を測る前提の入力版選択が不安定"
+				},
+				{
+					"track": "technical",
+					"dimension": "testing",
+					"criterion": "risk_coverage",
+					"reason": "extract scriptの複数revision/配列順の回帰fixture不足"
+				}
+			]
+		}
+	],
+	"tracks": {
+		"technical": {
+			"dimensions": {
+				"architecture": {
+					"criteria": {
+						"boundaries": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["E01", "E03", "E05", "E22"],
+							"rationale": "契約・検査・hostの実行責務が分離され、配布物の依存方向と実consumerで独立に確認できる。",
+							"countercheck": "static guard・ES2022/types[] build・空consumer・本体薄adapterの4経路を対照。benchのI/Oがsrcへ逆流しない。",
+							"anchor_support": "15個の配布sourceと実import境界を追跡し、環境型なしbuildおよび実tarball consumerが成功。"
+						},
+						"flow": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E09", "E10", "E11"],
+							"rationale": "主経路とrun/trial/budgetの状態遷移、保存と照合の責任が明示されている。",
+							"countercheck": "未知usage/timeout・完了後書換え・重複trial・改変API記録のnegative tests。export/unionの派生値にはF01/F02の限界がある。"
+						},
+						"fit": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E06", "E18", "E22"],
+							"rationale": "1〜8手順の短定義を既存Eumenesへ組み込む用途に、小さいpure libraryと薄adapterが適合する。",
+							"countercheck": "複雑なgraphや長期workflowは対象外。上限8手順の構造検査と空consumerを実行し、別runtimeを要しないことを対照。"
+						}
+					}
+				},
+				"correctness": {
+					"criteria": {
+						"contracts": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E03", "E04", "E07", "E08", "E23"],
+							"rationale": "配布検査の正常契約と主要拒否は満たすが、評価派生出力の一部は採点対象との同一性を満たさないため優秀4とはしない。",
+							"countercheck": "F01の正常JSON対照とhost/staged反例、F02の無変更対照と本文変更を比較。得点集計と保存定義を分けて確認。"
+						},
+						"edge_cases": {
+							"status": "assessed",
+							"value": 4,
+							"confidence": "High",
+							"evidence_ids": ["E01", "E02", "E03", "E04"],
+							"rationale": "JSONデータを境界とする配布ライブラリで、特殊キー・重複・深さ・引数容量・参照・原文・実行不可を検査する。",
+							"countercheck": "native JSON.parseとの差分2000件、duplicate escape keys3件、深さ、398試験のnonrunnable hand-built catalogやアクセサー/循環引数を対照。",
+							"anchor_support": "現行snapshotの入力/参照/状態境界を実行検証。exportの派生同一性はcontracts項目で扱い、この純粋schema/reader基準へ混ぜない。"
+						},
+						"concurrency": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E04", "E05", "E09"],
+							"rationale": "直列順序・完了後の不変性・予算reserveのatomicity・排他的artifact作成が実装されている。",
+							"countercheck": "複数DB接続で予算共有、duplicate/REPLACE拒否、cancel/deadline後不採用、既存artifact作成拒否を確認。OSクラッシュ実測は含めない。"
+						}
+					}
+				},
+				"security": {
+					"criteria": {
+						"access": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E03", "E04", "E10"],
+							"rationale": "提示入口と実行可否、公式API到達、hostが権限を持つ責任境界が明確。",
+							"countercheck": "自作CatalogViewの非実行入口もcheckで拒否し、guardへの禁止到達のnegative controlsを検査。host全権限の認証とは区別。"
+						},
+						"input_secrets": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E02", "E03", "E10"],
+							"rationale": "JSON入力/引数とAPI入出力を制限し、鍵値を記録から除去する。",
+							"countercheck": "escaped credential、反射ID、UTF8 bytes、アクセサー・循環・非有限・特殊キーのテストを確認。private sourceの外部送信なし。"
+						},
+						"abuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E09", "E10"],
+							"rationale": "呼出し前予算・timeout・response容量・tools設定拒否が該当する濫用経路を抑える。",
+							"countercheck": "予算枯渇前送信0、失敗/未知usage予約保持、無限streamの期限終了・上限超過cancelを注入試験。OS隔離は別責任。"
+						}
+					}
+				},
+				"reliability": {
+					"criteria": {
+						"failure": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E04", "E09", "E10"],
+							"rationale": "取消・期限・部分失敗・不確実結果を成功へ昇格せず、試行結果を別状態に保存する。",
+							"countercheck": "各非completed state、誤型・欠損output、開始前/完了後期限、stalled HTTPを検査。外部副作用のcrash窓は未実測。"
+						},
+						"recovery": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E09", "E11"],
+							"rationale": "別runで再開し、既存出力とimmutable DBを残し、移行・bundle再生で完了証拠を復元できる。実プロセスクラッシュの未確定要求を全工程で復旧した証拠はない。"
+						},
+						"resilience": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E04", "E09", "E10"],
+							"rationale": "API/入力/手順/応答の上限と依存失敗時の停止がある。",
+							"countercheck": "stream容量/期限/取消・model不一致・予算不足を試験。大規模同時負荷やhostサービス障害の測定ではない。"
+						}
+					}
+				},
+				"maintainability": {
+					"criteria": {
+						"clarity": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E12", "E16"],
+							"rationale": "公開契約は追えるが、現行状態の主入口が古く、評価条件と派生処理の全貌の把握に複数文書・大きいrunnerが必要。"
+						},
+						"change": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E05", "E09", "E11", "E16"],
+							"rationale": "直近の共通化やp0-3互換の公開口追加に、型/境界/consumer/負の回帰検査が利用できる。",
+							"countercheck": "F01/F02は既存suiteが検出しない変更境界。全体greenだけで同一性を保証できず、受入fixtureの補強が必要。"
+						},
+						"debt": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E07", "E08", "E16", "E18"],
+							"rationale": "小さいcoreに比べ実験条件と評価経路の維持対象が大きい。再現保持の理由はあるが、共通化後も処理差が残り負担が局所化しきっていない。"
+						}
+					}
+				},
+				"common_components": {
+					"criteria": {
+						"duplication": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E07", "E08", "E11", "E16"],
+							"rationale": "JSON復元/ID/記録照合は共通だが、条件による変換と入力固定がexport/unionに伝わらない。"
+						},
+						"reuse": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E11", "E22"],
+							"rationale": "schema/check/portsをbench・空consumer・実hostが再利用し、provider接続もInferencePortを守る。",
+							"countercheck": "benchのschemaをhostが独自に再推定せず同一ライブラリへ委譲するsourceを確認。host promptは別所有なので測定条件を分離。"
+						},
+						"abstraction": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E16", "E22"],
+							"rationale": "契約と接続口の抽象は実際の複数consumerに必要な範囲で、srcへI/Oや複雑なframeworkを持ち込んでいない。",
+							"countercheck": "actual host adapterとmock双方の型、typed literal argsとwhole-result refsを追跡。新しい汎用runnerの追加は不要。"
+						}
+					}
+				},
+				"testing": {
+					"criteria": {
+						"risk_coverage": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E03", "E04", "E07", "E08", "E11", "E23"],
+							"rationale": "398試験と配線87件はcore・失敗系・証拠改変を広く検査。条件別のexport同一性とunion driftの穴は残る。",
+							"countercheck": "正常controlを含む追加probeでsuite外の反例を再現し、行カバレッジや件数を品質の代用にしない。"
+						},
+						"quality": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E02", "E03", "E09", "E10", "E11"],
+							"rationale": "失敗するべき操作・改変・出力不一致を具体的にassertし、外部ガードとgold分離を試験する。",
+							"countercheck": "API由来の偽sidecar、重複judge、改変request、symlink、native parseとの差分が検出対象。F01/F02の追加probeが実際に穴を示す。"
+						},
+						"automation": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E04", "E05", "E18"],
+							"rationale": "文書化されたローカルfull gate・配線・packを再現できる。CIは明示的に今回の対象外で、release時自動強制の証拠はない。"
+						}
+					}
+				},
+				"supply_chain": {
+					"criteria": {
+						"dependencies": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E17", "E18"],
+							"rationale": "依存とvendorの出所・固定版・7日規則があり、過去修正と今回既知advisory監査を確認した。",
+							"countercheck": "実installed metadataとlock/公開licenseを照合し、bun auditはexit0/{}。scanner未検出を安全性の証明としない。"
+						},
+						"build_release": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E05", "E11", "E17"],
+							"rationale": "build/pack対象のallowlist・checksum・sourceDigest・immutable出力・空consumer検査が実物で通る。",
+							"countercheck": "実tarball SHAが既存と完全一致、既存名への再生成は拒否、bench/data/testが配布されない33ファイルを検査。署名配信全体は範囲外。"
+						},
+						"license": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E05", "E17", "E18"],
+							"rationale": "root/配布依存と直接dev/vendorの利用条件・所有を実metadataで確認できる。公開構成全体のtransitive法務精査は今回行っていない。"
+						}
+					}
+				},
+				"performance": {
+					"criteria": {
+						"budget": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E06", "E09", "E10", "E13"],
+							"rationale": "宣言した構造検査5ms枠を上限手順/文字長で満たし、過去API評価も承認予算内で記録されている。",
+							"countercheck": "1/8手順×20/2000文字の4条件・各1000件と費用の不確実性を区別。実ツール待ち時間やpeak memoryの余裕は結論に含めない。"
+						},
+						"hot_path": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E06", "E16"],
+							"rationale": "bounded8手順の検査は小さい計算量で、当該純粋hot pathを24カード実測が支持する。",
+							"countercheck": "最大長taskと最大8stepsを短い入力と比較。JSON Schemaコンパイルが主な追加コストになる別args負荷は限定的な未測定領域。"
+						},
+						"measurement": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E06", "E13", "E16"],
+							"rationale": "offline構造検査と過去API時間/費用のbaselineが分離されている。現行host prompt・実利用のtail・peak memoryを含む回帰測定は未整備。"
+						}
+					}
+				},
+				"operability": {
+					"criteria": {
+						"signals": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E07", "E08", "E09", "E11", "E12"],
+							"rationale": "run/usage/check/score/errorの観測は可能だが、派生定義と出所一致の穴が診断を誤らせる。"
+						},
+						"lifecycle": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E05", "E09", "E11"],
+							"rationale": "配布導入・consumer型・実行・v1→v2移行・記録再生・既存出力保護が実行確認されている。",
+							"countercheck": "空consumerとschema移行の既存完了run保持を検査。hostの長期運用・UI・全rollbackの受入とは分離。"
+						},
+						"interaction": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E03", "E05", "E12"],
+							"rationale": "SDK公開口とエラーは利用可能でconsumerが動く。現在地の案内と各条件の保証範囲の分かりやすさは改善余地がある。"
+						}
+					}
+				}
+			}
+		},
+		"project": {
+			"dimensions": {
+				"problem": {
+					"criteria": {
+						"need": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "対象の仕事と利用者像は計画にあるが、実際に繰り返す頻度・対象利用者の観測が不足。作者の目的を需要の検証へ置き換えない。"
+						},
+						"impact": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E14", "E15", "E18"],
+							"rationale": "複合作業の一部取りこぼしや回答の誤配による手戻りは保存実行で具体化している。日常業務の時間削減幅は未測定。"
+						},
+						"validation": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "実モデルの検証会話はあるが、実利用者がその反復業務を必要としている直接観測・利用記録を確立していない。"
+						}
+					}
+				},
+				"solution": {
+					"criteria": {
+						"mechanism": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E14", "E22"],
+							"rationale": "短い定義を契約検査し既存host子実行へ接続する仕組みは、依存2子完了1件で機能を実証。"
+						},
+						"experience": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E14", "E15"],
+							"rationale": "自然な複合作業・保留回答の入口で失敗が観測され、後続契約実装後も実モデルの時間切れ・取消・同担当複数操作の受入が残る。"
+						},
+						"outcomes": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "1件の検証用成功はあるが、代表的な実業務の改善成果・手動手順との比較がない。"
+						}
+					}
+				},
+				"differentiation": {
+					"criteria": {
+						"alternatives": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E19", "E20", "E21", "E22"],
+							"rationale": "状態付きagent、耐久workflow、固定業務、既存Eumenesの単一担当/手作業という代替に対し、登録済部品を短定義で結ぶ内部向け選択肢として成立する。"
+						},
+						"advantage": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "同じ仕事で費用・介入回数・成功率を比較しておらず、Eumenes向けの構造的適合を利用上の優位へ直結できない。"
+						},
+						"tradeoffs": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E05", "E18", "E19", "E20", "E21"],
+							"rationale": "既存Eumenesの契約を再利用する小さいlibraryに絞る代わり、最大8直列手順・全結果参照・host依存を受け入れる選択条件が明示される。"
+						}
+					}
+				},
+				"novelty": {
+					"criteria": {
+						"prior_art": {
+							"status": "assessed",
+							"value": 1,
+							"confidence": "Medium",
+							"evidence_ids": ["E01", "E19", "E20", "E21"],
+							"rationale": "JSON workflow、依存参照、状態検査、再生自体は既存手法。貢献はEumenes登録部品との接続と軽量定義の組合せが中心で、手法の大きい新規性は確立しない。"
+						},
+						"substance": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "短定義という差分が従来方式より利用成果を改善する寄与を分離測定していない。"
+						},
+						"verification": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "一次資料でprior artは確認したが、新規差分の独立比較・帰属実験はない。"
+						}
+					}
+				},
+				"adoption": {
+					"criteria": {
+						"entry": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E05", "E18", "E22"],
+							"rationale": "内部の既存Eumenesではtarball依存と薄いadapterで導入でき、実導入とconsumerの確認がある。第三者の学習/移行/支援費用は別途未確認。"
+						},
+						"reach": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E14", "E18", "E22"],
+							"rationale": "既存Eumenesの登録部品/会話入口を通じて、作者が対象にする内部利用者へ届ける経路は存在する。実転換率は未測定。"
+						},
+						"retention": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "日常で繰り返し使い、継続して便益が出た利用者の記録は未確認。デモ・検証を継続利用として数えない。"
+						}
+					}
+				},
+				"defensibility": {
+					"criteria": {
+						"assets": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E11", "E13", "E18", "E22"],
+							"rationale": "抽出契約・登録部品写像・API由来と再生可能評価資産は保守する価値がある。強い参入障壁とは主張しない。"
+						},
+						"substitution": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "プラットフォーム標準機能や他実装に置き換えても残る有用性を比較できていない。"
+						},
+						"incentives": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "短期の利用者承認と予算はあるが、長期保守・協力の資源配分は確認できない。"
+						}
+					}
+				},
+				"execution": {
+					"criteria": {
+						"delivery": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E05", "E14", "E15", "E18"],
+							"rationale": "ライブラリ0.1.0と評価/配布・host接続は届いている。普通の会話から安定して全仕事を完了する受入は残る。"
+						},
+						"focus": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E09", "E15", "E18"],
+							"rationale": "予算、CI除外、本体所有の判断、段階的受入を区切り、確認できた実行に限って成果を記録している。長期の供給能力は未知。"
+						},
+						"feedback": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E13", "E14", "E15", "E18"],
+							"rationale": "liveで得た誤配を設計案A/B・契約変更・固定/実モデル比較へ戻す連鎖が記録されている。比較不合格も残す。"
+						}
+					}
+				},
+				"timing": {
+					"criteria": {
+						"drivers": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "モデルとtoolchainの利用可能性はあるが、対象利用者の現在の需要の強さ・導入を急ぐ理由は未確認。"
+						},
+						"readiness": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E05", "E14", "E15", "E22"],
+							"rationale": "既存hostに0.1.0と登録部品・推論口があり、少なくとも限定liveで必要条件が成立。広い実機受入は残る。"
+						},
+						"window": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "現在の条件に合わせた内部改善は可能だが、競争/業務上の期限とそれに応える体制は未確認。"
+						}
+					}
+				},
+				"health": {
+					"criteria": {
+						"ownership": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E12", "E18"],
+							"rationale": "作者側の意思決定と契約/引継ぎ文書が確認できる。複数人での継続保守実績はない。"
+						},
+						"activity": {
+							"status": "assessed",
+							"value": 3,
+							"confidence": "Medium",
+							"evidence_ids": ["E03", "E05", "E13", "E15", "E18"],
+							"rationale": "p0-3互換の0.1.0、過去指摘の修正、配布と本体での受入継続が、成熟段階に合う保守として観測される。",
+							"countercheck": "commit頻度を点にせず、実artifact/source照合と398試験、未完了の記録保持を根拠にする。長期運用の強さは評価しない。"
+						},
+						"governance": {
+							"status": "assessed",
+							"value": 2,
+							"confidence": "Medium",
+							"evidence_ids": ["E09", "E15", "E18"],
+							"rationale": "利用者の権限、予算、採用/不採用、通知追加の撤回を文書に残す。恒常的な責任分担と資源は未確定。"
+						}
+					}
+				},
+				"expansion": {
+					"criteria": {
+						"adjacency": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "多分野のカードと合成例はあるが、隣接業務で再利用した実便益は未確認。"
+						},
+						"scalability": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "pure検査の速度は十分だが、複数利用者への導入・モデル費用・運用支援の拡張費用は未測定。"
+						},
+						"path": {
+							"status": "unknown",
+							"value": null,
+							"unknown_reason": "I5等の新評価/展開案はあるが、追加予算・担当・検証資源の承認は現時点で確立していない。"
+						}
+					}
+				}
+			}
+		}
+	}
+}

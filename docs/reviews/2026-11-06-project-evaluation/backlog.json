@@ -1,0 +1,136 @@
+[
+	{
+		"id": "V01",
+		"priority": "P1",
+		"reference": "E14/E15; EUM001/002/004/006",
+		"location": "本体の既存振り分けと受入基盤",
+		"action": "進行中の契約改修へ、普通の複合作業・保留回答・訂正・取消の通し受入を接続する。",
+		"dependencies": [
+			"本体担当の現行作業との照合",
+			"採用版・設定・実行資源の確定"
+		],
+		"acceptance": "選択先に加えて実行件数、引数、前段参照、元の仕事ID、取消後の禁止副作用を台帳で照合する。timeoutを不正解と区別する。",
+		"affected_criteria": [
+			"project.solution.experience",
+			"project.solution.outcomes"
+		],
+		"effort_basis": "M-L: 既存fixtureを使うが実モデルと通常会話の実接続が必要。新規実装は本評価で行わない。"
+	},
+	{
+		"id": "A01",
+		"priority": "P2",
+		"reference": "F01",
+		"location": "rederiveAuthoringはformat/restore/ID正規化のみで、host reader・原文結び付け・段階マーカー除去を再現しない。",
+		"action": "条件から決まる解析→marker除去→authoring→原文結び付けの再導出を既存共通口へまとめ、compose/repair/exportで同じ定義を得る。意味の判断は追加しない。",
+		"dependencies": [],
+		"acceptance": "正常JSON対照、host言い換え、host status欠落/BOM、staged compose/repairをDBからexportし、checked definitionとの一致と拒否時null、raw出力不変を検査。",
+		"affected_criteria": [
+			"technical.correctness.contracts",
+			"technical.common_components.duplication",
+			"technical.operability.signals"
+		],
+		"effort_basis": "S-M: 既存parse/restore/authoring/bind/stripを共通口へ接続。"
+	},
+	{
+		"id": "A02",
+		"priority": "P2",
+		"reference": "F02",
+		"location": "RecordedResultsの読取りと検査はcase ID・required集合中心で、記録済caseSnapshotとcatalog/provenanceの同一性を照合しない。",
+		"action": "既存caseSnapshotの検証を再利用し、元結果の依頼本文・資料・catalog版と現在の入力を照合。異なる入力は混ぜず、旧snapshotで再生するか新runとして全順位を測る。旧形式は照合不可を明示する。",
+		"dependencies": [],
+		"acceptance": "同一条件は通過し、caseID/required不変の本文だけの修正を拒否。catalog/card変更、duplicate case/ranking、provenance欠落も拒否または照合不可として明示。",
+		"affected_criteria": [
+			"technical.correctness.contracts",
+			"technical.common_components.duplication",
+			"technical.testing.risk_coverage"
+		],
+		"effort_basis": "S-M: 実験経路の入力契約と旧記録の扱いを決める。"
+	},
+	{
+		"id": "A03",
+		"priority": "P2",
+		"reference": "F04",
+		"location": "definitions.find(kind/id)がrevisionを指定せず最初の一致を採用する。bundleは新旧revisionを同時に含められる。",
+		"action": "対象のtoolchainRevisionIdを入力契約で明示し、既存revision mapからpackage/profile/skillを辿る。対象が一意でなければ拒否し、稼働・採用manifestとの一致を測定前に確認する。最大revisionが稼働中と無条件に推定しない。",
+		"dependencies": ["測定対象の本体revisionを確定"],
+		"acceptance": "同じ複数revisionを順不同で並べても指定revisionのinstructions digestが一致する。旧版指定、新版指定、未知/未指定で曖昧な場合、採用manifest不一致を検査する。",
+		"affected_criteria": [
+			"technical.correctness.contracts",
+			"technical.testing.risk_coverage"
+		],
+		"effort_basis": "S: 既存revision mapを使用。"
+	},
+	{
+		"id": "A04",
+		"priority": "P2",
+		"reference": "F03",
+		"location": "現在地・確認範囲の参照が11月5日で止まり、11月6日の採用決定を主入口へ反映していない。",
+		"action": "READMEに0.1.0取込み済み/限定live成功/通常会話受入未達を分けて記し、改善設計書§0と本体最新受入台帳への案内を揃える。履歴は保持する。",
+		"dependencies": ["本体の最新台帳と照合"],
+		"acceptance": "READMEから現行の採用版・生成条件・実施済み/未達・対象外の決定へ迷わず到達でき、旧履歴を現行計画として読まない。",
+		"affected_criteria": [
+			"technical.maintainability.clarity",
+			"technical.operability.interaction"
+		],
+		"effort_basis": "S: 現行入口だけ更新し履歴は保持。"
+	},
+	{
+		"id": "V02",
+		"priority": "P2",
+		"reference": "E13/E15/E23; I5",
+		"location": "既存eumenes条件・freeze・infer・judge・quality-report",
+		"action": "採用指示文、カード、reader、修復方針を固定して新しい未見集合で測る。",
+		"dependencies": ["A01", "A03", "作成者・目標モデル・追加予算の判断"],
+		"acceptance": "生成前に入力とgoldを固定し、機械契約・意味適合・実操作を分離。fixture/partial/ready、反復一貫性、人手確認を記録。旧devを未見へ戻さない。",
+		"affected_criteria": [
+			"technical.performance.measurement",
+			"project.solution.outcomes"
+		],
+		"effort_basis": "M-L: I5の費用を再見積り。今回の追加有料APIは0。"
+	},
+	{
+		"id": "R01",
+		"priority": "P2",
+		"reference": "E07/E08/E16; I6",
+		"location": "bench/format/run.ts; bench/export/export.ts; selection",
+		"action": "再導出・記録照合・採点/集計を処理境界で整理し、未採用条件の維持方針を決める。",
+		"dependencies": ["A01", "A02", "旧runの再現経路を保持"],
+		"acceptance": "保存済出力を別DBへ再生して一致する。意味を決める語句辞書や個別シナリオ分岐、新しい汎用実行基盤を加えない。",
+		"affected_criteria": [
+			"technical.maintainability.debt",
+			"technical.common_components.duplication"
+		],
+		"effort_basis": "M: 行数削減を目標にせず条件間の同一性で受入。"
+	},
+	{
+		"id": "V03",
+		"priority": "P2",
+		"reference": "E13/E15/E18; EUM030",
+		"location": "既存の利用・実行記録",
+		"action": "本人が繰り返す1-2の仕事を選び、手作業と複数回比較する。",
+		"dependencies": ["V01", "対象仕事と観測項目の合意"],
+		"acceptance": "完了率、説明し直し、介入回数、待ち時間、やり直し、未実施を比較。完了報告・通知追加は含めない。",
+		"affected_criteria": [
+			"project.problem.need",
+			"project.problem.validation",
+			"project.solution.outcomes",
+			"project.adoption.retention"
+		],
+		"effort_basis": "M: 機能追加より観測と継続利用に依存。"
+	},
+	{
+		"id": "P01",
+		"priority": "P2",
+		"reference": "E01/E03/E05/E09/E10/E11",
+		"location": "src pure境界・budget/guard・provenance・pack",
+		"action": "意味判断と検査の分担、失敗時拒否、費用不明null、追記記録、空consumerを維持。",
+		"dependencies": [],
+		"acceptance": "check:allとbench:verify、公開API変更時のpack/consumerを維持。既存の権限・状態台帳を再利用。",
+		"affected_criteria": [
+			"technical.architecture.boundaries",
+			"technical.security.input_secrets",
+			"technical.supply_chain.build_release"
+		],
+		"effort_basis": "既存検証を利用。CI追加は今回の利用者指定で対象外。"
+	}
+]

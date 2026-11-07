@@ -1,0 +1,94 @@
+{
+	"previousScore": 80.9,
+	"sameRubric": "1.1.0",
+	"sameProfile": "library",
+	"sameApplicability": true,
+	"currentScore": 71.6,
+	"note": "同じ60基準と重みで再点検。差には新しいF01/F02の発見と、例外/再現性/保守性に対する採点根拠の再校正を含み、コードだけの純粋な退行量ではない。以前の4/3を維持できるか現行根拠で再点検した。",
+	"changedAnchors": [
+		{
+			"criterion": "architecture.fit",
+			"prior": 4,
+			"current": 3,
+			"reason": "1〜8手順の短定義を既存Eumenesへ組み込む用途に、小さいpure libraryと薄adapterが適合する。"
+		},
+		{
+			"criterion": "correctness.contracts",
+			"prior": 4,
+			"current": 3,
+			"reason": "配布検査の正常契約と主要拒否は満たすが、評価派生出力の一部は採点対象との同一性を満たさないため優秀4とはしない。"
+		},
+		{
+			"criterion": "security.access",
+			"prior": 2,
+			"current": 3,
+			"reason": "提示入口と実行可否、公式API到達、hostが権限を持つ責任境界が明確。"
+		},
+		{
+			"criterion": "reliability.recovery",
+			"prior": 3,
+			"current": 2,
+			"reason": "別runで再開し、既存出力とimmutable DBを残し、移行・bundle再生で完了証拠を復元できる。実プロセスクラッシュの未確定要求を全工程で復旧した証拠はない。"
+		},
+		{
+			"criterion": "maintainability.clarity",
+			"prior": 3,
+			"current": 2,
+			"reason": "公開契約は追えるが、現行状態の主入口が古く、評価条件と派生処理の全貌の把握に複数文書・大きいrunnerが必要。"
+		},
+		{
+			"criterion": "maintainability.change",
+			"prior": 4,
+			"current": 3,
+			"reason": "直近の共通化やp0-3互換の公開口追加に、型/境界/consumer/負の回帰検査が利用できる。"
+		},
+		{
+			"criterion": "common_components.duplication",
+			"prior": 3,
+			"current": 2,
+			"reason": "JSON復元/ID/記録照合は共通だが、条件による変換と入力固定がexport/unionに伝わらない。"
+		},
+		{
+			"criterion": "common_components.reuse",
+			"prior": 4,
+			"current": 3,
+			"reason": "schema/check/portsをbench・空consumer・実hostが再利用し、provider接続もInferencePortを守る。"
+		},
+		{
+			"criterion": "common_components.abstraction",
+			"prior": 4,
+			"current": 3,
+			"reason": "契約と接続口の抽象は実際の複数consumerに必要な範囲で、srcへI/Oや複雑なframeworkを持ち込んでいない。"
+		},
+		{
+			"criterion": "testing.automation",
+			"prior": 3,
+			"current": 2,
+			"reason": "文書化されたローカルfull gate・配線・packを再現できる。CIは明示的に今回の対象外で、release時自動強制の証拠はない。"
+		},
+		{
+			"criterion": "supply_chain.dependencies",
+			"prior": 4,
+			"current": 3,
+			"reason": "依存とvendorの出所・固定版・7日規則があり、過去修正と今回既知advisory監査を確認した。"
+		},
+		{
+			"criterion": "supply_chain.license",
+			"prior": 3,
+			"current": 2,
+			"reason": "root/配布依存と直接dev/vendorの利用条件・所有を実metadataで確認できる。公開構成全体のtransitive法務精査は今回行っていない。"
+		},
+		{
+			"criterion": "performance.measurement",
+			"prior": 3,
+			"current": 2,
+			"reason": "offline構造検査と過去API時間/費用のbaselineが分離されている。現行host prompt・実利用のtail・peak memoryを含む回帰測定は未整備。"
+		},
+		{
+			"criterion": "operability.signals",
+			"prior": 3,
+			"current": 2,
+			"reason": "run/usage/check/score/errorの観測は可能だが、派生定義と出所一致の穴が診断を誤らせる。"
+		}
+	]
+}

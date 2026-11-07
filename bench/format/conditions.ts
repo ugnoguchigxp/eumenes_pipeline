@@ -143,7 +143,13 @@ export type ConditionSummary = {
 	guidance?: GuidanceId;
 	/** Present only on host-prompt conditions, with the snapshot the prompt came from. */
 	promptStyle?: PromptStyle;
-	hostPrompt?: { instructionsSha256: string; gitCommit: string | null };
+	hostPrompt?: {
+		instructionsSha256: string;
+		gitCommit: string | null;
+		toolchainRevisionId: string;
+		snapshotSha256: string;
+		inputMode: "bench-catalog-material-labels-no-answers";
+	};
 };
 
 export function summarizeCondition(

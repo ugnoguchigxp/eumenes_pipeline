@@ -1,0 +1,13 @@
+
+import {strict as assert} from 'node:assert';
+import {installGuard,reachAttemptCount} from '/Users/y.noguchi/Code/eumenes_pipeline/bench/mock/guard.ts';
+import {parseJsonStrict} from '/Users/y.noguchi/Code/eumenes_pipeline/src/internal/strict-json.ts';
+installGuard();let seed=761106;
+const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
+const words=['__proto__','constructor','prototype','日本語','quotes"slash\\','line\nfeed','a','0',''];
+function value(depth=0):unknown{const t=Math.floor(rand()*(depth<4?6:4));if(t===0)return null;if(t===1)return rand()<0.5;if(t===2)return (rand()-0.5)*1e10;if(t===3)return words[Math.floor(rand()*words.length)]!+String(Math.floor(rand()*10));if(t===4)return Array.from({length:Math.floor(rand()*5)},()=>value(depth+1));const o=Object.create(null);for(let i=0;i<4;i++)o[words[Math.floor(rand()*words.length)]!]=value(depth+1);return o;}
+for(let i=0;i<2000;i++){const text=JSON.stringify(value());const actual=parseJsonStrict(text);assert.equal(actual.ok,true);if(actual.ok)assert.deepEqual(actual.value,JSON.parse(text));}
+for(const text of ['{"a":1,"a":2}','{"a":1,"\\u0061":2}','{"__proto__":1,"__proto__":2}']){assert.equal(parseJsonStrict(text).ok,false);}
+assert.equal(parseJsonStrict('['.repeat(66)+'0'+']'.repeat(66)).ok,false);
+assert.equal(reachAttemptCount(),0);
+console.log(JSON.stringify({seed:761106,validDifferentialCases:2000,duplicateKeyCases:3,depthRejection:true,externalReachAttempts:0}));

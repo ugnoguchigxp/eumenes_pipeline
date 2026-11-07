@@ -1,0 +1,25 @@
+{
+	"purpose": "改善点の特定と実施順の判断",
+	"scope": [
+		"src library",
+		"bench evaluation",
+		"scripts release",
+		"read-only saved host evidence"
+	],
+	"remaining": [],
+	"completion": [
+		"Trace primary normal/failure paths",
+		"Validate findings, keep unknowns separate",
+		"Calculate criterion-level ledger",
+		"Acceptance checks and dependencies for each priority"
+	],
+	"completed": [
+		"主経路・失敗境界・配布境界の追跡",
+		"F01/F02/F04の対照付き再現とF03の確認",
+		"本体の最新進行状況と撤回案の反証確認",
+		"一次資料で代替手段比較",
+		"60基準の台帳・計算・改善受入・報告",
+		"追加記録を含むcheck:all398成功、配線87成功、採点一致"
+	],
+	"status": "complete"
+}

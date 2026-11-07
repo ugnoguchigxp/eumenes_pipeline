@@ -86,3 +86,13 @@ commitとpushは実行していない。既存の計画書差分と評価基準�
 利用者の「コードレビューし、改善点がなくなるまで改善」に対応し、[レビュー記録](../reviews/2026-11-05-code-review/report.md) の7件を修正した。388件の全試験、87件の配線、空のソースコピーの検査とpack:check、保存済み48件の強化したAPI由来照合、別ディレクトリの独立再集計が成功。追加の有料HTTP呼出しは0件。
 
 最新source identityは `74a4ba53967566892d27aa7feab6d08cf20a4ac7ae9fb2a6ff61eda9f120bdb8`、freezeは `9a0a4d819d27751efb60998cab9c9b0f4a3157217a2fd4cef3ed2816bb085fa6`。`data/evaluation/quality-review-final-2026-11-05/`を参照する。前の80.9点台帳と元実測は上書きせず保持する。現在の範囲で未解決の具体的指摘は無いが、第三者・実ホスト・実ツールの検証を行ったとは扱わない。
+
+## 2026-11-07：評価対象の版固定とrunnerの整理
+
+利用者の指定によりPipelineリポジトリだけを改修する。本体・Router・稼働設定・サーバー・通知は変更しない。
+
+本体の続行検証で計画revision 2が使われている一方、benchの既定snapshotはrevision 1だったため再抽出した。本体 `fb8eac06ba1e32891c51355c4e067d678e7fd555` のcleanなbundleから `--toolchain-revision toolchain:pipeline.execute@2` を指定し、`data/contracts/eumenes-compose-prompt-v2.json` を生成した。指示文SHA-256は `c6ae5096a78b6c5856a08589084eb35472670e0e9441dc990dee7936b1316dc5`。旧snapshotは上書きしていない。
+
+benchの `eumenes` 条件でsnapshotと期待revisionを明示指定できるようにし、freezeには指示文だけでなくsnapshot全体のdigestと出所も含める。使用した本文は作業DBと証拠bundleへ保存し、外部ファイルの後日の変更から再生を独立させる。入力の近似範囲もrunに明記する。新しい未使用ケースの実API評価、本体の通常設定での反復受入、実成果物の品質測定は未実施であり、過去24件の成績は更新しない。
+
+runnerは入力準備・実行と記録・集計と書出しに分離した。旧条件と採点基準は保持し、保存済みのLuna/Sonnet各24出力を一時的な別DBへ再生して、変更前後のsummary・ケース結果・各240採点行の一致を確認した。`check:all` は423件成功・0失敗、`bench:verify --db :memory:` は87/87・外部到達0件。旧revision 1を使った証拠bundleを別ディレクトリへ作り、固定依存の導入後に同梱CLIで再生して `equal: true` を確認した。実API呼出しは0件。再生の確認は実モデルの新規測定ではない。詳細な指定手順と制限は [評価手順](../evaluation.md#評価する版の指定と固定2026-11-07) を参照する。

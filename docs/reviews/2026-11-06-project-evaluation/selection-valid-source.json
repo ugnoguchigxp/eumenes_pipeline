@@ -1,0 +1,86 @@
+{
+	"caseSnapshot": {
+		"version": 1,
+		"digest": "c259bfe99fdb4c33dbf9975d006ab39bdec4eb273005cb24626624dd896372e5",
+		"files": [
+			{
+				"id": "prime-count",
+				"sha256": "5fbd1790358a8aad6ed84f6aa4dadc369045d6446f50aa4c319a6f4278cd3ab4",
+				"content": "{\"expected\":{\"acceptableBundles\":[\"cli.run\"],\"kind\":\"pipeline\",\"requiredBundles\":[\"compute.python\"]},\"id\":\"prime-count\",\"notes\":\"command型のready部品だけで組める単一作業。シェルでの計算も許容解とする\",\"providedMaterials\":[],\"request\":\"1から100までの素数の個数を計算して教えてください\",\"split\":\"dev\",\"usesFixtureContracts\":false}"
+			}
+		]
+	},
+	"runId": "8c1f76ac-d25b-448b-8e15-dc5476feb50d",
+	"startedAt": "2026-11-06T11:37:54.848Z",
+	"split": "dev",
+	"configs": ["emb-prefix"],
+	"cases": { "total": 1, "split": 1, "evaluated": 1, "excluded": [] },
+	"cards": 24,
+	"catalog": {
+		"version": "3be9a125394cf42bd25c37283d442fe8232a075719ba28353d0fe8e0173bdf5d",
+		"snapshotSha256": "57b8d500128b5aa33c012139ba0648d955b442dd13c96319d23ff150ac295c06",
+		"contractsSha256": "f6a2e691b206488ff086b23d7fd13db37397a68fc9d1a3f904f21c1d229e8293",
+		"fixturesSha256": "025fc7dbf939e517d84ab56def8198cb770bdf87f3a4515e5ec438d712331ee3"
+	},
+	"embedding": {
+		"network": "offline-review-stub",
+		"space": {
+			"modelId": "synthetic",
+			"revision": "review-1",
+			"artifactDigest": "ddb0433508ec0c43a8fc44cec9da87354980195bead7c3f18b5421d36ab82c52",
+			"dimension": 3
+		}
+	},
+	"methods": {
+		"emb-prefix": {
+			"description": "query に 'query: '、passage に 'passage: ' を付けて埋め込み",
+			"metrics": {
+				"evaluated": 1,
+				"containment": {
+					"3": { "cases": 0, "rate": 0 },
+					"5": { "cases": 0, "rate": 0 },
+					"8": { "cases": 0, "rate": 0 },
+					"12": { "cases": 0, "rate": 0 }
+				},
+				"meanWorstReciprocal": 0.05
+			}
+		}
+	},
+	"frozenByRule": "emb-prefix",
+	"perCase": [
+		{
+			"caseId": "prime-count",
+			"required": ["compute.python"],
+			"ranks": { "emb-prefix": { "compute.python": 20 } },
+			"worstRank": { "emb-prefix": 20 },
+			"rankings": {
+				"emb-prefix": [
+					"model3d.studio",
+					"docling.desk",
+					"image.create",
+					"weather.forecast",
+					"world.query",
+					"stock.quote",
+					"timers.manage",
+					"dots.delegate",
+					"claude-code.request",
+					"claude-code.repair",
+					"excalidraw.edit",
+					"object-recognition.manage",
+					"codex-tasks.manage",
+					"browser.operate",
+					"web.service-search",
+					"ocr.manage",
+					"music.create",
+					"kanban.manage",
+					"browser.capture",
+					"compute.python",
+					"music.library",
+					"cli.run",
+					"web.search",
+					"history.research"
+				]
+			}
+		}
+	]
+}

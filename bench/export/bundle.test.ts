@@ -11,8 +11,57 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { runFormat } from "../format/run.ts";
+import { CONDITIONS } from "../format/conditions.ts";
 import { SYNTHETIC_OUTPUTS } from "../format/synthetic.ts";
 import { createEvidenceBundle, verifyEvidenceBundle } from "./bundle.ts";
+
+test("a host replay bundle retains the exact external snapshot after its source changes", async () => {
+	const dir = mkdtempSync(join(tmpdir(), "pipeline-host-evidence-"));
+	const runsRoot = join(dir, "runs");
+	const dbPath = join(dir, "work.sqlite3");
+	const hostPromptPath = join(dir, "external-host.json");
+	const original = readFileSync(
+		"data/contracts/eumenes-compose-prompt.json",
+		"utf8",
+	);
+	writeFileSync(hostPromptPath, original);
+	const options = {
+		session: "host-evidence",
+		runsRoot,
+		dbPath,
+		hostPromptPath,
+		caseIds: ["vague-request"],
+		formats: ["json"] as const,
+		condition: CONDITIONS.eumenes,
+	};
+	await runFormat(options);
+	const request = JSON.parse(
+		readFileSync(
+			join(runsRoot, options.session, "requests/vague-request--json.json"),
+			"utf8",
+		),
+	);
+	writeFileSync(
+		join(runsRoot, options.session, "recordings/vague-request--json.json"),
+		JSON.stringify({
+			promptDigest: request.promptDigest,
+			output: JSON.stringify({
+				status: "needs_input",
+				questions: ["何を依頼しますか？"],
+			}),
+		}),
+	);
+	const scored = await runFormat(options);
+	writeFileSync(hostPromptPath, "changed after the completed run");
+	const target = join(dir, "bundle");
+	createEvidenceBundle({ target, runId: scored.runId, dbPath, runsRoot });
+	verifyEvidenceBundle(target);
+	const saved = join(target, "data/replay-host-prompt.json");
+	expect(readFileSync(saved, "utf8")).toBe(original);
+	const replayed = await runFormat({ ...options, hostPromptPath: saved });
+	expect(replayed.condition).toEqual(scored.condition);
+	expect(replayed.cells).toEqual(scored.cells);
+});
 
 test("portable evidence pins code, cases, original outputs and database, rejects missing or changed bytes", async () => {
 	const dir = mkdtempSync(join(tmpdir(), "pipeline-evidence-"));

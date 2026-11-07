@@ -1,6 +1,6 @@
 # Eumenes Pipeline
 
-[Eumenes](https://github.com/ugnoguchigxp/eumenes) に登録されたツールチェーンバンドルを部品として、AIが利用者の依頼を作業に分解し、部品を選び、成果物までの流れを短い定義（`request`・`steps`・`output`）に残すためのサブプロジェクト。最終的に tarball として Eumenes に取り込む。
+[Eumenes](https://github.com/ugnoguchigxp/eumenes) に登録されたツールチェーンバンドルを部品として、AIが利用者の依頼を作業に分解し、部品を選び、成果物までの流れを短い定義（`request`・`steps`・`output`）に残すためのサブプロジェクト。ビルドした tarball を Eumenes に取り込んで使う。
 
 ```json
 {
@@ -18,9 +18,19 @@
 
 ## 状態
 
-内部データ契約は **p0-3** として固定済みです。JSON生成、検査、モック実行、追記専用DB、結果のexport、Claude/OpenAI APIの検証口を実装しています。Eumenes本体の実dispatchと画面での受入は未完了です。モック成功は実ツールの成功を表しません。
+配布版 **0.1.0**、内部データ契約 **p0-3** をEumenes本体へ取込み済みです。JSON生成、検査、モック実行、追記専用DB、結果のexport、Claude/OpenAI APIの検証口を実装しています。限定したlive検証では、実モデルの計画から計算→15秒タイマーの子2件が完了し、画面の描画・通知も一部確認しました。通常会話の複数作業、質問への回答・継続、取消を含む通し受入は本体側で進行中です。モック成功と実ツール成功、限定したlive成功と全体受入を分けて扱います。
 
-現在の確認範囲は [品質改善記録](docs/handoff/2026-11-05-quality-improvement.md)、計画の正本は [plan.md](plan.md)、改善項目は [実装計画](docs/plans/quality-improvement-2026-11-05.md) を参照してください。JSONは基準の比較条件で、既定は全カード提示です。修復・構文復元・ID正規化・triage・段階生成は既定offの実験条件です。段階生成とtriageは採用していません。旧holdout40件は既見の診断集合として扱います。
+採用版・設計判断・確認済み範囲は [改善設計書の決定欄](docs/plans/improvement-design-2026-11-06.md#0-2026-11-06-の決定と実施)、本体の最新受入状況は [本体の課題台帳](../eumenes/spec/project-issues-2026-11-06.md) と [進行中の実装・検証記録](../eumenes/spec/project-issues-first-batch-2026-11-06.md) を参照してください。本体の振り分け・質問継続・実dispatch・画面の作業はそちらで管理し、会話への完了報告・結果通知の追加案は撤回済みです。計画の正本は [plan.md](plan.md)、11月5日までの結果は [品質改善記録](docs/handoff/2026-11-05-quality-improvement.md) に残しています。古い計画・評価を現在の採用状態として読み替えないでください。
+
+JSONは基準の比較条件で、既定は全カード提示です。修復・構文復元・ID正規化・triage・段階生成は既定offの実験条件です。段階生成とtriageは採用していません。旧holdout40件は既見の診断集合として扱います。
+
+本体の指示文を測る `eumenes` 条件は、抽出した指示文・カードの写像・出力の読み方を固定する実験条件です。[評価手順](docs/evaluation.md#本体の指示文を測る条件2026-11-06)に従って使い、旧bench条件のAPI成績をこの条件の測定結果へ転用しません。
+
+既定の指示文は本体の続行検証で使ったrevision 2です。`--host-prompt` と `--host-toolchain-revision` で旧版も指定できます。freezeでは指示文と出所を固定し、使用したsnapshotは証拠bundleへ保存します。カード・資料・回答履歴は本体との近似が残り、実ツールと最終成果物までの品質実測は未完了です。
+
+指示文を再抽出するときは、測定対象の本体で採用した `toolchainRevisionId` を確認します。バンドルに複数revisionがある場合は `--toolchain-revision toolchain:pipeline.execute@N` が必須です。既知の指示文digestがあれば `--expected-instructions-sha256 <SHA-256>` も指定すると、不一致時に保存前に止まります。配列順や最大revisionから稼働版を推測しません。抽出は本体を読み取るだけで、登録・設定・稼働状態は変えません。
+
+選択結果のunion再分析は、元結果のcase snapshot・catalog版・embedding由来を現在の入力と照合します。依頼文やカードが変わった場合、過去の順位と混ぜず元の入力で再生するか、新しいrunで全順位を測ります。照合情報のない旧結果は、保存済みの当時のソース・証拠bundleで再生してください。
 
 ## 必要なもの
 

@@ -1,0 +1,30 @@
+
+import {strict as assert} from 'node:assert';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {join} from 'node:path';
+import {installGuard,reachAttemptCount} from '/Users/y.noguchi/Code/eumenes_pipeline/bench/mock/guard.ts';
+import {runSelectionTuning} from '/Users/y.noguchi/Code/eumenes_pipeline/bench/selection/tuning.ts';
+import {runUnionAnalysis} from '/Users/y.noguchi/Code/eumenes_pipeline/bench/selection/union.ts';
+import {sha256} from '/Users/y.noguchi/Code/eumenes_pipeline/bench/catalog/load.ts';
+installGuard();
+const root=import.meta.dir;
+const casesDir=join(root,'cases');mkdirSync(casesDir);
+const path=join(casesDir,'prime-count.json');
+const original=JSON.parse(readFileSync('/Users/y.noguchi/Code/eumenes_pipeline/data/cases/prime-count.json','utf8'));
+writeFileSync(path,JSON.stringify(original));
+const transport={network:'offline-review-stub',embed:async(texts:readonly string[])=>({space:{modelId:'synthetic',revision:'review-1',artifactDigest:sha256('review-fixture-only'),dimension:3},vectors:texts.map(t=>{const h=sha256(t);return [0,8,16].map(i=>parseInt(h.slice(i,i+8),16)/0xffffffff);})})};
+const recorded=await runSelectionTuning({transport,split:'dev',configIds:['emb-prefix'],casesDir});
+const recordedResultsPath=join(root,'recorded.json');writeFileSync(recordedResultsPath,JSON.stringify(recorded));
+const control=runUnionAnalysis({recordedResultsPath,casesDir});
+const changed={...original,request:'1から200までの素数の個数を計算して教えてください'};
+writeFileSync(path,JSON.stringify(changed));
+let rejected=false;let report:any,error:string|null=null;
+try{report=runUnionAnalysis({recordedResultsPath,casesDir});}catch(e){rejected=true;error=(e as Error).message;}
+assert.equal(control.evaluated,1);
+assert.equal(rejected,false,'review hypothesis no longer holds if source drift is rejected');
+assert.notEqual(recorded.caseSnapshot.digest,report.caseSnapshot.digest);
+assert.equal(report.sourceRunId,recorded.runId);
+assert.equal(reachAttemptCount(),0);
+const result={kind:'synthetic-reproduction-not-model-measurement',sourceRunId:recorded.runId,derivedRunId:report.runId,controlEvaluated:control.evaluated,originalRequest:original.request,changedRequest:changed.request,sourceCaseDigest:recorded.caseSnapshot.digest,currentCaseDigest:report.caseSnapshot.digest,sourceDriftRejected:rejected,error,bm25Validation:report.bm25Validation,evaluated:report.evaluated,externalReachAttempts:reachAttemptCount()};
+writeFileSync(join(root,'result.json'),JSON.stringify(result,null,2));
+console.log(JSON.stringify({root,...result},null,2));

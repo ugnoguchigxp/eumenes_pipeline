@@ -232,13 +232,9 @@ type TrialRow = {
 function savedDefinition(
 	format: string,
 	outputText: string | null,
-	restored = false,
-	idsNormalized = false,
+	flags: Parameters<typeof rederiveAuthoring>[2],
 ): PipelineDefinition | null {
-	const gate = rederiveAuthoring(format, outputText, {
-		restored,
-		normalizeIds: idsNormalized,
-	});
+	const gate = rederiveAuthoring(format, outputText, flags);
 	if (!gate || !gate.outcome || gate.outcome.status !== "ready") return null;
 	return gate.outcome.definition;
 }
@@ -441,6 +437,19 @@ export function buildRunExport(options: {
 			criteria: Record<string, number | null>,
 		): boolean | null =>
 			"ids_normalized" in criteria ? criteria.ids_normalized === 1 : null;
+		const derivationFlags = (
+			trial: TrialRow,
+			restored: boolean,
+			normalizeIds: boolean,
+		) => ({
+			restored,
+			normalizeIds,
+			hostReading:
+				(config.condition as ConditionSummary | undefined)?.promptStyle ===
+				"eumenes-p0-3",
+			stripMarkers: config.staged === true,
+			sourceRequest: caseById.get(trial.case_id)?.request,
+		});
 
 		const cells: ExportCell[] = composeTrials.map((trial) => {
 			const { criteria, score, checks, model } = detailOf(trial);
@@ -463,8 +472,11 @@ export function buildRunExport(options: {
 					? savedDefinition(
 							trial.condition,
 							trial.output_text,
-							syntaxRestored === true,
-							idsNormalized === true,
+							derivationFlags(
+								trial,
+								syntaxRestored === true,
+								idsNormalized === true,
+							),
 						)
 					: null,
 				syntaxRestored,
@@ -499,8 +511,11 @@ export function buildRunExport(options: {
 						? savedDefinition(
 								trial.condition,
 								trial.output_text,
-								syntaxRestored === true,
-								idsNormalized === true,
+								derivationFlags(
+									trial,
+									syntaxRestored === true,
+									idsNormalized === true,
+								),
 							)
 						: null,
 				syntaxRestored,
@@ -561,10 +576,11 @@ export function buildRunExport(options: {
 			for (const trial of composeTrials) {
 				if (cellStatus(trial) !== "scored") continue;
 				const { criteria } = detailOf(trial);
-				const gate = rederiveAuthoring(trial.condition, trial.output_text, {
-					restored: restoredOf(criteria) === true,
-					normalizeIds: true,
-				});
+				const gate = rederiveAuthoring(
+					trial.condition,
+					trial.output_text,
+					derivationFlags(trial, restoredOf(criteria) === true, true),
+				);
 				if (!gate) continue;
 				if (gate.normalizeAttempted) attempted += 1;
 				if (gate.idsNormalized) recovered += 1;

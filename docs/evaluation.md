@@ -160,9 +160,34 @@ bun run bench:judge:prepare --source SOURCE_SESSION --session JUDGE_SESSION --ca
 
 - **形式**: json だけ。修復・構文復元・ID正規化・triage・段階生成とは併用できない（本体の修復メッセージを再現していないため）。
 - **指示文の抽出**: `bun scripts/extract-eumenes-prompt.ts` で `../eumenes` から読み取り専用で抽出する。
-  - 出力の `data/contracts/eumenes-compose-prompt.json` は手で編集しない。
+  - 既定は、11月6日夜の本体の続行検証で使った `toolchain:pipeline.execute@2` の `data/contracts/eumenes-compose-prompt-v2.json`。旧revision 1の `data/contracts/eumenes-compose-prompt.json` は履歴として保持する。いずれも手で編集しない。
   - bundleが未commitなら読込みを拒否する。
   - 写した本体ファイル（カード写像、メッセージ組立）のcommit時digestと未commitの有無も記録する。
   - 抽出し直したら、理由と新しいdigestを記録する。
 - **近似**: bench のケースには資料の内容と本体の参照が無いので、資料は名前と種別だけになる。`answers` は空。カードは本体の現行登録ではなく、benchカタログの提示カードを写像した物。
 - **実測**: まだ行っていない。新しいsessionとrunで、予算台帳を使って行う。
+
+### 評価する版の指定と固定（2026-11-07）
+
+抽出する版は、本体の採用記録と照合して明示する。複数revisionのあるバンドルから、配列の先頭や最大revisionを自動で選ばない。
+
+```sh
+bun scripts/extract-eumenes-prompt.ts \
+  --toolchain-revision toolchain:pipeline.execute@2 \
+  --out data/contracts/eumenes-compose-prompt-v2.json
+bun run bench:format -- --session host-v2-prepare --format json --condition eumenes \
+  --host-prompt data/contracts/eumenes-compose-prompt-v2.json \
+  --host-toolchain-revision toolchain:pipeline.execute@2
+```
+
+後者は記録が無ければ要求ファイルを準備して終了コード1となる。APIは呼ばない。旧版の再生では `--host-prompt data/contracts/eumenes-compose-prompt.json --host-toolchain-revision toolchain:pipeline.execute@1` を指定する。指定版とsnapshotが一致しなければ停止する。他の条件にhost専用optionを渡した場合も停止する。
+
+未使用ケースを実測する前に、要求準備の `summary.json` にある `condition.hostPrompt` を、freeze用protocolの `formatMethod.hostPrompt` へそのまま含める。ここには指示文のdigest、本体commit、toolchain revision、snapshot全体のdigest、入力の近似範囲を記録する。保存場所のpathだけを固定値として使わない。freeze後の指示文・revision・出所の差し替えは、要求の生成・再生前に拒否する。
+
+使用したsnapshot本文も作業DBへ保存する。証拠bundleはその本文を `data/replay-host-prompt.json` に同梱し、`bench:replay -- --replay` はそれを読む。元の外部snapshotが後で変わっても、その時点の指示文を再現する。
+
+**この条件が測れる範囲**は計画生成である。runの `inputMode: bench-catalog-material-labels-no-answers` は、カードがbenchの写し、資料が名前・種別だけ、回答履歴が空であることを示す。本体と完全に同条件、質問後の再開、実ツールの成功、最終成果物の正しさの証拠にはしない。これらの受入には、本体側で固定した実行条件と結果の照合が必要である。新しい未使用ケースの作成・固定と実API測定も未実施で、旧24件の成績は更新していない。
+
+### runnerの責務
+
+`bench/format/prepare.ts` は条件検査と要求の準備、`run.ts` は追記記録・セル評価・修復の実行、`report.ts` は集計とsummaryの書出しを持つ。既存の条件と失敗時の扱い、採点基準は維持する。構造整理の受入では、APIを呼ばず保存済み48出力を別DBへ再生し、run IDを除くsummary、各ケースの結果、採点行を比較する。

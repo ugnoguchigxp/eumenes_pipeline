@@ -1,0 +1,70 @@
+
+import { strict as assert } from "node:assert";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { Database } from "bun:sqlite";
+import { installGuard, reachAttemptCount } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/mock/guard.ts";
+import { MockHost } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/mock/host.ts";
+import { loadBenchCatalog, canonicalJson, sha256 } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/catalog/load.ts";
+import { loadCases } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/cases/cases.ts";
+import { SYNTHETIC_OUTPUTS } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/synthetic.ts";
+import { buildFormatPrompt } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/prompt.ts";
+import { buildHostPrompt, loadHostPrompt } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/host-prompt.ts";
+import { buildEnumPrompt, enumNoteText, parseEnumOutput } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/enumerate.ts";
+import { CONDITIONS } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/conditions.ts";
+import { inferenceDigest, ENUM_PURPOSE } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/infer/recorded.ts";
+import { runFormat } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/format/run.ts";
+import { buildRunExport } from "/Users/y.noguchi/Code/eumenes_pipeline/bench/export/export.ts";
+installGuard();
+const root=import.meta.dir;
+const runsRoot=join(root,"runs");
+const dbPath=join(root,"review.sqlite3");
+const prime=loadCases().find(c=>c.id==="prime-count")!;
+const raw=SYNTHETIC_OUTPUTS.find(s=>s.caseId==="prime-count" && s.format==="json")!.output;
+const original=JSON.parse(raw);
+const catalog=loadBenchCatalog({policy:"ready+partial"});
+const dispatches:any[]=[];
+const execute=MockHost.prototype.executeStep;
+MockHost.prototype.executeStep=async function(step,signal){dispatches.push(structuredClone(step));return execute.call(this,step,signal);};
+const results:any[]=[];
+for(const mode of ["baseline-control","host-request-mismatch","host-bare-definition","staged-markers"]){
+ const session=mode;
+ const dir=join(runsRoot,session,"recordings");mkdirSync(dir,{recursive:true});
+ const def=structuredClone(original);
+ let output=raw, built;
+ const options:any={session,runsRoot,dbPath,caseIds:[prime.id],formats:["json"]};
+ if(mode.startsWith("host-")){
+  options.condition=CONDITIONS.eumenes;
+  built=buildHostPrompt({evalCase:prime,cards:catalog.cards,host:loadHostPrompt()});
+  if(mode==="host-request-mismatch"){def.request="素数を数えて";output=JSON.stringify({status:"ready",definition:def});}
+ }else if(mode==="staged-markers"){
+  options.staged=true;
+  const enumOutput=JSON.stringify({items:["素数の個数を計算する","計算した個数を伝える"]});
+  const enumBuilt=buildEnumPrompt(prime);
+  const enumDir=join(runsRoot,session,"enum-recordings");mkdirSync(enumDir,{recursive:true});
+  writeFileSync(join(enumDir,`${prime.id}.json`),JSON.stringify({promptDigest:inferenceDigest({purpose:ENUM_PURPOSE,...enumBuilt}),output:enumOutput}));
+  built=buildFormatPrompt({evalCase:prime,format:"json",cards:catalog.cards,enumNote:enumNoteText(parseEnumOutput(enumOutput)!)});
+  def.steps[0].task="[w1][w2] "+def.steps[0].task;output=JSON.stringify(def);
+ }else built=buildFormatPrompt({evalCase:prime,format:"json",cards:catalog.cards});
+ writeFileSync(join(dir,`${prime.id}--json.json`),JSON.stringify({promptDigest:inferenceDigest({purpose:"compose",...built}),output}));
+ dispatches.length=0;
+ const report=await runFormat(options);
+ const exp=buildRunExport({runId:report.runId,dbPath,runsRoot});
+ writeFileSync(join(root,mode+"-export.json"),JSON.stringify(exp,null,2));
+ assert.equal(exp.run.status,"completed");assert.equal(exp.cells[0].status,"scored");
+ const cell=exp.cells[0];
+ const result={mode,runId:report.runId,passed:cell.passed,authoringOk:cell.authoringOk,parseOk:cell.score?.parseOk,exportedRequest:cell.definition?.request??null,exportedTask:cell.definition?.steps[0]?.task??null,dispatchedRequest:dispatches[0]?.source.request??null,dispatchedTask:dispatches[0]?.request??null,definitionEqualsExpectedChecked:canonicalJson(cell.definition)===canonicalJson(original),summaryDifferences:exp.summaryCrossCheck.differences};
+ if(mode==="baseline-control"){assert.equal(cell.passed,true);assert.equal(result.definitionEqualsExpectedChecked,true);}
+ if(mode==="host-request-mismatch"){assert.equal(cell.passed,true);assert.equal(result.dispatchedRequest,prime.request);assert.notEqual(cell.definition?.request,prime.request);}
+ if(mode==="host-bare-definition"){assert.equal(cell.authoringOk,false);assert.equal(cell.score?.parseOk,false);assert.ok(cell.definition);assert.equal(dispatches.length,0);}
+ if(mode==="staged-markers"){assert.equal(cell.passed,true);assert.equal(result.dispatchedTask,original.steps[0].task);assert.notEqual(cell.definition?.steps[0].task,result.dispatchedTask);}
+ const db=new Database(dbPath,{readonly:true});
+ const calls=db.query("SELECT request_digest, reference_digests FROM mock_calls WHERE run_id=?").all(report.runId);db.close();
+ if(dispatches.length){assert.equal((calls[0] as any).request_digest,sha256(dispatches[0].request));assert.equal(JSON.parse((calls[0] as any).reference_digests)[0],sha256(prime.request));}
+ results.push(result);
+}
+catalog.close();
+assert.equal(reachAttemptCount(),0);
+const evidence={root,apiCalls:0,externalReachAttempts:reachAttemptCount(),results};
+writeFileSync(join(root,"results.json"),JSON.stringify(evidence,null,2));
+console.log(JSON.stringify(evidence,null,2));

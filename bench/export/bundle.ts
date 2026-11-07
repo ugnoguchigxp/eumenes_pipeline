@@ -53,6 +53,14 @@ export function createEvidenceBundle(options: {
 				"source changed since run; preserve original source before bundling",
 			);
 		const { snapshot } = readCaseSnapshot(inputs.caseSnapshot);
+		const hostPrompt = config.condition?.hostPrompt;
+		if (
+			hostPrompt &&
+			(typeof inputs.hostPromptSnapshot !== "string" ||
+				hash(Buffer.from(inputs.hostPromptSnapshot)) !==
+					hostPrompt.snapshotSha256)
+		)
+			throw new Error("host prompt snapshot missing or mismatched");
 		if (
 			typeof config.session !== "string" ||
 			!/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(config.session)
@@ -76,6 +84,8 @@ export function createEvidenceBundle(options: {
 			save(path, readFileSync(join(root, path)));
 		for (const file of snapshot.files)
 			text(`data/replay-cases/${file.id}.json`, file.content);
+		if (hostPrompt)
+			text("data/replay-host-prompt.json", inputs.hostPromptSnapshot);
 		const copyTree = (
 			from: string,
 			to: string,

@@ -1,0 +1,18 @@
+{
+	"kind": "synthetic-reproduction-not-model-measurement",
+	"sourceRunId": "c42439da-309a-419c-aca6-bffa241a9b7a",
+	"derivedRunId": "908faed6-19e2-460b-8af4-c3fd55eb7ffb",
+	"controlEvaluated": 1,
+	"originalRequest": "1から100までの素数の個数を計算して教えてください",
+	"changedRequest": "この資料を検索して、要点を整理してください。",
+	"sourceCaseDigest": "c259bfe99fdb4c33dbf9975d006ab39bdec4eb273005cb24626624dd896372e5",
+	"currentCaseDigest": "7022bec46bc46d0f2d13c243405c0a9e805dd79d80f0b2c97e283c54b312de1a",
+	"sourceDriftRejected": false,
+	"error": null,
+	"bm25Validation": {
+		"checked": 0,
+		"mismatches": []
+	},
+	"evaluated": 1,
+	"externalReachAttempts": 0
+}

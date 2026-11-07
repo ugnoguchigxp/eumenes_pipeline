@@ -1,0 +1,14 @@
+{
+	"commit": "8a45a9aded00be1659b31be8d68a885e21afe887",
+	"reviewedAt": "2026-11-06",
+	"initialStatus": "clean",
+	"runtime": "1.4.4",
+	"platform": "Darwin arm64",
+	"constraints": [
+		"No product source changes",
+		"No main-host writes or server operations",
+		"No new paid inference",
+		"No CI work",
+		"Host results are saved evidence, not rerun here"
+	]
+}

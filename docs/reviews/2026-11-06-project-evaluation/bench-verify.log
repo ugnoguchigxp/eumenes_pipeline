@@ -1,0 +1,90 @@
+$ bun bench/cli/verify.ts --db :memory:
+ok   guard/none-before-run  0 reach attempts before bench:verify started
+ok   guard/fetch-blocked  blocked=true, attempts=1
+ok   unknown-component/reject  expected unknown_component; got unknown_component
+ok   reserved-id/reject  expected reserved_id; got reserved_id
+ok   duplicate-id/reject  expected duplicate_id; got duplicate_id
+ok   forward-reference/reject  expected forward_reference; got forward_reference
+ok   self-reference/reject  expected self_reference; got self_reference
+ok   unknown-reference/reject  expected unknown_reference; got unknown_reference
+ok   excluded-entry/reject  expected component_not_offered; got component_not_offered
+ok   ambiguous-bundle/reject  expected ambiguous_entry; got ambiguous_entry
+ok   entry-not-in-bundle/reject  expected entry_not_in_bundle; got entry_not_in_bundle
+ok   extra-field/reject  expected schema; got schema
+ok   no-steps/reject  expected schema; got schema
+ok   single-ready/accept  1 steps
+ok   single-ready/all-complete  status=completed, calls=1, delivered=1
+ok   single-ready/deterministic  outputs equal across runs
+ok   single-ready/stop-fail  status=stopped, calls=1, stoppedAt=count:failed
+ok   single-ready/stop-cancel  status=stopped, calls=1, stoppedAt=count:cancelled
+ok   single-ready/stop-expire  status=stopped, calls=1, stoppedAt=count:expired
+ok   single-ready/stop-ask  status=stopped, calls=1, stoppedAt=count:waiting_input
+ok   single-ready/stop-indeterminate  status=stopped, calls=1, stoppedAt=count:indeterminate
+ok   single-ready/drop-output  rejection=result_missing_output, calls=1
+ok   single-ready/wrong-type  rejection=result_contract_violation, calls=1
+ok   single-ready/cancel-midway  status=cancelled, calls=1, rejection=after_cancel
+ok   single-ready/after-deadline  rejection=after_deadline
+ok   research-image-music/accept  3 steps
+ok   research-image-music/all-complete  status=completed, calls=3, delivered=3
+ok   research-image-music/deterministic  outputs equal across runs
+ok   research-image-music/stop-fail  status=stopped, calls=1, stoppedAt=research:failed
+ok   research-image-music/stop-cancel  status=stopped, calls=1, stoppedAt=research:cancelled
+ok   research-image-music/stop-expire  status=stopped, calls=1, stoppedAt=research:expired
+ok   research-image-music/stop-ask  status=stopped, calls=1, stoppedAt=research:waiting_input
+ok   research-image-music/stop-indeterminate  status=stopped, calls=1, stoppedAt=research:indeterminate
+ok   research-image-music/drop-output  rejection=result_missing_output, calls=2
+ok   research-image-music/wrong-type  rejection=result_contract_violation, calls=2
+ok   research-image-music/cancel-midway  status=cancelled, calls=1, rejection=after_cancel
+ok   research-image-music/after-deadline  rejection=after_deadline
+ok   instant-then-command/accept  2 steps
+ok   instant-then-command/all-complete  status=completed, calls=2, delivered=2
+ok   instant-then-command/deterministic  outputs equal across runs
+ok   instant-then-command/stop-fail  status=stopped, calls=1, stoppedAt=weather:failed
+ok   instant-then-command/stop-cancel  status=stopped, calls=1, stoppedAt=weather:cancelled
+ok   instant-then-command/stop-expire  status=stopped, calls=1, stoppedAt=weather:expired
+ok   instant-then-command/stop-ask  status=stopped, calls=1, stoppedAt=weather:waiting_input
+ok   instant-then-command/stop-indeterminate  status=stopped, calls=1, stoppedAt=weather:indeterminate
+ok   instant-then-command/drop-output  rejection=result_missing_output, calls=2
+ok   instant-then-command/wrong-type  rejection=result_contract_violation, calls=2
+ok   instant-then-command/cancel-midway  status=cancelled, calls=1, rejection=after_cancel
+ok   instant-then-command/after-deadline  rejection=after_deadline
+ok   instant-then-command/arguments-required  state=failed, code=missing_arguments
+ok   explicit-entry/accept  1 steps
+ok   explicit-entry/all-complete  status=completed, calls=1, delivered=1
+ok   explicit-entry/deterministic  outputs equal across runs
+ok   explicit-entry/stop-fail  status=stopped, calls=1, stoppedAt=operate:failed
+ok   explicit-entry/stop-cancel  status=stopped, calls=1, stoppedAt=operate:cancelled
+ok   explicit-entry/stop-expire  status=stopped, calls=1, stoppedAt=operate:expired
+ok   explicit-entry/stop-ask  status=stopped, calls=1, stoppedAt=operate:waiting_input
+ok   explicit-entry/stop-indeterminate  status=stopped, calls=1, stoppedAt=operate:indeterminate
+ok   explicit-entry/drop-output  rejection=result_missing_output, calls=1
+ok   explicit-entry/wrong-type  rejection=result_contract_violation, calls=1
+ok   explicit-entry/cancel-midway  status=cancelled, calls=1, rejection=after_cancel
+ok   explicit-entry/after-deadline  rejection=after_deadline
+ok   synth:browser.capture/contracts  output domain:browser.receipt@1; 12 seeds
+ok   synth:browser.operate/contracts  output domain:browser.receipt@1; 12 seeds
+ok   synth:claude-code.repair/contracts  output domain:claude-code.receipt@1; 12 seeds
+ok   synth:claude-code.request/contracts  output domain:claude-code.receipt@1; 12 seeds
+ok   synth:cli.run/contracts  output domain:shell.run-receipt@1; 12 seeds
+ok   synth:codex-tasks.manage/contracts  output domain:kanban.receipt@1; 12 seeds
+ok   synth:compute.python/contracts  output domain:compute.receipt@1; 12 seeds
+ok   synth:docling.desk/contracts  output domain:docling.prepared@1; 12 seeds
+ok   synth:dots.delegate/contracts  output domain:dots.work-receipt@1; 12 seeds
+ok   synth:excalidraw.edit/contracts  output summary-only; 12 seeds
+ok   synth:history.research/contracts  output summary-only; 12 seeds
+ok   synth:image.create/contracts  output fixture:image.create.result@1; 12 seeds
+ok   synth:kanban.manage/contracts  output domain:kanban.receipt@1; 12 seeds
+ok   synth:model3d.studio/contracts  output domain:model3d.receipt@1; 12 seeds
+ok   synth:music.create/contracts  output fixture:music.create.result@1; 12 seeds
+ok   synth:music.library/contracts  output summary-only; 12 seeds
+ok   synth:object-recognition.manage/contracts  output summary-only; 12 seeds
+ok   synth:ocr.manage/contracts  output domain:ocr.receipt@1; 12 seeds
+ok   synth:stock.quote/contracts  output summary-only, arguments synthesized; 12 seeds
+ok   synth:timers.manage/contracts  output domain:timers.receipt@1; 12 seeds
+ok   synth:weather.forecast/contracts  output summary-only, arguments synthesized; 12 seeds
+ok   synth:web.search/contracts  output summary-only; 12 seeds
+ok   synth:web.service-search/contracts  output summary-only; 12 seeds
+ok   synth:world.query/contracts  output summary-only; 12 seeds
+ok   guard/zero-reach  0 reach attempts
+
+87/87 passed; run b0552737-4370-4315-b511-504b042038a7; catalogVersion 3be9a125394c

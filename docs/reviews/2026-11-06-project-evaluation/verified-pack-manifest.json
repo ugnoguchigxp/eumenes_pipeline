@@ -1,0 +1,18 @@
+{
+	"package": "eumenes-pipeline",
+	"version": "0.1.0",
+	"artifact": "eumenes-pipeline-0.1.0-a859fd16ce46.tgz",
+	"sha256": "4c60c46ab77040b3ff4ed23433ca0ae9bd2e689efb8ea1db67da9234d8570f4f",
+	"sizeBytes": 20125,
+	"sourceDigest": "a859fd16ce46b3650de68cca70e55c2a2e4f122be9786622c071c2deb22f9ad4",
+	"sourceFiles": 22,
+	"gitSha": null,
+	"dirty": null,
+	"builtAt": "2026-11-06T10:36:39.424Z",
+	"verification": {
+		"packContents": "passed",
+		"tarballContents": "passed",
+		"freshConsumerInstall": "passed",
+		"consumerTypecheck": "passed"
+	}
+}
